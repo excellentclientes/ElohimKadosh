@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elohim e Kadosh - Gestão Premium</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        .scale-enter-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .scale-leave-active { transition: all 0.2s ease; }
+        .scale-enter-from, .scale-leave-to { opacity: 0; transform: scale(0.97) translateY(10px); }
+
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+        
+        .glow-pulse { animation: glow 2s infinite alternate; }
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px currentColor, 0 0 10px currentColor; }
+            100% { box-shadow: 0 0 2px currentColor, 0 0 5px currentColor; opacity: 0.8; }
+        }
+
+        /* HEADER PRETO FOSCO PERMANENTE */
+        header { 
+            background-color: #09090b !important; 
+            border-bottom-color: #27272a !important; 
+        }
+    </style>
+</head>
+<body id="app" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
+
+    <!-- CABEÇALHO SUPERIOR (PRETO FOSCO) -->
+    <header class="sticky top-0 z-40 shadow-xl transition-colors">
+        <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="ph-fill ph-crown text-xl"></i>
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-lg font-bold text-white tracking-wide leading-tight">Elohim e Kadosh</h1>
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Gestão Premium</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <nav class="hidden lg:flex items-center gap-2 p-1.5 bg-[#18181b] rounded-2xl border border-slate-800">
+                    <a href="#" @click.prevent="activeTab = 'pedidos'" 
+                       :class="['px-5 py-2 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'pedidos' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800']">
+                        <i class="ph-fill ph-squares-four text-lg"></i> Painel de Pedidos
+                    </a>
+                    <a href="#" @click.prevent="activeTab = 'financas'" 
+                       :class="['px-5 py-2 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'financas' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800']">
+                        <i class="ph-fill ph-currency-dollar text-lg"></i> Finanças
+                    </a>
+                </nav>
+
+                <!-- Botão de Análise -->
+                <button @click="activeTab = 'analise'" title="Análise" 
+                        :class="['w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner hidden lg:flex', activeTab === 'analise' ? 'bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/30' : 'bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800']">
+                    <i class="ph-bold ph-chart-bar text-xl"></i>
+                </button>
+                
+                <button class="lg:hidden text-slate-300 hover:text-white"><i class="ph-bold ph-list text-2xl"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-[1600px] mx-auto p-6 lg:p-8">
+        
+        <!-- ========================================== -->
+        <!-- ABA: PAINEL DE PEDIDOS                     -->
+        <!-- ========================================== -->
+        <div v-if="activeTab === 'pedidos'">
+            <!-- Topbar de Ações e Ordenação -->
+            <div class="flex flex-col mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <!-- Linha Superior Fixa -->
+                <div class="flex flex-col xl:flex-row justify-between items-center gap-3 w-full">
+                    
+                    <!-- Campo de Pesquisa -->
+                    <div class="relative w-full xl:w-[280px] shrink-0">
+                        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                        <input type="text" v-model="searchQuery" placeholder="Pesquisar pedidos ou tempo..." 
+                               class="w-full pl-11 pr-8 py-3 bg-slate-50 border-transparent focus:bg-white border focus:border-indigo-300 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm font-medium">
+                        <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i class="ph-fill ph-x-circle text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Filtro por Loja (NOVO) -->
+                    <div class="flex items-center bg-slate-50 border border-slate-200 rounded-2xl px-3 py-1.5 h-11 shrink-0 group hover:border-indigo-300 transition-colors">
+                        <i class="ph-fill ph-storefront text-indigo-500 mr-2 text-lg"></i>
+                        <select v-model="filtroLoja" class="bg-transparent outline-none font-bold text-slate-700 text-xs cursor-pointer pr-2 appearance-none">
+                            <option value="Todas">Todas as Lojas</option>
+                            <option value="Elohim">Elohim</option>
+                            <option value="Kadosh">Kadosh</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down text-slate-400 text-[10px] pointer-events-none"></i>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between xl:justify-end gap-3 w-full xl:w-auto flex-1">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <!-- Controle de Ordenação -->
+                            <div class="flex items-center gap-2 border-l border-slate-200 pl-3 text-xs text-slate-500 font-semibold shrink-0">
+                                <i class="ph-bold ph-arrows-down-up text-indigo-500 text-base"></i>
+                                <span>Ordenar por:</span>
+                                
+                                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/50">
+                                    <select v-model="sortKey" class="bg-transparent outline-none font-bold text-slate-700 text-xs px-2 py-1.5 cursor-pointer appearance-none pr-6 relative">
+                                        <option value="id">Data de Criação</option>
+                                        <option value="tempo">Tempo (Dias)</option>
+                                        <option value="data">Data do Pedido</option>
+                                        <option value="status">Status</option>
+                                        <option value="loja">Loja</option>
+                                        <option value="idCliente">Cliente ID</option>
+                                        <option value="item">Item</option>
+                                        <option value="tema">Tema</option>
+                                        <option value="nomeCrianca">Criança</option>
+                                    </select>
+                                    
+                                    <button @click="toggleSortOrder" title="Alternar direção da ordem" class="w-7 h-7 flex items-center justify-center bg-white rounded-lg shadow-sm hover:shadow text-indigo-600 transition-all border border-slate-200 ml-1">
+                                        <i :class="sortOrder === 'asc' ? 'ph-bold ph-arrow-up' : 'ph-bold ph-arrow-down'" class="text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Seleção Dinâmica -->
+                            <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
+                                <label class="relative inline-flex items-center cursor-pointer group" title="Ativar Seleção Inteligente de Cards">
+                                    <input type="checkbox" v-model="selecaoDinamica" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-500 group-hover:bg-slate-300"></div>
+                                    <span class="ml-2 text-[11px] font-bold text-slate-600 transition-colors">Seleção Dinâmica</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Botão Modo TV -->
+                        <button @click="showTVConfig = true" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-xs shrink-0">
+                            <i class="ph-bold ph-monitor-play"></i> Modo TV
+                        </button>
+
+                        <button @click="showModalPedidos = true" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-xs shrink-0">
+                            <i class="ph-bold ph-plus"></i> Novo Pedido
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Linha Inferior com Altura Fixa (Não empurra a tabela) -->
+                <div class="flex flex-wrap gap-2 items-center min-h-[34px] pt-3">
+                    <transition-group name="fade">
+                        <div v-for="status in activeStatuses" :key="status" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-bold border border-indigo-100 whitespace-nowrap">
+                            <i class="ph-bold ph-funnel"></i> {{ status }}
+                            <button @click="removeStatus(status)" class="w-4 h-4 bg-indigo-200 text-indigo-700 rounded-full flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-colors ml-1"><i class="ph-bold ph-x text-[9px]"></i></button>
+                        </div>
+                    </transition-group>
+                </div>
+            </div>
+
+            <!-- Cards de Status Elegantes em Barras -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
+                <div v-for="status in statuses" :key="status"
+                     @click="handleCardClick(status)"
+                     :class="getCardStyles(status, activeStatuses.includes(status))">
+                    
+                    <div :class="['h-1.5 w-full absolute top-0 left-0 transition-all', getCardBarAccent(status)]"></div>
+                    
+                    <div class="flex justify-between items-start mb-3 pt-1">
+                        <span :class="['text-[9px] lg:text-[10px] font-bold uppercase tracking-wider leading-tight w-2/3', getCardContentStyles(status, activeStatuses.includes(status)).text]">
+                            {{ status }}
+                        </span>
+                        <div :class="['w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors', getCardContentStyles(status, activeStatuses.includes(status)).iconBg]">
+                            <i :class="['text-lg ph-fill transition-colors', getStatusIcon(status), getCardContentStyles(status, activeStatuses.includes(status)).icon]"></i>
+                        </div>
+                    </div>
+                    <span :class="['text-2xl lg:text-3xl font-black tracking-tighter transition-colors', getCardContentStyles(status, activeStatuses.includes(status)).number]">
+                        {{ statusCounts[status] }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tabela de Pedidos (Largura ajustada para caber) -->
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden flex flex-col w-full">
+                <div class="overflow-x-auto w-full custom-scrollbar">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest font-bold border-b-2 border-slate-200 select-none">
+                            <tr>
+                                <th @click="setSortKey('status')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Status <i :class="getSortIcon('status')"></i></div>
+                                </th>
+                                <th @click="setSortKey('data')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Data <i :class="getSortIcon('data')"></i></div>
+                                </th>
+                                <th @click="setSortKey('loja')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Loja <i :class="getSortIcon('loja')"></i></div>
+                                </th>
+                                <th @click="setSortKey('idCliente')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Cliente <i :class="getSortIcon('idCliente')"></i></div>
+                                </th>
+                                <th @click="setSortKey('item')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Item <i :class="getSortIcon('item')"></i></div>
+                                </th>
+                                <th @click="setSortKey('qtd')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center justify-center gap-1">Qtd <i :class="getSortIcon('qtd')"></i></div>
+                                </th>
+                                <th @click="setSortKey('tema')" class="px-3 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Tema <i :class="getSortIcon('tema')"></i></div>
+                                </th>
+                                <th @click="setSortKey('nomeCrianca')" class="px-3 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Criança <i :class="getSortIcon('nomeCrianca')"></i></div>
+                                </th>
+                                <th @click="setSortKey('idade')" class="px-2 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Idade <i :class="getSortIcon('idade')"></i></div>
+                                </th>
+                                <th @click="setSortKey('recorte')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Recorte</th>
+                                <th @click="setSortKey('nf')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">NF</th>
+                                <th @click="setSortKey('sab')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Sab</th>
+                                <th @click="setSortKey('tempo')" class="px-3 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center justify-center gap-1">Tempo <i :class="getSortIcon('tempo')"></i></div>
+                                </th>
+                                <th class="px-3 py-4 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <tr v-for="item in filteredItems" :key="item.id" 
+                                :class="['transition-colors duration-200 group border-b border-slate-200', getRowColor(item.status)]">
+                                
+                                <td class="px-3 py-3">
+                                    <div class="relative inline-flex items-center">
+                                        <select v-model="item.status" 
+                                                :class="['pl-2 pr-6 py-1 rounded-lg text-[10px] font-extrabold border appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm', getStatusColor(item.status)]">
+                                            <option v-for="s in statuses" :key="s" :value="s" class="text-slate-800 bg-white font-bold py-1">
+                                                {{ s }}
+                                            </option>
+                                        </select>
+                                        <i class="ph-bold ph-caret-down absolute right-2 pointer-events-none text-[9px] opacity-70" :class="getStatusColor(item.status)"></i>
+                                    </div>
+                                </td>
+
+                                <td class="px-3 py-3 text-slate-700 font-semibold text-xs">{{ formatDate(item.data) }}</td>
+                                <td class="px-3 py-3 font-bold text-slate-900 text-xs">{{ item.loja }}</td>
+                                
+                                <td class="px-3 py-3">
+                                    <button @click="copyToClipboard(item.idCliente)" 
+                                            title="Clique para copiar ID" 
+                                            class="group/copy relative text-slate-700 font-mono text-[11px] bg-white hover:bg-slate-100 border border-slate-300 hover:border-indigo-400 rounded-md px-2 py-1 font-bold transition-all inline-flex items-center gap-1 active:scale-95 shadow-sm">
+                                        #{{ item.idCliente }}
+                                        <i class="ph-bold ph-copy text-[10px] text-slate-400 group-hover/copy:text-indigo-600"></i>
+                                        
+                                        <transition name="fade">
+                                            <span v-if="copiedId === item.idCliente" 
+                                                  class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-sans font-bold py-1 px-2 rounded-lg shadow-lg whitespace-nowrap z-20 flex items-center gap-1">
+                                                <i class="ph-bold ph-check text-emerald-400"></i> Copiado!
+                                            </span>
+                                        </transition>
+                                    </button>
+                                </td>
+
+                                <td class="px-3 py-3 font-bold text-slate-900">
+                                    <input type="text" v-model="item.item" 
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-slate-900 text-xs">
+                                </td>
+
+                                <td class="px-2 py-3 text-center">
+                                    <input type="number" min="1" v-model.number="item.qtd" 
+                                           class="bg-white w-10 h-7 text-center rounded-lg border border-slate-300 hover:border-slate-400 focus:border-indigo-400 outline-none font-bold text-xs text-slate-800 shadow-sm transition-all">
+                                </td>
+
+                                <td class="px-3 py-3 font-bold text-slate-800">
+                                    <input type="text" v-model="item.tema" placeholder="-" 
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-slate-800 text-xs">
+                                </td>
+
+                                <td class="px-3 py-3 font-semibold text-slate-700">
+                                    <input type="text" v-model="item.nomeCrianca" placeholder="-" 
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-slate-700 text-xs">
+                                </td>
+
+                                <td class="px-2 py-3 font-semibold text-slate-700">
+                                    <input type="text" v-model="item.idade" placeholder="-" 
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-slate-700 text-xs">
+                                </td>
+                                
+                                <!-- CHECKBOXES MELHORADOS (ESTILO CHECK-IN) -->
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="item.recorte = !item.recorte" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-slate-100 border-slate-300 text-slate-300 hover:bg-slate-200']">
+                                        <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="item.nf = !item.nf" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-slate-100 border-slate-300 text-slate-300 hover:bg-slate-200']">
+                                        <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="item.sab = !item.sab" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-slate-100 border-slate-300 text-slate-300 hover:bg-slate-200']">
+                                        <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+
+                                <!-- COLUNA TEMPO -->
+                                <td class="px-3 py-3 text-center">
+                                    <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest shadow-sm" :class="getTempoBadge(item.data).badgeClass">
+                                        <span class="relative flex h-2 w-2">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="getTempoBadge(item.data).dotBaseClass"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 glow-pulse" :class="getTempoBadge(item.data).dotClass"></span>
+                                        </span>
+                                        {{ getTempoBadge(item.data).text }}
+                                    </div>
+                                </td>
+
+                                <td class="px-3 py-3 text-right">
+                                    <button @click="deleteItem(item.id)" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 shadow-sm opacity-0 group-hover:opacity-100 ml-auto transition-all">
+                                        <i class="ph-bold ph-trash text-sm"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="filteredItems.length === 0">
+                                <td colspan="14" class="px-6 py-20 text-center text-slate-400">
+                                    <i class="ph-fill ph-package text-4xl text-slate-300 mb-2"></i>
+                                    <h3 class="text-lg font-bold text-slate-600">Nenhum pedido encontrado</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA: FINANÇAS                              -->
+        <!-- ========================================== -->
+        <div v-else-if="activeTab === 'financas'">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 px-2">
+                    <i class="ph-fill ph-wallet text-emerald-500 text-2xl"></i> Gestão Financeira
+                </h2>
+                <button @click="showModalFinancas = true" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-1 text-sm">
+                    <i class="ph-bold ph-plus"></i> Novo Lançamento
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex items-center justify-between relative overflow-hidden">
+                    <div class="w-2 bg-emerald-500 absolute left-0 top-0 bottom-0"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Entradas</p>
+                        <h3 class="text-3xl font-black text-slate-800">{{ formatCurrency(totalEntradas) }}</h3>
+                    </div>
+                    <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                        <i class="ph-bold ph-trend-up text-3xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex items-center justify-between relative overflow-hidden">
+                    <div class="w-2 bg-red-500 absolute left-0 top-0 bottom-0"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Saídas</p>
+                        <h3 class="text-3xl font-black text-slate-800">{{ formatCurrency(totalSaidas) }}</h3>
+                    </div>
+                    <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                        <i class="ph-bold ph-trend-down text-3xl"></i>
+                    </div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex items-center justify-between relative overflow-hidden">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Saldo Atual</p>
+                        <h3 :class="['text-3xl font-black', saldoTotal >= 0 ? 'text-emerald-400' : 'text-red-400']">
+                            {{ formatCurrency(saldoTotal) }}
+                        </h3>
+                    </div>
+                    <div class="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-indigo-400">
+                        <i class="ph-bold ph-scales text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden flex flex-col w-full">
+                <div class="overflow-x-auto w-full custom-scrollbar">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-5">Data</th>
+                                <th class="px-6 py-5">Descrição</th>
+                                <th class="px-6 py-5">Tipo</th>
+                                <th class="px-6 py-5">Status</th>
+                                <th class="px-6 py-5 text-right">Valor</th>
+                                <th class="px-6 py-5 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white">
+                            <tr v-for="fin in financasSorted" :key="fin.id" class="hover:bg-slate-50/80 transition-colors group">
+                                <td class="px-6 py-4 text-slate-500 font-semibold">{{ formatDate(fin.data) }}</td>
+                                <td class="px-6 py-4 font-bold text-slate-800">{{ fin.descricao }}</td>
+                                <td class="px-6 py-4">
+                                    <span :class="['px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider', fin.tipo === 'Entrada' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200']">
+                                        {{ fin.tipo }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span :class="['px-2 py-1 rounded border text-[11px] font-bold', fin.status === 'Pago' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-yellow-50 border-yellow-200 text-yellow-700']">
+                                        {{ fin.status }}
+                                    </span>
+                                </td>
+                                <td :class="['px-6 py-4 text-right font-black', fin.tipo === 'Entrada' ? 'text-emerald-600' : 'text-red-500']">
+                                    {{ fin.tipo === 'Entrada' ? '+' : '-' }} {{ formatCurrency(fin.valor) }}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button @click="deleteFinanca(fin.id)" class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100">
+                                        <i class="ph-bold ph-trash text-lg"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="financasSorted.length === 0">
+                                <td colspan="6" class="px-6 py-16 text-center text-slate-400">
+                                    <i class="ph-fill ph-receipt text-4xl text-slate-300 mb-2"></i>
+                                    <h3 class="text-lg font-bold text-slate-700">Nenhum lançamento financeiro</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA: ANÁLISE (NOVA SEÇÃO)                  -->
+        <!-- ========================================== -->
+        <div v-else-if="activeTab === 'analise'">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 px-2">
+                    <i class="ph-fill ph-chart-bar text-indigo-500 text-2xl"></i> Central de Análises
+                </h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Estatísticas Rápidas Baseadas nos Dados -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                    <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total de Pedidos</span>
+                    <span class="text-4xl font-black text-slate-800">{{ pedidos.length }}</span>
+                </div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                    <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Loja Elohim</span>
+                    <span class="text-4xl font-black text-indigo-600">{{ pedidos.filter(p => p.loja === 'Elohim').length }}</span>
+                </div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                    <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Loja Kadosh</span>
+                    <span class="text-4xl font-black text-blue-500">{{ pedidos.filter(p => p.loja === 'Kadosh').length }}</span>
+                </div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                    <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Pedidos Finalizados</span>
+                    <span class="text-4xl font-black text-emerald-500">{{ statusCounts['Finalizado'] }}</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-10 flex flex-col items-center justify-center min-h-[400px]">
+                <div class="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-500 mb-4">
+                    <i class="ph-fill ph-chart-pie-slice text-5xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">Relatórios Detalhados</h3>
+                <p class="text-slate-500 text-center max-w-md">Em breve este painel exibirá gráficos interativos de faturamento, desempenho das lojas e tempo médio de entrega dos pedidos.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL: CONFIGURAR MODO TV -->
+    <transition name="scale">
+        <div v-if="showTVConfig" class="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showTVConfig = false"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="ph-bold ph-monitor-play text-indigo-500"></i> Configurar Modo TV
+                </h3>
+                <label class="block text-sm font-bold text-slate-600 mb-2">Quantidade máxima de pedidos:</label>
+                <input type="number" v-model.number="tvLimit" min="1" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 mb-6 transition-colors focus:border-indigo-500">
+                
+                <div class="flex gap-3 justify-end">
+                    <button @click="showTVConfig = false" class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
+                    <button @click="enterTVMode" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all">Iniciar TV</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- TELA: MODO TV (MODO CLARO) -->
+    <transition name="fade">
+        <div v-if="isTVMode" class="fixed inset-0 z-[100] bg-slate-100 flex flex-col text-slate-800 overflow-hidden">
+            <!-- Header TV -->
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white shadow-sm">
+                <div class="flex items-center gap-3">
+                    <i class="ph-fill ph-monitor-play text-3xl text-indigo-600 glow-pulse"></i>
+                    <h1 class="text-2xl font-black tracking-wider uppercase text-slate-900">
+                        Modo TV <span class="text-sm text-slate-500 ml-2 font-medium tracking-normal">Acompanhamento em Tempo Real</span>
+                    </h1>
+                </div>
+                <button @click="exitTVMode" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl font-bold transition-all border border-red-200">
+                    <i class="ph-bold ph-x"></i> Sair
+                </button>
+            </div>
+            
+            <!-- Content Split -->
+            <div class="flex-1 flex gap-4 p-4 overflow-hidden">
+                <!-- Coluna 1: Todos os Pedidos (Filtrados) -->
+                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
+                        <h2 class="text-xl font-black text-indigo-600 uppercase tracking-widest">Todos os Pedidos ({{tvAllOrders.length}})</h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3">Cliente / Loja</th>
+                                    <th class="px-4 py-3">Tema / Criança</th>
+                                    <th class="px-4 py-3">Item / Qtd</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr v-for="item in tvAllOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
+                                    <td class="px-4 py-3">
+                                        <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
+                                        <div class="font-bold text-slate-900">{{item.loja}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-indigo-700">{{item.tema || '-'}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">{{item.nomeCrianca || '-'}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-slate-900">{{item.item}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">Qtd: {{item.qtd}}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
+                                    </td>
+                                </tr>
+                                <tr v-if="tvAllOrders.length === 0">
+                                    <td colspan="4" class="px-4 py-10 text-center text-slate-400 font-bold">Nenhum pedido para exibir</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Coluna 2: Novos de Hoje -->
+                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
+                        <h2 class="text-xl font-black text-emerald-600 uppercase tracking-widest">Pedidos de Hoje ({{tvTodayOrders.length}})</h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3">Cliente / Loja</th>
+                                    <th class="px-4 py-3">Tema / Criança</th>
+                                    <th class="px-4 py-3">Item / Qtd</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr v-for="item in tvTodayOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
+                                    <td class="px-4 py-3">
+                                        <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
+                                        <div class="font-bold text-slate-900">{{item.loja}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-indigo-700">{{item.tema || '-'}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">{{item.nomeCrianca || '-'}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-slate-900">{{item.item}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">Qtd: {{item.qtd}}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
+                                    </td>
+                                </tr>
+                                <tr v-if="tvTodayOrders.length === 0">
+                                    <td colspan="4" class="px-4 py-10 text-center text-slate-400 font-bold">Nenhum pedido novo hoje</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODAL: NOVO PEDIDO -->
+    <transition name="fade">
+        <div v-if="showModalPedidos" class="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalPedidos"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all border border-slate-200">
+                
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-package text-indigo-500"></i> Novo Cadastro
+                    </h3>
+                    <button @click="closeModalPedidos" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                </div>
+                
+                <div class="p-8 overflow-y-auto flex-1 custom-scrollbar">
+                    <form @submit.prevent="savePedido" id="formPedido" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Loja *</label>
+                                <select v-model="form.loja" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:border-indigo-500">
+                                    <option value="" disabled>Selecionar Loja...</option>
+                                    <option v-for="loja in lojas" :key="loja" :value="loja">{{ loja }}</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
+                                <input type="date" v-model="form.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:border-indigo-500">
+                            </div>
+
+                            <div class="space-y-1.5 md:col-span-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">ID Cliente *</label>
+                                <input type="text" v-model="form.idCliente" required placeholder="Ex: 10459" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <!-- LISTA DE ITENS DINÂMICA -->
+                        <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-slate-50/50">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Itens do Pedido</h4>
+                                <button type="button" @click="addNovoItemPedido" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-1">
+                                    <i class="ph-bold ph-plus"></i> Adicionar Item
+                                </button>
+                            </div>
+
+                            <div class="space-y-3">
+                                <transition-group name="fade">
+                                    <div v-for="(it, index) in form.itensPedido" :key="index" class="flex flex-wrap md:flex-nowrap gap-3 items-end bg-white border border-slate-200 rounded-xl p-3 shadow-sm relative group">
+                                        <div class="w-full md:w-2/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Item</label>
+                                            <input type="text" v-model="it.item" required placeholder="Nome do item" class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors">
+                                        </div>
+                                        <div class="w-1/3 md:w-1/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Qtd</label>
+                                            <input type="number" min="1" v-model.number="it.qtd" required class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors text-center">
+                                        </div>
+                                        <div class="w-full md:w-1/4">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Tema</label>
+                                            <input type="text" v-model="it.tema" placeholder="Opcional" class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors">
+                                        </div>
+                                        <div class="w-full md:w-1/4">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Criança (Nome/Idade)</label>
+                                            <input type="text" v-model="it.nomeCrianca" placeholder="Opcional" class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors mb-2">
+                                            <input type="text" v-model="it.idade" placeholder="Idade (Opcional)" class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors">
+                                        </div>
+                                        
+                                        <button v-if="form.itensPedido.length > 1" type="button" @click="removerItemPedido(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:bg-red-500 hover:text-white">
+                                            <i class="ph-bold ph-minus text-xs"></i>
+                                        </button>
+                                    </div>
+                                </transition-group>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancelar</button>
+                    <button type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Cadastrar Pedido</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODAL: NOVO LANÇAMENTO FINANCEIRO -->
+    <transition name="fade">
+        <div v-if="showModalFinancas" class="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalFinancas"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden transform transition-all border border-slate-200">
+                
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-receipt text-emerald-500"></i> Novo Lançamento
+                    </h3>
+                    <button @click="closeModalFinancas" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                </div>
+                
+                <div class="p-8 overflow-y-auto">
+                    <form @submit.prevent="saveFinanca" id="formFinanca" class="space-y-5">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Tipo *</label>
+                            <div class="flex gap-4">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" v-model="formFin.tipo" value="Entrada" class="peer sr-only" required>
+                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-600 transition-all shadow-sm">Entrada</div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" v-model="formFin.tipo" value="Saída" class="peer sr-only" required>
+                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-red-50 peer-checked:border-red-500 peer-checked:text-red-600 transition-all shadow-sm">Saída</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Descrição *</label>
+                            <input type="text" v-model="formFin.descricao" required placeholder="Ex: Pagamento Fornecedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
+                                <input type="date" v-model="formFin.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Valor (R$) *</label>
+                                <input type="number" step="0.01" min="0" v-model.number="formFin.valor" required placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500">
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Status *</label>
+                            <select v-model="formFin.status" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500">
+                                <option value="Pago">Pago</option>
+                                <option value="Pendente">Pendente</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalFinancas" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancelar</button>
+                    <button type="submit" form="formFinanca" class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    activeTab: 'pedidos',
+                    searchQuery: '',
+                    filtroLoja: 'Todas', // NOVO: Estado para gerenciar o filtro de lojas
+                    sortKey: 'id',
+                    sortOrder: 'desc',
+                    
+                    showModalPedidos: false,
+                    showModalFinancas: false,
+
+                    showTVConfig: false,
+                    isTVMode: false,
+                    tvLimit: 10,
+                    
+                    activeStatuses: [],
+                    selecaoDinamica: false,
+                    
+                    lojas: ['Elohim', 'Kadosh'],
+                    statuses: ['Com informações', 'Sem informações', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
+                    
+                    copiedId: null,
+
+                    form: this.getInitialFormPedido(),
+                    formFin: this.getInitialFormFinanca(),
+                    
+                    pedidos: [
+                        { id: 1, data: '2023-10-25', loja: 'Elohim', idCliente: '10459', item: 'Adesivo', qtd: 50, tema: 'Patrulha', nomeCrianca: 'João', idade: '5', recorte: true, nf: false, sab: true, status: 'Com informações' },
+                        { id: 2, data: '2023-10-26', loja: 'Kadosh', idCliente: '88231', item: 'Banner', qtd: 1, tema: 'Homem Aranha', nomeCrianca: 'Pedro', idade: '7', recorte: false, nf: true, sab: false, status: 'Aprovado' },
+                        { id: 3, data: '2023-10-20', loja: 'Elohim', idCliente: '33102', item: 'Cartão', qtd: 100, tema: '-', nomeCrianca: '-', idade: '-', recorte: false, nf: false, sab: false, status: 'Aguardando coleta' }
+                    ],
+                    
+                    financas: [
+                        { id: 1, data: '2023-10-25', descricao: 'Venda Adesivos', tipo: 'Entrada', valor: 150.00, status: 'Pago' },
+                        { id: 2, data: '2023-10-26', descricao: 'Compra Papel', tipo: 'Saída', valor: 85.50, status: 'Pago' }
+                    ]
+                }
+            },
+            computed: {
+                filteredItems() {
+                    let result = this.pedidos;
+                    
+                    // APLICANDO FILTRO DE LOJA (NOVO)
+                    if (this.filtroLoja !== 'Todas') {
+                        result = result.filter(i => i.loja === this.filtroLoja);
+                    }
+                    
+                    if (this.searchQuery) {
+                        const q = this.searchQuery.toLowerCase();
+                        result = result.filter(i => {
+                            // Calcula a string de "Tempo" gerada visualmente para poder filtrar por ela também
+                            const tempoText = this.getTempoBadge(i.data).text.toLowerCase();
+                            
+                            return i.idCliente.toLowerCase().includes(q) || 
+                                   i.loja.toLowerCase().includes(q) ||
+                                   i.item.toLowerCase().includes(q) ||
+                                   (i.tema && i.tema.toLowerCase().includes(q)) ||
+                                   (i.nomeCrianca && i.nomeCrianca.toLowerCase().includes(q)) ||
+                                   tempoText.includes(q); // Adicionado filtro de TEMPO (Ex: 'hoje', '2 dias')
+                        });
+                    }
+
+                    if (this.activeStatuses.length > 0) {
+                        result = result.filter(i => this.activeStatuses.includes(i.status));
+                    }
+                    
+                    return result.sort((a, b) => {
+                        let valA = a[this.sortKey];
+                        let valB = b[this.sortKey];
+                        
+                        if (this.sortKey === 'tempo') {
+                            valA = this.getDaysPassed(a.data);
+                            valB = this.getDaysPassed(b.data);
+                        }
+
+                        if (typeof valA === 'string') valA = valA.toLowerCase();
+                        if (typeof valB === 'string') valB = valB.toLowerCase();
+                        
+                        if (valA < valB) return this.sortOrder === 'asc' ? -1 : 1;
+                        if (valA > valB) return this.sortOrder === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                },
+                statusCounts() {
+                    const counts = {};
+                    this.statuses.forEach(s => counts[s] = 0);
+                    this.pedidos.forEach(p => {
+                        if (counts[p.status] !== undefined) counts[p.status]++;
+                    });
+                    return counts;
+                },
+                financasSorted() {
+                    return [...this.financas].sort((a, b) => new Date(b.data) - new Date(a.data));
+                },
+                totalEntradas() {
+                    return this.financas.filter(f => f.tipo === 'Entrada').reduce((acc, curr) => acc + curr.valor, 0);
+                },
+                totalSaidas() {
+                    return this.financas.filter(f => f.tipo === 'Saída').reduce((acc, curr) => acc + curr.valor, 0);
+                },
+                saldoTotal() {
+                    return this.totalEntradas - this.totalSaidas;
+                },
+                tvAllOrders() {
+                    return this.filteredItems.slice(0, this.tvLimit);
+                },
+                tvTodayOrders() {
+                    return this.filteredItems.filter(item => this.getDaysPassed(item.data) === 0).slice(0, this.tvLimit);
+                }
+            },
+            methods: {
+                getInitialFormPedido() {
+                    const today = new Date().toISOString().split('T')[0];
+                    return { loja: '', data: today, idCliente: '', itensPedido: [{ item: '', qtd: 1, tema: '', nomeCrianca: '', idade: '' }] };
+                },
+                getInitialFormFinanca() {
+                    const today = new Date().toISOString().split('T')[0];
+                    return { tipo: 'Entrada', descricao: '', data: today, valor: null, status: 'Pago' };
+                },
+                closeModalPedidos() { this.showModalPedidos = false; this.form = this.getInitialFormPedido(); },
+                closeModalFinancas() { this.showModalFinancas = false; this.formFin = this.getInitialFormFinanca(); },
+                
+                addNovoItemPedido() {
+                    this.form.itensPedido.push({ item: '', qtd: 1, tema: '', nomeCrianca: '', idade: '' });
+                },
+                removerItemPedido(index) {
+                    this.form.itensPedido.splice(index, 1);
+                },
+
+                savePedido() {
+                    const baseId = Date.now();
+                    this.form.itensPedido.forEach((it, index) => {
+                        this.pedidos.unshift({
+                            id: baseId + index,
+                            data: this.form.data,
+                            loja: this.form.loja,
+                            idCliente: this.form.idCliente,
+                            item: it.item,
+                            qtd: it.qtd,
+                            tema: it.tema,
+                            nomeCrianca: it.nomeCrianca,
+                            idade: it.idade,
+                            recorte: false, nf: false, sab: false,
+                            status: 'Com informações'
+                        });
+                    });
+                    this.closeModalPedidos();
+                },
+                saveFinanca() {
+                    this.financas.unshift({
+                        id: Date.now(),
+                        data: this.formFin.data,
+                        descricao: this.formFin.descricao,
+                        tipo: this.formFin.tipo,
+                        valor: this.formFin.valor,
+                        status: this.formFin.status
+                    });
+                    this.closeModalFinancas();
+                },
+                deleteItem(id) { if(confirm('Tem certeza que deseja excluir este pedido?')) this.pedidos = this.pedidos.filter(i => i.id !== id); },
+                deleteFinanca(id) { if(confirm('Tem certeza que deseja excluir este lançamento?')) this.financas = this.financas.filter(f => f.id !== id); },
+                
+                setSortKey(key) {
+                    if (this.sortKey === key) { this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'; } 
+                    else { this.sortKey = key; this.sortOrder = 'asc'; }
+                },
+                toggleSortOrder() { this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'; },
+                getSortIcon(key) {
+                    if (this.sortKey !== key) return 'ph-bold ph-minus text-slate-300 opacity-50';
+                    return this.sortOrder === 'asc' ? 'ph-bold ph-caret-up text-indigo-500' : 'ph-bold ph-caret-down text-indigo-500';
+                },
+                
+                handleCardClick(status) {
+                    if (!this.selecaoDinamica) {
+                        this.activeStatuses = this.activeStatuses.includes(status) ? [] : [status];
+                    } else {
+                        if (this.activeStatuses.includes(status)) {
+                            this.activeStatuses = this.activeStatuses.filter(s => s !== status);
+                        } else {
+                            this.activeStatuses.push(status);
+                        }
+                    }
+                },
+                removeStatus(status) {
+                    this.activeStatuses = this.activeStatuses.filter(s => s !== status);
+                },
+
+                enterTVMode() {
+                    this.showTVConfig = false;
+                    this.isTVMode = true;
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(err => console.log(err));
+                    }
+                },
+                exitTVMode() {
+                    this.isTVMode = false;
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen().catch(err => console.log(err));
+                    }
+                },
+                
+                formatDate(dateStr) {
+                    const [y, m, d] = dateStr.split('-');
+                    return `${d}/${m}/${y.substring(2)}`;
+                },
+                formatCurrency(val) {
+                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+                },
+                getDaysPassed(dateStr) {
+                    const diffTime = Math.abs(new Date() - new Date(dateStr));
+                    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                },
+                
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.copiedId = text;
+                        setTimeout(() => { this.copiedId = null; }, 2000);
+                    });
+                },
+
+                getStatusIcon(status) {
+                    const icons = {
+                        'Com informações': 'ph-info',
+                        'Sem informações': 'ph-warning-circle',
+                        'Para aprovação': 'ph-clock-countdown',
+                        'Aprovado': 'ph-check-circle',
+                        'Impresso': 'ph-printer',
+                        'Aguardando coleta': 'ph-package',
+                        'Finalizado': 'ph-flag-checkered'
+                    };
+                    return icons[status] || 'ph-circle';
+                },
+                
+                getCardBarAccent(status) {
+                    const accents = {
+                        'Com informações': 'bg-blue-500',
+                        'Sem informações': 'bg-slate-400',
+                        'Para aprovação': 'bg-orange-500',
+                        'Aprovado': 'bg-emerald-500',
+                        'Impresso': 'bg-purple-500',
+                        'Aguardando coleta': 'bg-amber-500',
+                        'Finalizado': 'bg-slate-600'
+                    };
+                    return accents[status] || 'bg-indigo-500';
+                },
+
+                getCardStyles(status, isActive) {
+                    let base = 'p-4 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden group shadow-sm hover:shadow-md ';
+                    if (isActive) {
+                        const colors = {
+                            'Com informações': 'bg-blue-50 border-blue-400 ring-2 ring-blue-400/30 transform scale-[1.02]',
+                            'Sem informações': 'bg-slate-100 border-slate-400 ring-2 ring-slate-400/30 transform scale-[1.02]',
+                            'Para aprovação': 'bg-orange-50 border-orange-400 ring-2 ring-orange-400/30 transform scale-[1.02]',
+                            'Aprovado': 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-400/30 transform scale-[1.02]',
+                            'Impresso': 'bg-purple-50 border-purple-400 ring-2 ring-purple-400/30 transform scale-[1.02]',
+                            'Aguardando coleta': 'bg-amber-50 border-amber-400 ring-2 ring-amber-400/30 transform scale-[1.02]',
+                            'Finalizado': 'bg-slate-100 border-slate-500 ring-2 ring-slate-500/30 transform scale-[1.02]'
+                        };
+                        return base + colors[status];
+                    }
+                    return base + 'bg-white border-slate-200 hover:border-slate-300 opacity-90 hover:opacity-100';
+                },
+                
+                getCardContentStyles(status, isActive) {
+                    if (isActive) {
+                        const colors = {
+                            'Com informações': { text: 'text-blue-900', number: 'text-blue-950', iconBg: 'bg-blue-200', icon: 'text-blue-700' },
+                            'Sem informações': { text: 'text-slate-800', number: 'text-slate-900', iconBg: 'bg-slate-300', icon: 'text-slate-700' },
+                            'Para aprovação': { text: 'text-orange-900', number: 'text-orange-950', iconBg: 'bg-orange-200', icon: 'text-orange-700' },
+                            'Aprovado': { text: 'text-emerald-900', number: 'text-emerald-950', iconBg: 'bg-emerald-200', icon: 'text-emerald-700' },
+                            'Impresso': { text: 'text-purple-900', number: 'text-purple-950', iconBg: 'bg-purple-200', icon: 'text-purple-700' },
+                            'Aguardando coleta': { text: 'text-amber-900', number: 'text-amber-950', iconBg: 'bg-amber-200', icon: 'text-amber-700' },
+                            'Finalizado': { text: 'text-slate-900', number: 'text-slate-950', iconBg: 'bg-slate-300', icon: 'text-slate-800' }
+                        };
+                        return colors[status];
+                    }
+                    return { text: 'text-slate-600', number: 'text-slate-800', iconBg: 'bg-slate-100', icon: 'text-slate-500' };
+                },
+                
+                getStatusColor(status) {
+                    const colors = {
+                        'Com informações': 'bg-blue-100 text-blue-900 border-blue-300',
+                        'Sem informações': 'bg-slate-200 text-slate-800 border-slate-400',
+                        'Para aprovação': 'bg-orange-100 text-orange-900 border-orange-300',
+                        'Aprovado': 'bg-emerald-100 text-emerald-900 border-emerald-300',
+                        'Impresso': 'bg-purple-100 text-purple-900 border-purple-300',
+                        'Aguardando coleta': 'bg-amber-100 text-amber-900 border-amber-300',
+                        'Finalizado': 'bg-slate-300 text-slate-950 border-slate-400'
+                    };
+                    return colors[status] || 'bg-slate-100 text-slate-700 border-slate-200';
+                },
+                
+                getRowColor(status) {
+                    const colors = {
+                        'Com informações': 'bg-blue-50/70 hover:bg-blue-100/80 border-l-4 border-l-blue-500',
+                        'Sem informações': 'bg-slate-100/80 hover:bg-slate-200/80 border-l-4 border-l-slate-400',
+                        'Para aprovação': 'bg-orange-50/70 hover:bg-orange-100/80 border-l-4 border-l-orange-500',
+                        'Aprovado': 'bg-emerald-50/70 hover:bg-emerald-100/80 border-l-4 border-l-emerald-500',
+                        'Impresso': 'bg-purple-50/70 hover:bg-purple-100/80 border-l-4 border-l-purple-500',
+                        'Aguardando coleta': 'bg-amber-50/70 hover:bg-amber-100/80 border-l-4 border-l-amber-500',
+                        'Finalizado': 'bg-slate-100 hover:bg-slate-200/90 border-l-4 border-l-slate-600 opacity-75'
+                    };
+                    return colors[status] || 'hover:bg-slate-50 border-l-4 border-l-transparent';
+                },
+                
+                getTempoBadge(dataStr) {
+                    const dias = this.getDaysPassed(dataStr);
+                    let badgeClass, dotClass, dotBaseClass, text;
+
+                    if (dias === 0) {
+                        badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-300";
+                        dotClass = "bg-emerald-500"; dotBaseClass = "bg-emerald-400";
+                        text = "Hoje";
+                    } else if (dias <= 2) {
+                        badgeClass = "bg-blue-100 text-blue-800 border-blue-300";
+                        dotClass = "bg-blue-500"; dotBaseClass = "bg-blue-400";
+                        text = `${dias} Dia${dias > 1 ? 's' : ''}`;
+                    } else if (dias <= 5) {
+                        badgeClass = "bg-amber-100 text-amber-800 border-amber-300";
+                        dotClass = "bg-amber-500"; dotBaseClass = "bg-amber-400";
+                        text = `${dias} Dias`;
+                    } else {
+                        badgeClass = "bg-red-100 text-red-800 border-red-300";
+                        dotClass = "bg-red-500"; dotBaseClass = "bg-red-400";
+                        text = `${dias} Dias`;
+                    }
+                    
+                    return { badgeClass, dotClass, dotBaseClass, text };
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
