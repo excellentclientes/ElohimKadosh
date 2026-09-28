@@ -137,7 +137,7 @@
 
                     <div class="flex flex-wrap items-center justify-between xl:justify-end gap-3 w-full xl:w-auto flex-1">
                         <div class="flex flex-wrap items-center gap-3">
-                            <!-- Controle de Ordenação (Design Moderno com Custom Select) -->
+                            <!-- Controle de Ordenação -->
                             <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
                                 <div class="relative group" @click.stop>
                                     <div @click="openFilterDropdown = openFilterDropdown === 'sort' ? null : 'sort'" 
@@ -220,9 +220,10 @@
                 </div>
             </div>
 
-            <!-- Tabela de Pedidos -->
-            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden flex flex-col w-full">
-                <div class="overflow-x-auto w-full custom-scrollbar">
+            <!-- Tabela de Pedidos - CORREÇÃO DE BUG DO MENU AQUI -->
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full relative z-10">
+                <!-- Adicionado pb-32 para ter respiro pro menu -->
+                <div class="overflow-x-auto w-full custom-scrollbar pb-32">
                     <table class="w-full text-left text-sm whitespace-nowrap">
                         <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest font-bold border-b-2 border-slate-200 select-none">
                             <tr>
@@ -263,11 +264,12 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
-                            <!-- Cores aplicadas à linha toda -->
-                            <tr v-for="item in filteredItems" :key="item.id" 
+                            <!-- Index adicionado para lógica inteligente de abertura do menu -->
+                            <tr v-for="(item, index) in filteredItems" :key="item.id" 
                                 :class="['transition-colors duration-200 group border-b border-slate-200', getRowColor(item.status)]">
                                 
-                                <td class="px-3 py-3">
+                                <!-- CORREÇÃO DE BUG DA BORDA DE COR (Movida para o TD) -->
+                                <td class="px-3 py-3 border-l-4" :class="getRowBorderColor(item.status)">
                                     <!-- Custom Dropdown para Status -->
                                     <div class="relative inline-flex items-center select-none" @click.stop>
                                         <div @click="openDropdownId = openDropdownId === item.id ? null : item.id" 
@@ -276,7 +278,10 @@
                                             <i class="ph-bold ph-caret-down absolute right-2.5 text-[10px] opacity-70" :class="getStatusIconColor(item.status)"></i>
                                         </div>
                                         <transition name="fade">
-                                            <div v-if="openDropdownId === item.id" class="absolute z-50 top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                            <!-- CORREÇÃO DE BUG DO MENU CORTADO: Agora abre para CIMA nas últimas linhas! -->
+                                            <div v-if="openDropdownId === item.id" 
+                                                 class="absolute z-50 left-0 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1"
+                                                 :class="(filteredItems.length > 3 && index >= filteredItems.length - 2) ? 'bottom-[calc(100%+4px)]' : 'top-full mt-1'">
                                                 <div v-for="s in statuses" :key="s" @click="item.status = s; openDropdownId = null" 
                                                      class="px-4 py-2 text-[11px] font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
                                                      :class="s === item.status ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
@@ -617,7 +622,7 @@
                             </thead>
                             <tbody class="divide-y divide-slate-200">
                                 <tr v-for="item in tvAllOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 border-l-4" :class="getRowBorderColor(item.status)">
                                         <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
                                         <div class="font-bold text-slate-900">{{item.loja}}</div>
                                     </td>
@@ -654,7 +659,7 @@
                             </thead>
                             <tbody class="divide-y divide-slate-200">
                                 <tr v-for="item in tvTodayOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 border-l-4" :class="getRowBorderColor(item.status)">
                                         <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
                                         <div class="font-bold text-slate-900">{{item.loja}}</div>
                                     </td>
@@ -1158,6 +1163,18 @@
                     });
                 },
 
+                // FUNÇÃO NOVA QUE FALTAVA
+                getTempoBadge(dateStr) {
+                    const days = this.getDaysPassed(dateStr);
+                    if (days === 0) {
+                        return { text: 'Hoje', badgeClass: 'border-emerald-200 text-emerald-700 bg-emerald-50', dotBaseClass: 'bg-emerald-400', dotClass: 'bg-emerald-500' };
+                    } else if (days <= 2) {
+                        return { text: days + ' Dias', badgeClass: 'border-amber-200 text-amber-700 bg-amber-50', dotBaseClass: 'bg-amber-400', dotClass: 'bg-amber-500' };
+                    } else {
+                        return { text: days + ' Dias', badgeClass: 'border-red-200 text-red-700 bg-red-50', dotBaseClass: 'bg-red-400', dotClass: 'bg-red-500' };
+                    }
+                },
+
                 getStatusIcon(status) {
                     const icons = {
                         'Com informações': 'ph-info',
@@ -1243,42 +1260,32 @@
                     return colors[status] || 'bg-slate-100 text-slate-700';
                 },
                 
+                // CORREÇÃO: Removido o border-l daqui (O conflito estava acontecendo por isso)
                 getRowColor(status) {
                     const colors = {
-                        'Com informações': 'bg-blue-50/70 hover:bg-blue-100/90 border-l-4 border-l-blue-500',
-                        'Sem informações': 'bg-slate-100/80 hover:bg-slate-200/90 border-l-4 border-l-slate-400',
-                        'Para aprovação': 'bg-orange-50/70 hover:bg-orange-100/90 border-l-4 border-l-orange-500',
-                        'Aprovado': 'bg-emerald-50/70 hover:bg-emerald-100/90 border-l-4 border-l-emerald-500',
-                        'Impresso': 'bg-purple-50/70 hover:bg-purple-100/90 border-l-4 border-l-purple-500',
-                        'Aguardando coleta': 'bg-amber-50/70 hover:bg-amber-100/90 border-l-4 border-l-amber-500',
-                        'Finalizado': 'bg-slate-100 hover:bg-slate-200/90 border-l-4 border-l-slate-600 opacity-80'
+                        'Com informações': 'bg-blue-50/70 hover:bg-blue-100/90',
+                        'Sem informações': 'bg-slate-100/80 hover:bg-slate-200/90',
+                        'Para aprovação': 'bg-orange-50/70 hover:bg-orange-100/90',
+                        'Aprovado': 'bg-emerald-50/70 hover:bg-emerald-100/90',
+                        'Impresso': 'bg-purple-50/70 hover:bg-purple-100/90',
+                        'Aguardando coleta': 'bg-amber-50/70 hover:bg-amber-100/90',
+                        'Finalizado': 'bg-slate-100 hover:bg-slate-200/90 opacity-80'
                     };
-                    return colors[status] || 'hover:bg-slate-50 border-l-4 border-l-transparent';
+                    return colors[status] || 'hover:bg-slate-50';
                 },
-                
-                getTempoBadge(dataStr) {
-                    const dias = this.getDaysPassed(dataStr);
-                    let badgeClass, dotClass, dotBaseClass, text;
 
-                    if (dias === 0) {
-                        badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-300";
-                        dotClass = "bg-emerald-500"; dotBaseClass = "bg-emerald-400";
-                        text = "Hoje";
-                    } else if (dias <= 2) {
-                        badgeClass = "bg-blue-100 text-blue-800 border-blue-300";
-                        dotClass = "bg-blue-500"; dotBaseClass = "bg-blue-400";
-                        text = `${dias} Dia${dias > 1 ? 's' : ''}`;
-                    } else if (dias <= 5) {
-                        badgeClass = "bg-amber-100 text-amber-800 border-amber-300";
-                        dotClass = "bg-amber-500"; dotBaseClass = "bg-amber-400";
-                        text = `${dias} Dias`;
-                    } else {
-                        badgeClass = "bg-red-100 text-red-800 border-red-300";
-                        dotClass = "bg-red-500"; dotBaseClass = "bg-red-400";
-                        text = `${dias} Dias`;
-                    }
-                    
-                    return { badgeClass, dotClass, dotBaseClass, text };
+                // NOVA FUNÇÃO: Aplica a borda lateral de cor corretamente na célula
+                getRowBorderColor(status) {
+                    const colors = {
+                        'Com informações': 'border-l-blue-500',
+                        'Sem informações': 'border-l-slate-400',
+                        'Para aprovação': 'border-l-orange-500',
+                        'Aprovado': 'border-l-emerald-500',
+                        'Impresso': 'border-l-purple-500',
+                        'Aguardando coleta': 'border-l-amber-500',
+                        'Finalizado': 'border-l-slate-600'
+                    };
+                    return colors[status] || 'border-l-transparent';
                 }
             }
         }).mount('#app');
