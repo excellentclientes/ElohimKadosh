@@ -49,9 +49,12 @@
             background-color: #09090b !important; 
             border-bottom-color: #27272a !important; 
         }
+
+        /* Esconder seta de selects customizados no IE/Edge antigo */
+        select::-ms-expand { display: none; }
     </style>
 </head>
-<body id="app" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
+<body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
 
     <!-- CABEÇALHO SUPERIOR (PRETO FOSCO) -->
     <header class="sticky top-0 z-40 shadow-xl transition-colors">
@@ -111,41 +114,56 @@
                         </button>
                     </div>
 
-                    <!-- Filtro por Loja (NOVO) -->
-                    <div class="flex items-center bg-slate-50 border border-slate-200 rounded-2xl px-3 py-1.5 h-11 shrink-0 group hover:border-indigo-300 transition-colors">
-                        <i class="ph-fill ph-storefront text-indigo-500 mr-2 text-lg"></i>
-                        <select v-model="filtroLoja" class="bg-transparent outline-none font-bold text-slate-700 text-xs cursor-pointer pr-2 appearance-none">
-                            <option value="Todas">Todas as Lojas</option>
-                            <option value="Elohim">Elohim</option>
-                            <option value="Kadosh">Kadosh</option>
-                        </select>
-                        <i class="ph-bold ph-caret-down text-slate-400 text-[10px] pointer-events-none"></i>
+                    <!-- Filtro por Loja (Design Moderno com Custom Select) -->
+                    <div class="relative w-full sm:w-auto shrink-0 group" @click.stop>
+                        <div @click="openFilterDropdown = openFilterDropdown === 'loja' ? null : 'loja'" 
+                             class="w-full sm:w-44 bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-2xl pl-10 pr-8 py-3 cursor-pointer outline-none transition-all shadow-sm flex items-center justify-between">
+                            <div class="absolute left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ph-fill ph-storefront text-indigo-500 text-lg"></i>
+                            </div>
+                            <span>{{ filtroLoja === 'Todas' ? 'Todas as Lojas' : filtroLoja }}</span>
+                            <div class="absolute right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="ph-bold ph-caret-down text-xs"></i>
+                            </div>
+                        </div>
+                        <transition name="fade">
+                            <div v-if="openFilterDropdown === 'loja'" class="absolute z-50 top-full left-0 mt-1 w-full sm:w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                <div @click="filtroLoja = 'Todas'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Todas' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Todas as Lojas</div>
+                                <div @click="filtroLoja = 'Elohim'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Elohim' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Elohim</div>
+                                <div @click="filtroLoja = 'Kadosh'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Kadosh' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Kadosh</div>
+                            </div>
+                        </transition>
                     </div>
 
                     <div class="flex flex-wrap items-center justify-between xl:justify-end gap-3 w-full xl:w-auto flex-1">
                         <div class="flex flex-wrap items-center gap-3">
-                            <!-- Controle de Ordenação -->
-                            <div class="flex items-center gap-2 border-l border-slate-200 pl-3 text-xs text-slate-500 font-semibold shrink-0">
-                                <i class="ph-bold ph-arrows-down-up text-indigo-500 text-base"></i>
-                                <span>Ordenar por:</span>
-                                
-                                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/50">
-                                    <select v-model="sortKey" class="bg-transparent outline-none font-bold text-slate-700 text-xs px-2 py-1.5 cursor-pointer appearance-none pr-6 relative">
-                                        <option value="id">Data de Criação</option>
-                                        <option value="tempo">Tempo (Dias)</option>
-                                        <option value="data">Data do Pedido</option>
-                                        <option value="status">Status</option>
-                                        <option value="loja">Loja</option>
-                                        <option value="idCliente">Cliente ID</option>
-                                        <option value="item">Item</option>
-                                        <option value="tema">Tema</option>
-                                        <option value="nomeCrianca">Criança</option>
-                                    </select>
-                                    
-                                    <button @click="toggleSortOrder" title="Alternar direção da ordem" class="w-7 h-7 flex items-center justify-center bg-white rounded-lg shadow-sm hover:shadow text-indigo-600 transition-all border border-slate-200 ml-1">
-                                        <i :class="sortOrder === 'asc' ? 'ph-bold ph-arrow-up' : 'ph-bold ph-arrow-down'" class="text-sm"></i>
-                                    </button>
+                            <!-- Controle de Ordenação (Design Moderno com Custom Select) -->
+                            <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
+                                <div class="relative group" @click.stop>
+                                    <div @click="openFilterDropdown = openFilterDropdown === 'sort' ? null : 'sort'" 
+                                         class="bg-slate-100 hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-xl pl-8 pr-8 py-2 cursor-pointer outline-none transition-all shadow-sm w-44 flex items-center justify-between">
+                                        <div class="absolute left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="ph-bold ph-arrows-down-up text-indigo-500 text-sm"></i>
+                                        </div>
+                                        <span>{{ getSortLabel(sortKey) }}</span>
+                                        <div class="absolute right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                                            <i class="ph-bold ph-caret-down text-[10px]"></i>
+                                        </div>
+                                    </div>
+                                    <transition name="fade">
+                                        <div v-if="openFilterDropdown === 'sort'" class="absolute z-50 top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                            <div v-for="option in sortOptions" :key="option.value" 
+                                                 @click="sortKey = option.value; openFilterDropdown = null" 
+                                                 class="px-4 py-2 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
+                                                 :class="sortKey === option.value ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                                                {{ option.label }}
+                                            </div>
+                                        </div>
+                                    </transition>
                                 </div>
+                                <button @click="toggleSortOrder" title="Alternar direção da ordem" class="w-8 h-8 flex items-center justify-center bg-white rounded-xl shadow-sm hover:shadow text-indigo-600 transition-all border border-slate-200 hover:border-indigo-300 ml-1">
+                                    <i :class="sortOrder === 'asc' ? 'ph-bold ph-arrow-up' : 'ph-bold ph-arrow-down'" class="text-sm"></i>
+                                </button>
                             </div>
 
                             <!-- Seleção Dinâmica -->
@@ -169,7 +187,7 @@
                     </div>
                 </div>
 
-                <!-- Linha Inferior com Altura Fixa (Não empurra a tabela) -->
+                <!-- Linha Inferior com Altura Fixa -->
                 <div class="flex flex-wrap gap-2 items-center min-h-[34px] pt-3">
                     <transition-group name="fade">
                         <div v-for="status in activeStatuses" :key="status" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-bold border border-indigo-100 whitespace-nowrap">
@@ -202,7 +220,7 @@
                 </div>
             </div>
 
-            <!-- Tabela de Pedidos (Largura ajustada para caber) -->
+            <!-- Tabela de Pedidos -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden flex flex-col w-full">
                 <div class="overflow-x-auto w-full custom-scrollbar">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -245,30 +263,39 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
+                            <!-- Cores aplicadas à linha toda -->
                             <tr v-for="item in filteredItems" :key="item.id" 
                                 :class="['transition-colors duration-200 group border-b border-slate-200', getRowColor(item.status)]">
                                 
                                 <td class="px-3 py-3">
-                                    <div class="relative inline-flex items-center">
-                                        <select v-model="item.status" 
-                                                :class="['pl-2 pr-6 py-1 rounded-lg text-[10px] font-extrabold border appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm', getStatusColor(item.status)]">
-                                            <option v-for="s in statuses" :key="s" :value="s" class="text-slate-800 bg-white font-bold py-1">
-                                                {{ s }}
-                                            </option>
-                                        </select>
-                                        <i class="ph-bold ph-caret-down absolute right-2 pointer-events-none text-[9px] opacity-70" :class="getStatusColor(item.status)"></i>
+                                    <!-- Custom Dropdown para Status -->
+                                    <div class="relative inline-flex items-center select-none" @click.stop>
+                                        <div @click="openDropdownId = openDropdownId === item.id ? null : item.id" 
+                                             :class="['pl-3 pr-7 py-1.5 rounded-lg text-[10px] font-extrabold cursor-pointer outline-none transition-all shadow-sm border border-transparent hover:border-black/20 flex items-center gap-2 min-w-[120px]', getStatusColor(item.status)]">
+                                            {{ item.status }}
+                                            <i class="ph-bold ph-caret-down absolute right-2.5 text-[10px] opacity-70" :class="getStatusIconColor(item.status)"></i>
+                                        </div>
+                                        <transition name="fade">
+                                            <div v-if="openDropdownId === item.id" class="absolute z-50 top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                                <div v-for="s in statuses" :key="s" @click="item.status = s; openDropdownId = null" 
+                                                     class="px-4 py-2 text-[11px] font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
+                                                     :class="s === item.status ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                                                    {{ s }}
+                                                </div>
+                                            </div>
+                                        </transition>
                                     </div>
                                 </td>
 
-                                <td class="px-3 py-3 text-slate-700 font-semibold text-xs">{{ formatDate(item.data) }}</td>
+                                <td class="px-3 py-3 text-slate-800 font-semibold text-xs">{{ formatDate(item.data) }}</td>
                                 <td class="px-3 py-3 font-bold text-slate-900 text-xs">{{ item.loja }}</td>
                                 
                                 <td class="px-3 py-3">
                                     <button @click="copyToClipboard(item.idCliente)" 
                                             title="Clique para copiar ID" 
-                                            class="group/copy relative text-slate-700 font-mono text-[11px] bg-white hover:bg-slate-100 border border-slate-300 hover:border-indigo-400 rounded-md px-2 py-1 font-bold transition-all inline-flex items-center gap-1 active:scale-95 shadow-sm">
+                                            class="group/copy relative text-slate-800 font-mono text-[11px] bg-transparent hover:bg-white border border-transparent hover:border-slate-300 focus:border-indigo-400 rounded-md px-1.5 py-1 font-bold transition-all inline-flex items-center gap-1 active:scale-95 shadow-none hover:shadow-sm">
                                         #{{ item.idCliente }}
-                                        <i class="ph-bold ph-copy text-[10px] text-slate-400 group-hover/copy:text-indigo-600"></i>
+                                        <i class="ph-bold ph-copy text-[10px] opacity-0 group-hover/copy:opacity-100 text-slate-400 group-hover/copy:text-indigo-600 transition-opacity"></i>
                                         
                                         <transition name="fade">
                                             <span v-if="copiedId === item.idCliente" 
@@ -286,7 +313,7 @@
 
                                 <td class="px-2 py-3 text-center">
                                     <input type="number" min="1" v-model.number="item.qtd" 
-                                           class="bg-white w-10 h-7 text-center rounded-lg border border-slate-300 hover:border-slate-400 focus:border-indigo-400 outline-none font-bold text-xs text-slate-800 shadow-sm transition-all">
+                                           class="bg-transparent w-10 h-7 text-center rounded-lg border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white outline-none font-bold text-xs text-slate-900 transition-all">
                                 </td>
 
                                 <td class="px-3 py-3 font-bold text-slate-800">
@@ -294,36 +321,34 @@
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-slate-800 text-xs">
                                 </td>
 
-                                <td class="px-3 py-3 font-semibold text-slate-700">
+                                <td class="px-3 py-3 font-semibold text-slate-800">
                                     <input type="text" v-model="item.nomeCrianca" placeholder="-" 
-                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-slate-700 text-xs">
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-slate-800 text-xs">
                                 </td>
 
-                                <td class="px-2 py-3 font-semibold text-slate-700">
+                                <td class="px-2 py-3 font-semibold text-slate-800">
                                     <input type="text" v-model="item.idade" placeholder="-" 
-                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-slate-700 text-xs">
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-slate-800 text-xs">
                                 </td>
                                 
-                                <!-- CHECKBOXES MELHORADOS (ESTILO CHECK-IN) -->
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.recorte = !item.recorte" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-slate-100 border-slate-300 text-slate-300 hover:bg-slate-200']">
+                                    <button @click="item.recorte = !item.recorte" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.nf = !item.nf" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-slate-100 border-slate-300 text-slate-300 hover:bg-slate-200']">
+                                    <button @click="item.nf = !item.nf" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.sab = !item.sab" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-slate-100 border-slate-300 text-slate-300 hover:bg-slate-200']">
+                                    <button @click="item.sab = !item.sab" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
 
-                                <!-- COLUNA TEMPO -->
                                 <td class="px-3 py-3 text-center">
-                                    <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest shadow-sm" :class="getTempoBadge(item.data).badgeClass">
+                                    <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest shadow-sm bg-white/60 backdrop-blur-sm" :class="getTempoBadge(item.data).badgeClass">
                                         <span class="relative flex h-2 w-2">
                                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="getTempoBadge(item.data).dotBaseClass"></span>
                                             <span class="relative inline-flex rounded-full h-2 w-2 glow-pulse" :class="getTempoBadge(item.data).dotClass"></span>
@@ -333,13 +358,13 @@
                                 </td>
 
                                 <td class="px-3 py-3 text-right">
-                                    <button @click="deleteItem(item.id)" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 shadow-sm opacity-0 group-hover:opacity-100 ml-auto transition-all">
+                                    <button @click.stop="confirmDelete(item.id, 'pedido')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 shadow-sm opacity-0 group-hover:opacity-100 ml-auto transition-all bg-white border border-transparent hover:border-red-200">
                                         <i class="ph-bold ph-trash text-sm"></i>
                                     </button>
                                 </td>
                             </tr>
                             <tr v-if="filteredItems.length === 0">
-                                <td colspan="14" class="px-6 py-20 text-center text-slate-400">
+                                <td colspan="14" class="px-6 py-20 text-center text-slate-400 bg-white">
                                     <i class="ph-fill ph-package text-4xl text-slate-300 mb-2"></i>
                                     <h3 class="text-lg font-bold text-slate-600">Nenhum pedido encontrado</h3>
                                 </td>
@@ -428,7 +453,7 @@
                                     {{ fin.tipo === 'Entrada' ? '+' : '-' }} {{ formatCurrency(fin.valor) }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button @click="deleteFinanca(fin.id)" class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100">
+                                    <button @click.stop="confirmDelete(fin.id, 'financa')" class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 opacity-0 group-hover:opacity-100 transition-all">
                                         <i class="ph-bold ph-trash text-lg"></i>
                                     </button>
                                 </td>
@@ -446,7 +471,7 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- ABA: ANÁLISE (NOVA SEÇÃO)                  -->
+        <!-- ABA: ANÁLISE                               -->
         <!-- ========================================== -->
         <div v-else-if="activeTab === 'analise'">
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
@@ -456,7 +481,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <!-- Estatísticas Rápidas Baseadas nos Dados -->
                 <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
                     <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total de Pedidos</span>
                     <span class="text-4xl font-black text-slate-800">{{ pedidos.length }}</span>
@@ -471,20 +495,75 @@
                 </div>
                 <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
                     <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Pedidos Finalizados</span>
-                    <span class="text-4xl font-black text-emerald-500">{{ statusCounts['Finalizado'] }}</span>
+                    <span class="text-4xl font-black text-emerald-500">{{ statusCounts['Finalizado'] || 0 }}</span>
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-10 flex flex-col items-center justify-center min-h-[400px]">
-                <div class="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-500 mb-4">
-                    <i class="ph-fill ph-chart-pie-slice text-5xl"></i>
+            <!-- Gráficos de Barras Modernos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Gráfico de Status -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <i class="ph-bold ph-chart-pie-slice text-indigo-500"></i> Pedidos por Status
+                    </h3>
+                    <div class="space-y-5">
+                        <div v-for="status in statuses" :key="'chart-'+status">
+                            <div class="flex justify-between items-center text-xs font-bold mb-1.5">
+                                <span class="text-slate-600 uppercase tracking-wider">{{ status }}</span>
+                                <span class="text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md">{{ statusCounts[status] }}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
+                                <div :class="['h-full rounded-full transition-all duration-1000', getCardBarAccent(status)]" 
+                                     :style="{ width: Math.max((statusCounts[status] / Math.max(...Object.values(statusCounts), 1)) * 100, 1) + '%' }">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h3 class="text-2xl font-bold text-slate-800 mb-2">Relatórios Detalhados</h3>
-                <p class="text-slate-500 text-center max-w-md">Em breve este painel exibirá gráficos interativos de faturamento, desempenho das lojas e tempo médio de entrega dos pedidos.</p>
+
+                <!-- Gráfico de Lojas -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <i class="ph-bold ph-storefront text-indigo-500"></i> Volume por Loja
+                    </h3>
+                    <div class="space-y-6 mt-10">
+                        <div v-for="loja in lojas" :key="'chart-'+loja">
+                            <div class="flex justify-between items-center text-sm font-bold mb-2">
+                                <span class="text-slate-700 uppercase tracking-wider">{{ loja }}</span>
+                                <span class="text-slate-800 bg-slate-100 px-3 py-1 rounded-md text-base">{{ getLojasCount(loja) }}</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                <div :class="['h-full rounded-full transition-all duration-1000', loja === 'Elohim' ? 'bg-indigo-500' : 'bg-blue-500']" 
+                                     :style="{ width: Math.max((getLojasCount(loja) / Math.max(pedidos.length, 1)) * 100, 1) + '%' }">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
     </main>
+
+    <!-- MODAL CONFIRMAÇÃO DE EXCLUSÃO (NOVO DESIGN) -->
+    <transition name="scale">
+        <div v-if="showDeleteModal" class="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="cancelDelete"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 border border-slate-200 text-center transform transition-all">
+                <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner border border-red-100">
+                    <i class="ph-fill ph-trash text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-800 mb-3">Confirmar Exclusão</h3>
+                <p class="text-sm font-medium text-slate-500 mb-8 leading-relaxed">
+                    Tem certeza que deseja excluir permanentemente este registro?<br>Esta ação não poderá ser desfeita.
+                </p>
+                <div class="flex gap-3 justify-center">
+                    <button @click="cancelDelete" class="w-full px-5 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors border border-slate-200">Cancelar</button>
+                    <button @click="executeDelete" class="w-full px-5 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all transform hover:-translate-y-0.5">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </transition>
 
     <!-- MODAL: CONFIGURAR MODO TV -->
     <transition name="scale">
@@ -496,7 +575,7 @@
                 </h3>
                 <label class="block text-sm font-bold text-slate-600 mb-2">Quantidade máxima de pedidos:</label>
                 <input type="number" v-model.number="tvLimit" min="1" 
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 mb-6 transition-colors focus:border-indigo-500">
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 mb-6 transition-colors focus:border-indigo-500 focus:bg-white">
                 
                 <div class="flex gap-3 justify-end">
                     <button @click="showTVConfig = false" class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
@@ -506,10 +585,9 @@
         </div>
     </transition>
 
-    <!-- TELA: MODO TV (MODO CLARO) -->
+    <!-- TELA: MODO TV -->
     <transition name="fade">
         <div v-if="isTVMode" class="fixed inset-0 z-[100] bg-slate-100 flex flex-col text-slate-800 overflow-hidden">
-            <!-- Header TV -->
             <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white shadow-sm">
                 <div class="flex items-center gap-3">
                     <i class="ph-fill ph-monitor-play text-3xl text-indigo-600 glow-pulse"></i>
@@ -522,9 +600,7 @@
                 </button>
             </div>
             
-            <!-- Content Split -->
             <div class="flex-1 flex gap-4 p-4 overflow-hidden">
-                <!-- Coluna 1: Todos os Pedidos (Filtrados) -->
                 <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
                     <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
                         <h2 class="text-xl font-black text-indigo-600 uppercase tracking-widest">Todos os Pedidos ({{tvAllOrders.length}})</h2>
@@ -557,15 +633,11 @@
                                         <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
                                     </td>
                                 </tr>
-                                <tr v-if="tvAllOrders.length === 0">
-                                    <td colspan="4" class="px-4 py-10 text-center text-slate-400 font-bold">Nenhum pedido para exibir</td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
                 
-                <!-- Coluna 2: Novos de Hoje -->
                 <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
                     <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
                         <h2 class="text-xl font-black text-emerald-600 uppercase tracking-widest">Pedidos de Hoje ({{tvTodayOrders.length}})</h2>
@@ -598,9 +670,6 @@
                                         <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
                                     </td>
                                 </tr>
-                                <tr v-if="tvTodayOrders.length === 0">
-                                    <td colspan="4" class="px-4 py-10 text-center text-slate-400 font-bold">Nenhum pedido novo hoje</td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -613,39 +682,86 @@
     <transition name="fade">
         <div v-if="showModalPedidos" class="fixed inset-0 z-50 flex items-center justify-center px-4">
             <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalPedidos"></div>
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all border border-slate-200">
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all border border-slate-200">
                 
                 <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
                     <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="ph-fill ph-package text-indigo-500"></i> Novo Cadastro
+                        <i class="ph-fill ph-package text-indigo-500"></i> Novo Cadastro de Pedido
                     </h3>
                     <button @click="closeModalPedidos" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
                 </div>
                 
                 <div class="p-8 overflow-y-auto flex-1 custom-scrollbar">
                     <form @submit.prevent="savePedido" id="formPedido" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Loja *</label>
-                                <select v-model="form.loja" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:border-indigo-500">
-                                    <option value="" disabled>Selecionar Loja...</option>
-                                    <option v-for="loja in lojas" :key="loja" :value="loja">{{ loja }}</option>
-                                </select>
+                        
+                        <!-- DADOS GERAIS DO PEDIDO (TOPO) -->
+                        <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
+                            <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2 border-b border-slate-200 pb-2">Informações Gerais</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div class="space-y-1.5 relative" @click.stop>
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Loja *</label>
+                                    <!-- Custom Dropdown no Modal -->
+                                    <div @click="openFilterDropdown = openFilterDropdown === 'formLoja' ? null : 'formLoja'" 
+                                         class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm cursor-pointer flex items-center justify-between">
+                                        <span>{{ form.loja || 'Selecionar...' }}</span>
+                                        <i class="ph-bold ph-caret-down text-slate-400"></i>
+                                    </div>
+                                    <transition name="fade">
+                                        <div v-if="openFilterDropdown === 'formLoja'" class="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                            <div v-for="loja in lojas" :key="loja" @click="form.loja = loja; openFilterDropdown = null" 
+                                                 class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors"
+                                                 :class="form.loja === loja ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                                                {{ loja }}
+                                            </div>
+                                        </div>
+                                    </transition>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
+                                    <input type="date" v-model="form.data" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">ID Cliente *</label>
+                                    <input type="text" v-model="form.idCliente" required placeholder="Ex: 10459" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
                             </div>
 
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
-                                <input type="date" v-model="form.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:border-indigo-500">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+                                <div class="space-y-1.5 md:col-span-5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Criança</label>
+                                    <input type="text" v-model="form.nomeCrianca" placeholder="Nome da Criança" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                                <div class="space-y-1.5 md:col-span-2">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Idade</label>
+                                    <input type="text" v-model="form.idade" placeholder="Ex: 5" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm text-center">
+                                </div>
+                                <div class="space-y-1.5 md:col-span-5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Tema</label>
+                                    <input type="text" v-model="form.tema" placeholder="Tema da festa" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
                             </div>
 
-                            <div class="space-y-1.5 md:col-span-2">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">ID Cliente *</label>
-                                <input type="text" v-model="form.idCliente" required placeholder="Ex: 10459" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:border-indigo-500">
+                            <div class="flex gap-6 pt-2">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <div :class="['w-6 h-6 rounded flex items-center justify-center border shadow-sm transition-all', form.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-indigo-400']">
+                                        <i class="ph-bold ph-check text-sm"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Nota Fiscal (NF)</span>
+                                    <input type="checkbox" v-model="form.nf" class="hidden">
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <div :class="['w-6 h-6 rounded flex items-center justify-center border shadow-sm transition-all', form.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-amber-400']">
+                                        <i class="ph-bold ph-check text-sm"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Sábado (SAB)</span>
+                                    <input type="checkbox" v-model="form.sab" class="hidden">
+                                </label>
                             </div>
                         </div>
 
-                        <!-- LISTA DE ITENS DINÂMICA -->
-                        <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-slate-50/50">
+                        <!-- LISTA DE ITENS DINÂMICA (APENAS ITEM, QTD E RECORTE) -->
+                        <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
                             <div class="flex justify-between items-center mb-4">
                                 <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Itens do Pedido</h4>
                                 <button type="button" @click="addNovoItemPedido" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-1">
@@ -655,26 +771,26 @@
 
                             <div class="space-y-3">
                                 <transition-group name="fade">
-                                    <div v-for="(it, index) in form.itensPedido" :key="index" class="flex flex-wrap md:flex-nowrap gap-3 items-end bg-white border border-slate-200 rounded-xl p-3 shadow-sm relative group">
-                                        <div class="w-full md:w-2/5">
-                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Item</label>
-                                            <input type="text" v-model="it.item" required placeholder="Nome do item" class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors">
-                                        </div>
-                                        <div class="w-1/3 md:w-1/5">
-                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Qtd</label>
-                                            <input type="number" min="1" v-model.number="it.qtd" required class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors text-center">
-                                        </div>
-                                        <div class="w-full md:w-1/4">
-                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Tema</label>
-                                            <input type="text" v-model="it.tema" placeholder="Opcional" class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors">
-                                        </div>
-                                        <div class="w-full md:w-1/4">
-                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Criança (Nome/Idade)</label>
-                                            <input type="text" v-model="it.nomeCrianca" placeholder="Opcional" class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors mb-2">
-                                            <input type="text" v-model="it.idade" placeholder="Idade (Opcional)" class="w-full bg-transparent border-b border-slate-200 px-2 py-1.5 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 transition-colors">
+                                    <div v-for="(it, index) in form.itensPedido" :key="index" class="flex flex-wrap md:flex-nowrap gap-4 items-end bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm relative group">
+                                        
+                                        <div class="w-full md:w-3/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Nome do Item</label>
+                                            <input type="text" v-model="it.item" required placeholder="Ex: Cartão, Adesivo..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all shadow-sm">
                                         </div>
                                         
-                                        <button v-if="form.itensPedido.length > 1" type="button" @click="removerItemPedido(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:bg-red-500 hover:text-white">
+                                        <div class="w-1/2 md:w-1/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block text-center">Quantidade</label>
+                                            <input type="number" min="1" v-model.number="it.qtd" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-center shadow-sm">
+                                        </div>
+                                        
+                                        <div class="w-1/2 md:w-1/5 flex flex-col items-center justify-end pb-1">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Recorte</label>
+                                            <button type="button" @click="it.recorte = !it.recorte" :class="['w-8 h-8 rounded flex items-center justify-center border transition-all shadow-sm', it.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-slate-300 hover:border-emerald-400']">
+                                                <i :class="['ph-bold ph-scissors text-base', it.recorte ? 'text-white' : '']"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <button v-if="form.itensPedido.length > 1" type="button" @click="removerItemPedido(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:bg-red-500 hover:text-white border border-red-200">
                                             <i class="ph-bold ph-minus text-xs"></i>
                                         </button>
                                     </div>
@@ -684,9 +800,9 @@
                     </form>
                 </div>
                 
-                <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-10">
-                    <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancelar</button>
-                    <button type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Cadastrar Pedido</button>
+                <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
+                    <button type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Finalizar Cadastro</button>
                 </div>
             </div>
         </div>
@@ -723,32 +839,40 @@
 
                         <div class="space-y-1.5">
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Descrição *</label>
-                            <input type="text" v-model="formFin.descricao" required placeholder="Ex: Pagamento Fornecedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500">
+                            <input type="text" v-model="formFin.descricao" required placeholder="Ex: Pagamento Fornecedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-1.5">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
-                                <input type="date" v-model="formFin.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500">
+                                <input type="date" v-model="formFin.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
                             </div>
                             <div class="space-y-1.5">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Valor (R$) *</label>
-                                <input type="number" step="0.01" min="0" v-model.number="formFin.valor" required placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500">
+                                <input type="number" step="0.01" min="0" v-model.number="formFin.valor" required placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
                             </div>
                         </div>
                         
-                        <div class="space-y-1.5">
+                        <div class="space-y-1.5 relative" @click.stop>
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Status *</label>
-                            <select v-model="formFin.status" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500">
-                                <option value="Pago">Pago</option>
-                                <option value="Pendente">Pendente</option>
-                            </select>
+                            <!-- Custom Dropdown Status Finanças -->
+                            <div @click="openFilterDropdown = openFilterDropdown === 'formStatus' ? null : 'formStatus'" 
+                                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer flex items-center justify-between">
+                                <span>{{ formFin.status }}</span>
+                                <i class="ph-bold ph-caret-down text-slate-400"></i>
+                            </div>
+                            <transition name="fade">
+                                <div v-if="openFilterDropdown === 'formStatus'" class="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                    <div @click="formFin.status = 'Pago'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pago' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pago</div>
+                                    <div @click="formFin.status = 'Pendente'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pendente' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pendente</div>
+                                </div>
+                            </transition>
                         </div>
                     </form>
                 </div>
                 
                 <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-10">
-                    <button type="button" @click="closeModalFinancas" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancelar</button>
+                    <button type="button" @click="closeModalFinancas" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
                     <button type="submit" form="formFinanca" class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5">Salvar</button>
                 </div>
             </div>
@@ -763,12 +887,21 @@
                 return {
                     activeTab: 'pedidos',
                     searchQuery: '',
-                    filtroLoja: 'Todas', // NOVO: Estado para gerenciar o filtro de lojas
+                    filtroLoja: 'Todas', 
                     sortKey: 'id',
                     sortOrder: 'desc',
                     
                     showModalPedidos: false,
                     showModalFinancas: false,
+                    
+                    /* Variáveis Modal de Exclusão Moderno */
+                    showDeleteModal: false,
+                    itemToDelete: null,
+                    deleteType: '',
+
+                    /* Controle de Dropdowns Customizados */
+                    openDropdownId: null,
+                    openFilterDropdown: null,
 
                     showTVConfig: false,
                     isTVMode: false,
@@ -780,6 +913,18 @@
                     lojas: ['Elohim', 'Kadosh'],
                     statuses: ['Com informações', 'Sem informações', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
                     
+                    sortOptions: [
+                        { value: 'id', label: 'Data de Criação' },
+                        { value: 'tempo', label: 'Tempo (Dias)' },
+                        { value: 'data', label: 'Data do Pedido' },
+                        { value: 'status', label: 'Status' },
+                        { value: 'loja', label: 'Loja' },
+                        { value: 'idCliente', label: 'Cliente ID' },
+                        { value: 'item', label: 'Item' },
+                        { value: 'tema', label: 'Tema' },
+                        { value: 'nomeCrianca', label: 'Criança' }
+                    ],
+
                     copiedId: null,
 
                     form: this.getInitialFormPedido(),
@@ -801,7 +946,6 @@
                 filteredItems() {
                     let result = this.pedidos;
                     
-                    // APLICANDO FILTRO DE LOJA (NOVO)
                     if (this.filtroLoja !== 'Todas') {
                         result = result.filter(i => i.loja === this.filtroLoja);
                     }
@@ -809,15 +953,13 @@
                     if (this.searchQuery) {
                         const q = this.searchQuery.toLowerCase();
                         result = result.filter(i => {
-                            // Calcula a string de "Tempo" gerada visualmente para poder filtrar por ela também
                             const tempoText = this.getTempoBadge(i.data).text.toLowerCase();
-                            
                             return i.idCliente.toLowerCase().includes(q) || 
                                    i.loja.toLowerCase().includes(q) ||
                                    i.item.toLowerCase().includes(q) ||
                                    (i.tema && i.tema.toLowerCase().includes(q)) ||
                                    (i.nomeCrianca && i.nomeCrianca.toLowerCase().includes(q)) ||
-                                   tempoText.includes(q); // Adicionado filtro de TEMPO (Ex: 'hoje', '2 dias')
+                                   tempoText.includes(q); 
                         });
                     }
 
@@ -870,9 +1012,24 @@
                 }
             },
             methods: {
+                /* Fechar todos os Dropdowns Globais */
+                closeAllDropdowns() {
+                    this.openDropdownId = null;
+                    this.openFilterDropdown = null;
+                },
+
+                /* Obter Rótulo de Ordenação */
+                getSortLabel(key) {
+                    const option = this.sortOptions.find(o => o.value === key);
+                    return option ? option.label : '';
+                },
+
+                getLojasCount(loja) {
+                    return this.pedidos.filter(p => p.loja === loja).length;
+                },
                 getInitialFormPedido() {
                     const today = new Date().toISOString().split('T')[0];
-                    return { loja: '', data: today, idCliente: '', itensPedido: [{ item: '', qtd: 1, tema: '', nomeCrianca: '', idade: '' }] };
+                    return { loja: '', data: today, idCliente: '', nomeCrianca: '', idade: '', tema: '', nf: false, sab: false, itensPedido: [{ item: '', qtd: 1, recorte: false }] };
                 },
                 getInitialFormFinanca() {
                     const today = new Date().toISOString().split('T')[0];
@@ -882,13 +1039,14 @@
                 closeModalFinancas() { this.showModalFinancas = false; this.formFin = this.getInitialFormFinanca(); },
                 
                 addNovoItemPedido() {
-                    this.form.itensPedido.push({ item: '', qtd: 1, tema: '', nomeCrianca: '', idade: '' });
+                    this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
                 },
                 removerItemPedido(index) {
                     this.form.itensPedido.splice(index, 1);
                 },
 
                 savePedido() {
+                    if(!this.form.loja) { alert('Selecione uma loja antes de salvar.'); return; }
                     const baseId = Date.now();
                     this.form.itensPedido.forEach((it, index) => {
                         this.pedidos.unshift({
@@ -898,10 +1056,12 @@
                             idCliente: this.form.idCliente,
                             item: it.item,
                             qtd: it.qtd,
-                            tema: it.tema,
-                            nomeCrianca: it.nomeCrianca,
-                            idade: it.idade,
-                            recorte: false, nf: false, sab: false,
+                            tema: this.form.tema,
+                            nomeCrianca: this.form.nomeCrianca,
+                            idade: this.form.idade,
+                            recorte: it.recorte, 
+                            nf: this.form.nf, 
+                            sab: this.form.sab,
                             status: 'Com informações'
                         });
                     });
@@ -918,8 +1078,26 @@
                     });
                     this.closeModalFinancas();
                 },
-                deleteItem(id) { if(confirm('Tem certeza que deseja excluir este pedido?')) this.pedidos = this.pedidos.filter(i => i.id !== id); },
-                deleteFinanca(id) { if(confirm('Tem certeza que deseja excluir este lançamento?')) this.financas = this.financas.filter(f => f.id !== id); },
+
+                /* Lógica Modernizada de Exclusão */
+                confirmDelete(id, type) {
+                    this.itemToDelete = id;
+                    this.deleteType = type;
+                    this.showDeleteModal = true;
+                },
+                cancelDelete() {
+                    this.showDeleteModal = false;
+                    this.itemToDelete = null;
+                    this.deleteType = '';
+                },
+                executeDelete() {
+                    if (this.deleteType === 'pedido') {
+                        this.pedidos = this.pedidos.filter(i => i.id !== this.itemToDelete);
+                    } else if (this.deleteType === 'financa') {
+                        this.financas = this.financas.filter(f => f.id !== this.itemToDelete);
+                    }
+                    this.cancelDelete();
+                },
                 
                 setSortKey(key) {
                     if (this.sortKey === key) { this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'; } 
@@ -1038,29 +1216,42 @@
                     }
                     return { text: 'text-slate-600', number: 'text-slate-800', iconBg: 'bg-slate-100', icon: 'text-slate-500' };
                 },
+
+                getStatusIconColor(status) {
+                    const colors = {
+                        'Com informações': 'text-blue-600',
+                        'Sem informações': 'text-slate-600',
+                        'Para aprovação': 'text-orange-600',
+                        'Aprovado': 'text-emerald-600',
+                        'Impresso': 'text-purple-600',
+                        'Aguardando coleta': 'text-amber-600',
+                        'Finalizado': 'text-slate-800'
+                    };
+                    return colors[status] || 'text-slate-500';
+                },
                 
                 getStatusColor(status) {
                     const colors = {
-                        'Com informações': 'bg-blue-100 text-blue-900 border-blue-300',
-                        'Sem informações': 'bg-slate-200 text-slate-800 border-slate-400',
-                        'Para aprovação': 'bg-orange-100 text-orange-900 border-orange-300',
-                        'Aprovado': 'bg-emerald-100 text-emerald-900 border-emerald-300',
-                        'Impresso': 'bg-purple-100 text-purple-900 border-purple-300',
-                        'Aguardando coleta': 'bg-amber-100 text-amber-900 border-amber-300',
-                        'Finalizado': 'bg-slate-300 text-slate-950 border-slate-400'
+                        'Com informações': 'bg-blue-100 text-blue-900',
+                        'Sem informações': 'bg-slate-200 text-slate-800',
+                        'Para aprovação': 'bg-orange-100 text-orange-900',
+                        'Aprovado': 'bg-emerald-100 text-emerald-900',
+                        'Impresso': 'bg-purple-100 text-purple-900',
+                        'Aguardando coleta': 'bg-amber-100 text-amber-900',
+                        'Finalizado': 'bg-slate-300 text-slate-950'
                     };
-                    return colors[status] || 'bg-slate-100 text-slate-700 border-slate-200';
+                    return colors[status] || 'bg-slate-100 text-slate-700';
                 },
                 
                 getRowColor(status) {
                     const colors = {
-                        'Com informações': 'bg-blue-50/70 hover:bg-blue-100/80 border-l-4 border-l-blue-500',
-                        'Sem informações': 'bg-slate-100/80 hover:bg-slate-200/80 border-l-4 border-l-slate-400',
-                        'Para aprovação': 'bg-orange-50/70 hover:bg-orange-100/80 border-l-4 border-l-orange-500',
-                        'Aprovado': 'bg-emerald-50/70 hover:bg-emerald-100/80 border-l-4 border-l-emerald-500',
-                        'Impresso': 'bg-purple-50/70 hover:bg-purple-100/80 border-l-4 border-l-purple-500',
-                        'Aguardando coleta': 'bg-amber-50/70 hover:bg-amber-100/80 border-l-4 border-l-amber-500',
-                        'Finalizado': 'bg-slate-100 hover:bg-slate-200/90 border-l-4 border-l-slate-600 opacity-75'
+                        'Com informações': 'bg-blue-50/70 hover:bg-blue-100/90 border-l-4 border-l-blue-500',
+                        'Sem informações': 'bg-slate-100/80 hover:bg-slate-200/90 border-l-4 border-l-slate-400',
+                        'Para aprovação': 'bg-orange-50/70 hover:bg-orange-100/90 border-l-4 border-l-orange-500',
+                        'Aprovado': 'bg-emerald-50/70 hover:bg-emerald-100/90 border-l-4 border-l-emerald-500',
+                        'Impresso': 'bg-purple-50/70 hover:bg-purple-100/90 border-l-4 border-l-purple-500',
+                        'Aguardando coleta': 'bg-amber-50/70 hover:bg-amber-100/90 border-l-4 border-l-amber-500',
+                        'Finalizado': 'bg-slate-100 hover:bg-slate-200/90 border-l-4 border-l-slate-600 opacity-80'
                     };
                     return colors[status] || 'hover:bg-slate-50 border-l-4 border-l-transparent';
                 },
