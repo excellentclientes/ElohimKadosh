@@ -1200,6 +1200,18 @@
                     financas: []
                 };
             },
+            watch: {
+                activeTab(newVal) {
+                    if (newVal === 'analise' && this.previousTab === 'pedidos') {
+                        this.$nextTick(() => { this.renderApexCharts(); });
+                    }
+                },
+                analiseLoja() {
+                    if (this.activeTab === 'analise' && this.previousTab === 'pedidos') {
+                        this.$nextTick(() => { this.renderApexCharts(); });
+                    }
+                }
+            },
             computed: {
                 filteredItems() {
                     let result = this.pedidos;
@@ -1403,8 +1415,8 @@
                     setTimeout(() => this.copiedId = null, 2000);
                 },
                 updatePedidoFirebase(item) {
-                    if (window.FirebaseDB && window.FirebaseDB.savePedido) {
-                        window.FirebaseDB.savePedido(item).catch(err => console.error("Erro ao atualizar pedido:", err));
+                    if (window.FirebaseDB && item.id) {
+                        window.FirebaseDB.savePedido(item);
                     }
                 },
                 openStatusMenu(item, event) {
@@ -1430,10 +1442,10 @@
                 executeDelete() {
                     if (window.FirebaseDB) {
                         if (this.deleteType === 'pedido') {
-                            window.FirebaseDB.deletePedido(this.itemToDelete).catch(err => console.error("Erro ao excluir pedido:", err));
+                            window.FirebaseDB.deletePedido(this.itemToDelete);
                         } else if (this.deleteType === 'financa') {
                             if (window.FirebaseDB.deleteFinanca) {
-                                window.FirebaseDB.deleteFinanca(this.itemToDelete).catch(err => console.error("Erro ao excluir finança:", err));
+                                window.FirebaseDB.deleteFinanca(this.itemToDelete);
                             }
                         }
                     }
@@ -1446,6 +1458,74 @@
                 getLojasCountAnalise(loja) {
                     return this.pedidosAnalise.filter(p => p.loja === loja).length;
                 },
+                renderApexCharts() {
+                    const dataByDate = {};
+                    this.pedidosAnalise.forEach(p => {
+                        if (!dataByDate[p.data]) {
+                            dataByDate[p.data] = { recorteYes: 0, recorteNo: 0, nfYes: 0, nfNo: 0, sabYes: 0, sabNo: 0, elohim: 0, kadosh: 0 };
+                        }
+                        if (p.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
+                        if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
+                        if (p.sab) dataByDate[p.data].sabYes++; else dataByDate[p.data].sabNo++;
+                        if (p.loja === 'Elohim') dataByDate[p.data].elohim++;
+                        if (p.loja === 'Kadosh') dataByDate[p.data].kadosh++;
+                    });
+
+                    const sortedDates = Object.keys(dataByDate).sort();
+                    const recorteSeries = [{ name: 'Com Recorte', data: [] }, { name: 'Sem Recorte', data: [] }];
+                    const nfSeries = [{ name: 'Com NF', data: [] }, { name: 'Sem NF', data: [] }];
+                    const sabSeries = [{ name: 'Com Sáb', data: [] }, { name: 'Sem Sáb', data: [] }];
+                    const lojaSeries = [{ name: 'Elohim', data: [] }, { name: 'Kadosh', data: [] }];
+
+                    sortedDates.forEach(d => {
+                        recorteSeries[0].data.push(dataByDate[d].recorteYes);
+                        recorteSeries[1].data.push(dataByDate[d].recorteNo);
+                        
+                        nfSeries[0].data.push(dataByDate[d].nfYes);
+                        nfSeries[1].data.push(dataByDate[d].nfNo);
+                        
+                        sabSeries[0].data.push(dataByDate[d].sabYes);
+                        sabSeries[1].data.push(dataByDate[d].sabNo);
+                        
+                        lojaSeries[0].data.push(dataByDate[d].elohim);
+                        lojaSeries[1].data.push(dataByDate[d].kadosh);
+                    });
+
+                    const formatDateLabel = (d) => d.split('-').reverse().join('/');
+                    const categories = sortedDates.map(formatDateLabel);
+
+                    const buildChart = (id, type, series, colors, isLine = false) => {
+                        if (this.chartInstances[id]) {
+                            this.chartInstances[id].destroy();
+                        }
+                        
+                        const options = {
+                            series: series,
+                            chart: { type: type, height: '100%', width: '100%', toolbar: { show: false }, parentHeightOffset: 0 },
+                            colors: colors,
+                            plotOptions: isLine ? {} : { bar: { columnWidth: '35%', borderRadius: 2 } },
+                            dataLabels: { enabled: false },
+                            stroke: isLine ? { curve: 'smooth', width: 3 } : { show: true, width: 2, colors: ['transparent'] },
+                            xaxis: { categories: categories, labels: { show: isLine, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: {enabled: false} },
+                            yaxis: { labels: { show: false } },
+                            grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, right: 0, bottom: 0, left: isLine ? 15 : 0 } },
+                            legend: { show: false }, 
+                            tooltip: { theme: 'light', shared: true, intersect: false }
+                        };
+
+                        const el = document.querySelector(`#${id}`);
+                        if(el) {
+                            const chart = new ApexCharts(el, options);
+                            chart.render();
+                            this.chartInstances[id] = chart;
+                        }
+                    };
+
+                    buildChart('chart-recorte', 'bar', recorteSeries, ['#10b981', '#cbd5e1']);
+                    buildChart('chart-nf', 'bar', nfSeries, ['#6366f1', '#cbd5e1']);
+                    buildChart('chart-sab', 'bar', sabSeries, ['#f59e0b', '#cbd5e1']);
+                    buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); 
+                },
                 enterTVMode() {
                     this.isTVMode = true;
                     this.showTVConfig = false;
@@ -1455,6 +1535,7 @@
                 },
                 closeModalPedidos() {
                     this.showModalPedidos = false;
+                    this.modoPlanilha = false;
                 },
                 addNovoItemPedido() {
                     this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
@@ -1465,6 +1546,7 @@
                 savePedido() {
                     this.form.itensPedido.forEach((it) => {
                         const novoPedido = {
+                            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
                             loja: this.form.loja,
                             data: this.form.data,
                             idCliente: this.form.idCliente,
@@ -1491,8 +1573,12 @@
                 },
                 autoSavePlanilhaRow(linha) {
                     if(linha.idCliente && linha.item) {
+                        if (!linha.id) {
+                            linha.id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+                            linha.status = 'Com informações';
+                        }
                         const pedidoData = {
-                            id: linha.firebaseId || undefined,
+                            id: linha.id,
                             loja: linha.loja,
                             data: linha.data,
                             idCliente: linha.idCliente,
@@ -1504,7 +1590,7 @@
                             recorte: linha.recorte,
                             nf: linha.nf,
                             sab: linha.sab,
-                            status: 'Com informações'
+                            status: linha.status
                         };
                         if (window.FirebaseDB && window.FirebaseDB.savePedido) {
                             window.FirebaseDB.savePedido(pedidoData);
@@ -1533,25 +1619,7 @@
                 },
                 salvarTodaPlanilha() {
                     this.planilhaLinhas.forEach((linha) => {
-                        if(linha.idCliente && linha.item) {
-                            const pedidoData = {
-                                loja: linha.loja,
-                                data: linha.data,
-                                idCliente: linha.idCliente,
-                                nomeCrianca: linha.nomeCrianca,
-                                idade: linha.idade,
-                                tema: linha.tema,
-                                item: linha.item,
-                                qtd: linha.qtd,
-                                recorte: linha.recorte,
-                                nf: linha.nf,
-                                sab: linha.sab,
-                                status: 'Com informações'
-                            };
-                            if (window.FirebaseDB && window.FirebaseDB.savePedido) {
-                                window.FirebaseDB.savePedido(pedidoData);
-                            }
-                        }
+                        this.autoSavePlanilhaRow(linha);
                     });
                     this.planilhaLinhas = [{
                         idTemp: Date.now(),
@@ -1574,6 +1642,7 @@
                 },
                 saveFinanca() {
                     const novaFinanca = {
+                        id: Date.now().toString(),
                         tipo: this.formFin.tipo,
                         descricao: this.formFin.descricao,
                         data: this.formFin.data,
@@ -1708,22 +1777,22 @@
                 }
             },
             mounted() {
-                // Conexão em tempo real com o Firebase Realtime Database
-                const checkFirebase = setInterval(() => {
+                const initFirebase = () => {
                     if (window.FirebaseDB) {
-                        clearInterval(checkFirebase);
-                        
-                        // Ouve Pedidos em tempo real
                         window.FirebaseDB.listenPedidos((lista) => {
                             this.pedidos = lista;
+                            if (this.activeTab === 'analise') {
+                                this.$nextTick(() => { this.renderApexCharts(); });
+                            }
                         });
-
-                        // Ouve Finanças em tempo real
                         window.FirebaseDB.listenFinancas((lista) => {
                             this.financas = lista;
                         });
+                    } else {
+                        setTimeout(initFirebase, 100);
                     }
-                }, 100);
+                };
+                initFirebase();
             }
         }).mount('#app');
     </script>
