@@ -1,0 +1,38 @@
+body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background-color: #f8fafc;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.scale-enter-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.scale-leave-active { transition: all 0.2s ease; }
+.scale-enter-from, .scale-leave-to { opacity: 0; transform: scale(0.97) translateY(10px); }
+
+input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
+input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
+.glow-pulse { animation: glow 2s infinite alternate; }
+@keyframes glow {
+    0% { box-shadow: 0 0 5px currentColor, 0 0 10px currentColor; }
+    100% { box-shadow: 0 0 2px currentColor, 0 0 5px currentColor; opacity: 0.8; }
+}
+
+/* HEADER PRETO FOSCO PERMANENTE */
+header { 
+    background-color: #09090b !important; 
+    border-bottom-color: #27272a !important; 
+}
+
+select::-ms-expand { display: none; }
+
+/* Custom Scrollbar classes for specific divs */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
