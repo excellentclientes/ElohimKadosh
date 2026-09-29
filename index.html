@@ -17,6 +17,9 @@
     <!-- ApexCharts (Para os gráficos modernos) -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+    <!-- Conexão com Firebase Externa -->
+    <script type="module" src="firebase-config.js"></script>
+
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -278,7 +281,7 @@
                                             <div v-if="openDropdownId === item.id" 
                                                  class="absolute z-50 left-0 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1"
                                                  :class="(filteredItems.length > 3 && index >= filteredItems.length - 2) ? 'bottom-[calc(100%+4px)]' : 'top-full mt-1'">
-                                                <div v-for="s in statuses" :key="s" @click="item.status = s; openDropdownId = null" 
+                                                <div v-for="s in statuses" :key="s" @click="item.status = s; openDropdownId = null; updatePedidoFirebase(item)" 
                                                      class="px-4 py-2 text-[11px] font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
                                                      :class="s === item.status ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
                                                     {{ s }}
@@ -333,17 +336,17 @@
                                 </td>
                                 
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.recorte = !item.recorte" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                    <button @click="item.recorte = !item.recorte; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.nf = !item.nf" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                    <button @click="item.nf = !item.nf; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.sab = !item.sab" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                    <button @click="item.sab = !item.sab; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
@@ -1052,17 +1055,8 @@
                     form: this.getInitialFormPedido(),
                     formFin: this.getInitialFormFinanca(),
                     
-                    pedidos: [
-                        { id: 1, data: '2023-10-25', loja: 'Elohim', idCliente: '10459', item: 'Adesivo', qtd: 50, tema: 'Patrulha', nomeCrianca: 'João', idade: '5', recorte: true, nf: false, sab: true, status: 'Com informações' },
-                        { id: 2, data: '2023-10-26', loja: 'Kadosh', idCliente: '88231', item: 'Banner', qtd: 1, tema: 'Homem Aranha', nomeCrianca: 'Pedro', idade: '7', recorte: false, nf: true, sab: false, status: 'Aprovado' },
-                        { id: 3, data: '2023-10-20', loja: 'Elohim', idCliente: '33102', item: 'Cartão', qtd: 100, tema: '-', nomeCrianca: '-', idade: '-', recorte: false, nf: false, sab: false, status: 'Aguardando coleta' },
-                        { id: 4, data: '2023-10-26', loja: 'Elohim', idCliente: '11202', item: 'Caixinha', qtd: 20, tema: 'Mickey', nomeCrianca: 'Lucas', idade: '2', recorte: true, nf: true, sab: true, status: 'Finalizado' },
-                    ],
-                    
-                    financas: [
-                        { id: 1, data: '2023-10-25', descricao: 'Venda Adesivos', tipo: 'Entrada', valor: 150.00, status: 'Pago' },
-                        { id: 2, data: '2023-10-26', descricao: 'Compra Papel', tipo: 'Saída', valor: 85.50, status: 'Pago' }
-                    ]
+                    pedidos: [],
+                    financas: []
                 }
             },
             watch: {
@@ -1076,6 +1070,21 @@
                         this.$nextTick(() => { this.renderApexCharts(); });
                     }
                 }
+            },
+            mounted() {
+                const initFirebase = () => {
+                    if (window.FirebaseDB) {
+                        window.FirebaseDB.listenPedidos((dados) => {
+                            this.pedidos = dados;
+                        });
+                        window.FirebaseDB.listenFinancas((dados) => {
+                            this.financas = dados;
+                        });
+                    } else {
+                        setTimeout(initFirebase, 100);
+                    }
+                };
+                initFirebase();
             },
             computed: {
                 filteredItems() {
@@ -1175,7 +1184,12 @@
                     return this.filteredItems.filter(p => p.data === today).slice(0, this.tvLimit);
                 }
             },
-            methods: {
+           methods: {
+                updatePedidoFirebase(item) {
+                    if (window.FirebaseDB && item.id) {
+                        window.FirebaseDB.savePedido(item);
+                    }
+                },
                 openAnalise() {
                     this.previousTab = this.activeTab;
                     this.activeTab = 'analise';
