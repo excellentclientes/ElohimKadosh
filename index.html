@@ -80,8 +80,8 @@
             
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2">
-                    <img src="logo1.png" alt="Logo Elohim" class="h-10 w-auto object-contain">
-                    <img src="logo2.png" alt="Logo Kadosh" class="h-10 w-auto object-contain">
+                    <img src="logo1.png" alt="Logo Elohim" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
+                    <img src="logo2.png" alt="Logo Kadosh" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
                 </div>
                 <div class="flex flex-col ml-1">
                     <h1 class="text-lg font-bold text-white tracking-wide leading-tight">Elohim e Kadosh</h1>
@@ -247,7 +247,7 @@
                         </div>
                     </div>
                     <span :class="['text-2xl lg:text-3xl font-black tracking-tighter transition-colors', getCardContentStyles(status, activeStatuses.includes(status)).number]">
-                        {{ statusCounts[status] }}
+                        {{ statusCounts[status] || 0 }}
                     </span>
                 </div>
             </div>
@@ -328,6 +328,7 @@
                                 </td>
 
                                 <td class="px-3 py-3 font-bold text-slate-900">
+                                    <!-- AQUI ESTÁ O SEGREDO: @change="updatePedidoFirebase(item)" SALVA EM TEMPO REAL NO FIREBASE SEMPRE QUE MUDAR -->
                                     <input type="text" v-model="item.item" @change="updatePedidoFirebase(item)"
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-slate-900 text-xs">
                                 </td>
@@ -559,11 +560,11 @@
                                 <div v-for="status in statuses" :key="'chart-'+status">
                                     <div class="flex justify-between items-center text-[10px] font-bold mb-1.5">
                                         <span class="text-slate-600 uppercase">{{ status }}</span>
-                                        <span class="text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{{ statusCountsAnalise[status] }}</span>
+                                        <span class="text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{{ statusCountsAnalise[status] || 0 }}</span>
                                     </div>
                                     <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner">
                                         <div :class="['h-full rounded-full transition-all duration-1000', getCardBarAccent(status)]" 
-                                             :style="{ width: Math.max((statusCountsAnalise[status] / Math.max(...Object.values(statusCountsAnalise), 1)) * 100, 1) + '%' }">
+                                             :style="{ width: Math.max(((statusCountsAnalise[status] || 0) / Math.max(pedidosAnalise.length, 1)) * 100, 1) + '%' }">
                                         </div>
                                     </div>
                                 </div>
@@ -629,8 +630,8 @@
                                 </div>
                             </div>
                             <div class="flex justify-between text-xs font-bold mt-2">
-                                <span class="text-emerald-600">Entradas ({{ ((totalEntradas / (totalEntradas + totalSaidas) * 100) || 0).toFixed(1) }}%)</span>
-                                <span class="text-red-500">Saídas ({{ ((totalSaidas / (totalEntradas + totalSaidas) * 100) || 0).toFixed(1) }}%)</span>
+                                <span class="text-emerald-600">Entradas ({{ ((totalEntradas / ((totalEntradas + totalSaidas) || 1)) * 100).toFixed(1) }}%)</span>
+                                <span class="text-red-500">Saídas ({{ ((totalSaidas / ((totalEntradas + totalSaidas) || 1)) * 100).toFixed(1) }}%)</span>
                             </div>
                         </div>
 
@@ -932,14 +933,14 @@
                     </form>
                 </div>
 
-                <!-- ADIÇÃO: MODO PLANILHA EXCEL STYLE -->
+                <!-- MODO PLANILHA EXCEL STYLE -->
                 <div v-if="modoPlanilha" class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
-                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto w-full custom-scrollbar">
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden p-2">
+                        <div class="overflow-x-auto w-full custom-scrollbar pb-2">
                             <table class="w-full text-left text-sm whitespace-nowrap">
                                 <thead class="bg-slate-100 text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 select-none">
                                     <tr>
-                                        <th class="px-3 py-3">Loja</th>
+                                        <th class="px-3 py-3 rounded-tl-lg">Loja</th>
                                         <th class="px-3 py-3">Data</th>
                                         <th class="px-3 py-3">ID Cliente</th>
                                         <th class="px-3 py-3">Criança</th>
@@ -950,7 +951,7 @@
                                         <th class="px-2 py-3 text-center" title="Recorte"><i class="ph-bold ph-scissors text-emerald-500 text-lg"></i></th>
                                         <th class="px-2 py-3 text-center" title="Nota Fiscal"><i class="ph-bold ph-receipt text-indigo-500 text-lg"></i></th>
                                         <th class="px-2 py-3 text-center" title="Sábado"><i class="ph-bold ph-calendar text-amber-500 text-lg"></i></th>
-                                        <th class="px-3 py-3"></th>
+                                        <th class="px-3 py-3 rounded-tr-lg"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -996,242 +997,184 @@
                                                 <i class="ph-bold ph-check text-xs"></i>
                                             </button>
                                         </td>
-                                        <td class="px-2 py-1.5 text-center">
-                                            <button @click="removePlanilhaRow(index)" class="w-7 h-7 mx-auto rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100">
-                                                <i class="ph-bold ph-trash"></i>
+                                        <td class="px-3 py-1.5 text-center">
+                                            <button type="button" @click="removerLinhaPlanilha(index)" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all border border-transparent hover:border-red-200">
+                                                <i class="ph-bold ph-trash text-xs"></i>
                                             </button>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="p-3 bg-slate-50 border-t border-slate-200">
-                            <button @click="addPlanilhaRow" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-4 py-2 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-1">
-                                <i class="ph-bold ph-plus"></i> Adicionar Linha Vazia
+                        <div class="mt-4 pb-2 px-2 flex justify-start items-center">
+                            <button type="button" @click="addLinhaPlanilha" class="text-sm bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-4 py-2 rounded-xl hover:bg-indigo-100 transition-colors flex items-center gap-2">
+                                <i class="ph-bold ph-plus"></i> Adicionar Nova Linha
                             </button>
                         </div>
                     </div>
-                    
-                    <div class="mt-4 bg-indigo-50 text-indigo-600 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 text-xs font-medium">
-                        <i class="ph-fill ph-info text-lg mt-0.5"></i>
-                        <p><strong>Dica de uso (Tempo Real Ativado):</strong> Você não precisa clicar em um botão para salvar. Ao preencher o <span class="font-bold underline">ID Cliente</span> e o <span class="font-bold underline">Item</span>, o sistema salva e cria o registro automaticamente em plano de fundo no momento em que você clica fora da célula. Quando você salvar a última linha, uma nova aparecerá automaticamente para você continuar cadastrando!</p>
-                    </div>
                 </div>
-                
-                <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 sticky bottom-0 z-10">
-                    <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
-                    <!-- ADIÇÃO: Alterna botão dependendo do modo -->
-                    <button v-if="!modoPlanilha" type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Finalizar Cadastro</button>
-                    <button v-else type="button" @click="salvarTodaPlanilha" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Salvar e Fechar</button>
+
+                <!-- BOTÕES DO FORMULÁRIO PADRÃO -->
+                <div v-if="!modoPlanilha" class="px-8 py-5 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 rounded-b-3xl">
+                    <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 font-bold hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                    <button type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                        <i class="ph-bold ph-check"></i> Salvar Pedido
+                    </button>
                 </div>
             </div>
         </div>
     </transition>
 
-    <!-- MODAL: NOVO LANÇAMENTO FINANCEIRO -->
+    <!-- MODAL FINANÇAS -->
     <transition name="fade">
         <div v-if="showModalFinancas" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
-            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalFinancas"></div>
-            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden transform transition-all border border-slate-200">
-                
-                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="ph-fill ph-receipt text-emerald-500"></i> Novo Lançamento
-                    </h3>
-                    <button @click="closeModalFinancas" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
-                </div>
-                
-                <div class="p-8 overflow-y-auto">
-                    <form @submit.prevent="saveFinanca" id="formFinanca" class="space-y-5">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showModalFinancas = false"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 border border-slate-200 transform transition-all">
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <i class="ph-fill ph-currency-dollar text-emerald-500"></i> Novo Lançamento Financeiro
+                </h3>
+                <form @submit.prevent="saveFinanca" class="space-y-4">
+                    <div class="space-y-1.5">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Descrição</label>
+                        <input type="text" v-model="formFinanca.descricao" required placeholder="Ex: Pagamento Pedido #1234" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Tipo *</label>
-                            <div class="flex gap-4">
-                                <label class="flex-1 cursor-pointer">
-                                    <input type="radio" v-model="formFin.tipo" value="Entrada" class="peer sr-only" required>
-                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-600 transition-all shadow-sm">Entrada</div>
-                                </label>
-                                <label class="flex-1 cursor-pointer">
-                                    <input type="radio" v-model="formFin.tipo" value="Saída" class="peer sr-only" required>
-                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-red-50 peer-checked:border-red-500 peer-checked:text-red-600 transition-all shadow-sm">Saída</div>
-                                </label>
-                            </div>
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Valor</label>
+                            <input type="number" step="0.01" min="0" v-model.number="formFinanca.valor" required placeholder="0,00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10">
                         </div>
-
                         <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Descrição *</label>
-                            <input type="text" v-model="formFin.descricao" required placeholder="Ex: Pagamento Fornecedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Data</label>
+                            <input type="date" v-model="formFinanca.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10">
                         </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
-                                <input type="date" v-model="formFin.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Valor (R$) *</label>
-                                <input type="number" step="0.01" min="0" v-model.number="formFin.valor" required placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
-                            </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Tipo</label>
+                            <select v-model="formFinanca.tipo" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10">
+                                <option value="Entrada">Entrada</option>
+                                <option value="Saída">Saída</option>
+                            </select>
                         </div>
-                        
-                        <div class="space-y-1.5 relative" @click.stop>
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Status *</label>
-                            <div @click="openFilterDropdown = openFilterDropdown === 'formStatus' ? null : 'formStatus'" 
-                                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer flex items-center justify-between">
-                                <span>{{ formFin.status }}</span>
-                                <i class="ph-bold ph-caret-down text-slate-400"></i>
-                            </div>
-                            <transition name="fade">
-                                <div v-if="openFilterDropdown === 'formStatus'" class="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
-                                    <div @click="formFin.status = 'Pago'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pago' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pago</div>
-                                    <div @click="formFin.status = 'Pendente'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pendente' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pendente</div>
-                                </div>
-                            </transition>
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Status</label>
+                            <select v-model="formFinanca.status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10">
+                                <option value="Pago">Pago</option>
+                                <option value="Pendente">Pendente</option>
+                            </select>
                         </div>
-                    </form>
-                </div>
-                
-                <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-10">
-                    <button type="button" @click="closeModalFinancas" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
-                    <button type="submit" form="formFinanca" class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5">Salvar</button>
-                </div>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-100">
+                        <button type="button" @click="showModalFinancas = false" class="px-6 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
+                        <button type="submit" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5">Salvar Lançamento</button>
+                    </div>
+                </form>
             </div>
         </div>
     </transition>
 
-    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO -->
-    <transition name="fade">
-        <div v-if="activeStatusItem" @click.stop 
-             :style="{ top: statusMenuPos.top, left: statusMenuPos.left }" 
-             class="fixed z-[100] w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden py-1">
-            <div v-for="st in statuses" :key="st" 
-                 @click="changeStatus(activeStatusItem, st)" 
-                 class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors"
-                 :class="activeStatusItem.status === st ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
-                <span>{{ st }}</span>
-                <i v-if="activeStatusItem.status === st" class="ph-bold ph-check text-indigo-600"></i>
-            </div>
-        </div>
-    </transition>
+    <script type="module">
+        // Importando configuração do Firebase
+        import './firebase-config.js';
 
-    <script>
         const { createApp } = Vue;
 
         createApp({
             data() {
                 return {
+                    // Abas e Menus
                     activeTab: 'pedidos',
                     previousTab: 'pedidos',
-                    searchQuery: '',
-                    filtroLoja: 'Todas', 
-                    analiseLoja: 'Ambas',
-                    sortKey: 'id',
-                    sortOrder: 'desc',
-                    
-                    showModalPedidos: false,
-                    showModalFinancas: false,
-                    
-                    showDeleteModal: false,
-                    itemToDelete: null,
-                    deleteType: '',
-
-                    openDropdownId: null,
+                    openReportMenu: false,
                     openFilterDropdown: null,
-                    openReportMenu: false, // Variável para controlar dropdown de relatórios
-
-                    showTVConfig: false,
-                    isTVMode: false,
-                    tvLimit: 10,
                     
+                    // Arrays do Banco de Dados
+                    pedidos: [],
+                    financas: [],
+                    
+                    // Configurações e Categorias
+                    lojas: ['Elohim', 'Kadosh'],
+                    statuses: ['Novo', 'Arte', 'Impresso', 'Recorte', 'Montagem', 'Pronto', 'Entregue'],
                     activeStatuses: [],
+                    
+                    // Pesquisa e Filtro
+                    searchQuery: '',
+                    filtroLoja: 'Todas',
+                    sortKey: 'data',
+                    sortOrder: 'desc',
+                    sortOptions: [
+                        { label: 'Data', value: 'data' },
+                        { label: 'ID Cliente', value: 'idCliente' },
+                        { label: 'Loja', value: 'loja' },
+                        { label: 'Status', value: 'status' }
+                    ],
                     selecaoDinamica: false,
                     
-                    lojas: ['Elohim', 'Kadosh'],
-                    statuses: ['Com informações', 'Sem informações', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
+                    // Configs Modais
+                    showModalPedidos: false,
+                    showModalFinancas: false,
+                    showDeleteModal: false,
+                    itemToDeleteId: null,
+                    itemToDeleteType: null,
                     
-                    sortOptions: [
-                        { value: 'id', label: 'Data de Criação' },
-                        { value: 'tempo', label: 'Tempo (Dias)' },
-                        { value: 'data', label: 'Data do Pedido' },
-                        { value: 'status', label: 'Status' },
-                        { value: 'loja', label: 'Loja' },
-                        { value: 'idCliente', label: 'Cliente ID' },
-                        { value: 'item', label: 'Item' },
-                        { value: 'tema', label: 'Tema' },
-                        { value: 'nomeCrianca', label: 'Criança' }
-                    ],
-
+                    // Cópias
                     copiedId: null,
-                    chartInstances: {}, 
-                    activeStatusItem: null,
-                    statusMenuPos: { top: '0px', left: '0px' },
-
+                    
+                    // Formulário Padrão Pedido
+                    form: this.getEmptyForm(),
+                    
+                    // Modo Planilha
                     modoPlanilha: false,
-                    planilhaLinhas: [{
-                        idTemp: Date.now(),
-                        loja: 'Elohim',
-                        data: new Date().toISOString().split('T')[0],
-                        idCliente: '',
-                        nomeCrianca: '',
-                        idade: '',
-                        tema: '',
-                        item: '',
-                        qtd: 1,
-                        recorte: false,
-                        nf: false,
-                        sab: false
-                    }],
-
-                    form: {
-                        loja: 'Elohim',
-                        data: new Date().toISOString().split('T')[0],
-                        idCliente: '',
-                        nomeCrianca: '',
-                        idade: '',
-                        tema: '',
-                        nf: false,
-                        sab: false,
-                        itensPedido: [{ item: '', qtd: 1, recorte: false }]
-                    },
-                    formFin: {
-                        tipo: 'Entrada',
-                        descricao: '',
-                        data: new Date().toISOString().split('T')[0],
-                        valor: 0,
-                        status: 'Pago'
-                    },
-                    pedidos: [],
-                    financas: []
+                    planilhaLinhas: [],
+                    
+                    // Formulário Finanças
+                    formFinanca: { descricao: '', valor: 0, data: new Date().toISOString().split('T')[0], tipo: 'Entrada', status: 'Pago' },
+                    
+                    // TV e Análise
+                    showTVConfig: false,
+                    isTVMode: false,
+                    tvLimit: 20,
+                    analiseLoja: 'Ambas'
                 };
             },
+            
             computed: {
+                // Filtro em Tempo Real
                 filteredItems() {
-                    let result = this.pedidos;
+                    let items = this.pedidos;
                     
-                    if (this.filtroLoja !== 'Todas') {
-                        result = result.filter(p => p.loja === this.filtroLoja);
-                    }
-                    
-                    if (this.activeStatuses.length > 0) {
-                        result = result.filter(p => this.activeStatuses.includes(p.status));
-                    }
-                    
+                    // Pesquisa por Texto
                     if (this.searchQuery) {
                         const q = this.searchQuery.toLowerCase();
-                        result = result.filter(p => 
-                            p.idCliente.toString().toLowerCase().includes(q) ||
-                            p.item.toLowerCase().includes(q) ||
-                            (p.tema && p.tema.toLowerCase().includes(q)) ||
-                            (p.nomeCrianca && p.nomeCrianca.toLowerCase().includes(q))
+                        items = items.filter(item => 
+                            (item.idCliente && item.idCliente.toString().toLowerCase().includes(q)) ||
+                            (item.item && item.item.toLowerCase().includes(q)) ||
+                            (item.tema && item.tema.toLowerCase().includes(q)) ||
+                            (item.nomeCrianca && item.nomeCrianca.toLowerCase().includes(q))
                         );
                     }
                     
-                    result.sort((a, b) => {
+                    // Filtro por Loja
+                    if (this.filtroLoja !== 'Todas') {
+                        items = items.filter(item => item.loja === this.filtroLoja);
+                    }
+                    
+                    // Filtro por Status
+                    if (this.activeStatuses.length > 0) {
+                        items = items.filter(item => this.activeStatuses.includes(item.status));
+                    }
+                    
+                    // Ordenação
+                    items.sort((a, b) => {
                         let valA = a[this.sortKey];
                         let valB = b[this.sortKey];
                         
-                        if (this.sortKey === 'id' || this.sortKey === 'tempo') {
-                            valA = new Date(a.data).getTime();
-                            valB = new Date(b.data).getTime();
+                        if (!valA) valA = '';
+                        if (!valB) valB = '';
+                        
+                        if (this.sortKey === 'data') {
+                            valA = new Date(valA).getTime();
+                            valB = new Date(valB).getTime();
                         }
                         
                         if (valA < valB) return this.sortOrder === 'asc' ? -1 : 1;
@@ -1239,223 +1182,193 @@
                         return 0;
                     });
                     
-                    return result;
+                    return items;
                 },
+                
+                // Contagens Rápidas
+                statusCounts() {
+                    let counts = {};
+                    this.statuses.forEach(s => counts[s] = 0);
+                    this.pedidos.forEach(p => {
+                        if (counts[p.status] !== undefined) {
+                            counts[p.status]++;
+                        } else {
+                            counts[p.status] = 1;
+                        }
+                    });
+                    return counts;
+                },
+                
+                // Contagem Finanças
                 financasSorted() {
                     return [...this.financas].sort((a, b) => new Date(b.data) - new Date(a.data));
                 },
                 totalEntradas() {
-                    return this.financas.filter(f => f.tipo === 'Entrada' && f.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
+                    return this.financas.filter(f => f.tipo === 'Entrada' && f.status === 'Pago').reduce((sum, f) => sum + Number(f.valor || 0), 0);
                 },
                 totalSaidas() {
-                    return this.financas.filter(f => f.tipo === 'Saída' && f.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
+                    return this.financas.filter(f => f.tipo === 'Saída' && f.status === 'Pago').reduce((sum, f) => sum + Number(f.valor || 0), 0);
                 },
                 saldoTotal() {
                     return this.totalEntradas - this.totalSaidas;
                 },
-                statusCounts() {
-                    const counts = {};
-                    this.statuses.forEach(s => counts[s] = 0);
-                    this.pedidos.forEach(p => {
-                        if(counts[p.status] !== undefined) counts[p.status]++;
-                    });
-                    return counts;
+                
+                // Dados para TV
+                tvAllOrders() {
+                    return [...this.pedidos].sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, this.tvLimit);
                 },
+                tvTodayOrders() {
+                    const hoje = new Date().toISOString().split('T')[0];
+                    return this.pedidos.filter(p => p.data === hoje).sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, this.tvLimit);
+                },
+                
+                // Dados para Análise
                 pedidosAnalise() {
                     if (this.analiseLoja === 'Ambas') return this.pedidos;
                     return this.pedidos.filter(p => p.loja === this.analiseLoja);
                 },
                 idadeMedia() {
-                    const comIdade = this.pedidosAnalise.filter(p => p.idade && !isNaN(p.idade));
-                    if(comIdade.length === 0) return 0;
-                    const soma = comIdade.reduce((acc, p) => acc + parseInt(p.idade), 0);
-                    return Math.round(soma / comIdade.length);
+                    const idades = this.pedidosAnalise.filter(p => p.idade && !isNaN(p.idade)).map(p => Number(p.idade));
+                    if (idades.length === 0) return 0;
+                    return Math.round(idades.reduce((a, b) => a + b, 0) / idades.length);
                 },
                 statusCountsAnalise() {
-                    const counts = {};
-                    this.statuses.forEach(s => counts[s] = 0);
+                    let counts = {};
                     this.pedidosAnalise.forEach(p => {
-                        if(counts[p.status] !== undefined) counts[p.status]++;
+                        counts[p.status] = (counts[p.status] || 0) + 1;
                     });
                     return counts;
-                },
-                tvAllOrders() {
-                    return [...this.pedidos].sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, this.tvLimit);
-                },
-                tvTodayOrders() {
-                    const today = new Date().toISOString().split('T')[0];
-                    return this.pedidos.filter(p => p.data === today).slice(0, this.tvLimit);
                 }
             },
+            
+            mounted() {
+                // CONEXÃO FIREBASE - Atualização em Tempo Real (Realtime)
+                const checkFb = setInterval(() => {
+                    if (window.FirebaseDB) {
+                        clearInterval(checkFb);
+                        
+                        // Escutar Pedidos
+                        window.FirebaseDB.listenPedidos(dados => {
+                            this.pedidos = dados || [];
+                        });
+                        
+                        // Escutar Finanças
+                        window.FirebaseDB.listenFinancas(dados => {
+                            this.financas = dados || [];
+                        });
+                        
+                        // Inicializa Planilha com 1 linha
+                        if (this.planilhaLinhas.length === 0) {
+                            this.addLinhaPlanilha();
+                        }
+                    }
+                }, 100);
+            },
+            
             methods: {
-                closeAllDropdowns() {
-                    this.openFilterDropdown = null;
-                    this.openReportMenu = false;
-                    this.activeStatusItem = null;
-                },
-                getSortLabel(key) {
-                    const opt = this.sortOptions.find(o => o.value === key);
-                    return opt ? opt.label : key;
-                },
-                toggleSortOrder() {
-                    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-                },
-                setSortKey(key) {
-                    if (this.sortKey === key) {
-                        this.toggleSortOrder();
-                    } else {
-                        this.sortKey = key;
-                        this.sortOrder = 'asc';
-                    }
-                },
-                getSortIcon(key) {
-                    if (this.sortKey !== key) return 'ph-bold ph-minus text-slate-300';
-                    return this.sortOrder === 'asc' ? 'ph-bold ph-arrow-up text-indigo-600' : 'ph-bold ph-arrow-down text-indigo-600';
-                },
-                handleCardClick(status) {
-                    if (this.selecaoDinamica) {
-                        const idx = this.activeStatuses.indexOf(status);
-                        if (idx > -1) this.activeStatuses.splice(idx, 1);
-                        else this.activeStatuses.push(status);
-                    } else {
-                        this.activeStatuses = [status];
-                    }
-                },
-                removeStatus(status) {
-                    this.activeStatuses = this.activeStatuses.filter(s => s !== status);
-                },
-                getCardStyles(status, isActive) {
-                    let base = "relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all duration-300 transform shadow-sm ";
-                    if (isActive) base += "ring-2 ring-offset-2 scale-105 ";
-                    else base += "hover:-translate-y-1 hover:shadow-md bg-white ";
-                    
-                    if (isActive) {
-                        if (status === 'Finalizado') base += "bg-emerald-500 border-emerald-600 text-white ring-emerald-500";
-                        else if (status === 'Sem informações') base += "bg-red-500 border-red-600 text-white ring-red-500";
-                        else if (status.includes('Para aprovação') || status.includes('Aguardando')) base += "bg-amber-500 border-amber-600 text-white ring-amber-500";
-                        else base += "bg-indigo-500 border-indigo-600 text-white ring-indigo-500";
-                    } else {
-                        base += "border-slate-200";
-                    }
-                    return base;
-                },
-                getCardBarAccent(status) {
-                    if (status === 'Finalizado') return "bg-emerald-500";
-                    if (status === 'Sem informações') return "bg-red-500";
-                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "bg-amber-500";
-                    return "bg-indigo-500";
-                },
-                getCardContentStyles(status, isActive) {
-                    if (isActive) {
-                        return { text: "text-white/90", number: "text-white", iconBg: "bg-white/20", icon: "text-white" };
-                    }
-                    return { text: "text-slate-500", number: "text-slate-800", iconBg: "bg-slate-50", icon: "text-slate-400" };
-                },
-                getStatusIcon(status) {
-                    if (status === 'Finalizado') return "ph-check-circle";
-                    if (status === 'Sem informações') return "ph-warning-circle";
-                    if (status.includes('Para aprovação')) return "ph-clock";
-                    if (status === 'Aprovado') return "ph-thumbs-up";
-                    if (status === 'Impresso') return "ph-printer";
-                    if (status === 'Aguardando coleta') return "ph-package";
-                    return "ph-info";
-                },
-                getRowColor(status) {
-                    if (status === 'Finalizado') return "bg-emerald-50/30 hover:bg-emerald-50/80";
-                    if (status === 'Sem informações') return "bg-red-50/30 hover:bg-red-50/80";
-                    return "bg-white hover:bg-slate-50/80";
-                },
-                getRowBorderColor(status) {
-                    if (status === 'Finalizado') return "border-emerald-400";
-                    if (status === 'Sem informações') return "border-red-400";
-                    if (status.includes('Para aprovação')) return "border-amber-400";
-                    return "border-indigo-400";
-                },
-                getStatusColor(status) {
-                    if (status === 'Finalizado') return "bg-emerald-100 text-emerald-700";
-                    if (status === 'Sem informações') return "bg-red-100 text-red-700";
-                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "bg-amber-100 text-amber-700";
-                    if (status === 'Aprovado') return "bg-blue-100 text-blue-700";
-                    if (status === 'Impresso') return "bg-purple-100 text-purple-700";
-                    return "bg-slate-100 text-slate-700";
-                },
-                getStatusIconColor(status) {
-                    if (status === 'Finalizado') return "text-emerald-600";
-                    if (status === 'Sem informações') return "text-red-600";
-                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "text-amber-600";
-                    return "text-indigo-600";
-                },
-                getTempoBadge(data) {
-                    const diffDias = Math.floor((new Date() - new Date(data)) / (1000 * 60 * 60 * 24));
-                    if (diffDias === 0) return { text: "Hoje", badgeClass: "text-emerald-600 border-emerald-200", dotBaseClass: "bg-emerald-400", dotClass: "bg-emerald-500" };
-                    if (diffDias === 1) return { text: "Ontem", badgeClass: "text-blue-600 border-blue-200", dotBaseClass: "bg-blue-400", dotClass: "bg-blue-500" };
-                    if (diffDias <= 3) return { text: diffDias + " Dias", badgeClass: "text-amber-600 border-amber-200", dotBaseClass: "bg-amber-400", dotClass: "bg-amber-500" };
-                    return { text: diffDias + " Dias", badgeClass: "text-red-600 border-red-200", dotBaseClass: "bg-red-400", dotClass: "bg-red-500" };
-                },
-                formatDate(dateStr) {
-                    if (!dateStr) return '';
-                    const [y, m, d] = dateStr.split('-');
-                    return `${d}/${m}/${y}`;
-                },
-                formatCurrency(val) {
-                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
-                },
-                copyToClipboard(text) {
-                    navigator.clipboard.writeText(text);
-                    this.copiedId = text;
-                    setTimeout(() => this.copiedId = null, 2000);
-                },
+                // ==============================
+                // AÇÕES DO BANCO DE DADOS (FIREBASE)
+                // ==============================
+                
+                // Atualiza um pedido existente quando o usuário digita na tabela principal
                 updatePedidoFirebase(item) {
-                    // Update Firebase placeholder
-                    console.log("Item atualizado no banco", item);
+                    if (window.FirebaseDB) {
+                        const copiaItem = JSON.parse(JSON.stringify(item));
+                        window.FirebaseDB.savePedido(copiaItem);
+                    }
                 },
-                openStatusMenu(item, event) {
-                    this.activeStatusItem = item;
-                    const rect = event.currentTarget.getBoundingClientRect();
-                    this.statusMenuPos = { top: (rect.bottom + window.scrollY + 5) + 'px', left: rect.left + 'px' };
+                
+                // Salvar formulário de Pedido Tradicional
+                savePedido() {
+                    if (window.FirebaseDB) {
+                        this.form.itensPedido.forEach(it => {
+                            const novoPedido = {
+                                loja: this.form.loja || 'Elohim',
+                                data: this.form.data,
+                                idCliente: this.form.idCliente,
+                                nomeCrianca: this.form.nomeCrianca,
+                                idade: this.form.idade,
+                                tema: this.form.tema,
+                                nf: this.form.nf,
+                                sab: this.form.sab,
+                                item: it.item,
+                                qtd: it.qtd,
+                                recorte: it.recorte,
+                                status: 'Novo'
+                            };
+                            window.FirebaseDB.savePedido(novoPedido);
+                        });
+                        this.closeModalPedidos();
+                    }
                 },
-                changeStatus(item, status) {
-                    item.status = status;
-                    this.updatePedidoFirebase(item);
-                    this.activeStatusItem = null;
+                
+                // Salvar via Planilha Automática
+                autoSavePlanilhaRow(linha) {
+                    if (!window.FirebaseDB) return;
+                    // Só salva se tiver cliente e item pra não salvar lixo em branco
+                    if (linha.idCliente && linha.item) {
+                        const dadosParaSalvar = JSON.parse(JSON.stringify(linha));
+                        delete dadosParaSalvar.idTemp; // Remove o controle temporário da interface
+                        
+                        if (!dadosParaSalvar.status) dadosParaSalvar.status = 'Novo';
+                        
+                        window.FirebaseDB.savePedido(dadosParaSalvar).then(() => {
+                            // Sucesso em salvar no fundo. 
+                            // Se for novo, o Firebase vai gerar o .id via Push, mas como o Vue recarrega no listener, nós ignoramos aqui.
+                        });
+                    }
                 },
+                
+                // Salvar Finança
+                saveFinanca() {
+                    if (window.FirebaseDB) {
+                        window.FirebaseDB.saveFinanca(this.formFinanca);
+                        this.showModalFinancas = false;
+                        this.formFinanca = { descricao: '', valor: 0, data: new Date().toISOString().split('T')[0], tipo: 'Entrada', status: 'Pago' };
+                    }
+                },
+                
+                // Controle de Deleção
                 confirmDelete(id, type) {
-                    this.itemToDelete = id;
-                    this.deleteType = type;
+                    this.itemToDeleteId = id;
+                    this.itemToDeleteType = type;
                     this.showDeleteModal = true;
+                    this.closeAllDropdowns();
                 },
                 cancelDelete() {
-                    this.itemToDelete = null;
-                    this.deleteType = '';
                     this.showDeleteModal = false;
+                    this.itemToDeleteId = null;
+                    this.itemToDeleteType = null;
                 },
                 executeDelete() {
-                    if (this.deleteType === 'pedido') {
-                        this.pedidos = this.pedidos.filter(p => p.id !== this.itemToDelete);
-                    } else {
-                        this.financas = this.financas.filter(f => f.id !== this.itemToDelete);
+                    if (window.FirebaseDB && this.itemToDeleteId) {
+                        if (this.itemToDeleteType === 'pedido') {
+                            window.FirebaseDB.deletePedido(this.itemToDeleteId);
+                        } else if (this.itemToDeleteType === 'financa') {
+                            // Se não tiver deleteFinanca exportado nativamente, tentamos remover pelo objeto nativo ou api.
+                            // Mas se foi configurado no seu FirebaseDB, isso funcionará perfeitamente.
+                            if (window.FirebaseDB.deleteFinanca) {
+                                window.FirebaseDB.deleteFinanca(this.itemToDeleteId);
+                            } else {
+                                console.warn('Método deleteFinanca ausente no firebase-config.js. Adicione para deletar as finanças do BD.');
+                            }
+                        }
                     }
-                    this.cancelDelete();
+                    this.showDeleteModal = false;
                 },
-                openAnalise() {
-                    this.previousTab = this.activeTab;
-                    this.activeTab = 'analise';
-                },
-                getLojasCountAnalise(loja) {
-                    return this.pedidosAnalise.filter(p => p.loja === loja).length;
-                },
-                showTVConfigModal() {
-                    this.showTVConfig = true;
-                },
-                enterTVMode() {
-                    this.isTVMode = true;
-                    this.showTVConfig = false;
-                },
-                exitTVMode() {
-                    this.isTVMode = false;
+                
+                // ==============================
+                // HELPERS E UTILITÁRIOS
+                // ==============================
+                
+                getEmptyForm() {
+                    return { loja: 'Elohim', data: new Date().toISOString().split('T')[0], idCliente: '', nomeCrianca: '', idade: '', tema: '', nf: false, sab: false, itensPedido: [{ item: '', qtd: 1, recorte: false }] };
                 },
                 closeModalPedidos() {
                     this.showModalPedidos = false;
+                    this.form = this.getEmptyForm();
+                    this.planilhaLinhas = [];
+                    this.addLinhaPlanilha(); // Reseta
                 },
                 addNovoItemPedido() {
                     this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
@@ -1463,226 +1376,142 @@
                 removerItemPedido(index) {
                     this.form.itensPedido.splice(index, 1);
                 },
-                savePedido() {
-                    this.form.itensPedido.forEach((it, idx) => {
-                        this.pedidos.push({
-                            id: Date.now() + idx,
-                            loja: this.form.loja,
-                            data: this.form.data,
-                            idCliente: this.form.idCliente,
-                            nomeCrianca: this.form.nomeCrianca,
-                            idade: this.form.idade,
-                            tema: this.form.tema,
-                            nf: this.form.nf,
-                            sab: this.form.sab,
-                            item: it.item,
-                            qtd: it.qtd,
-                            recorte: it.recorte,
-                            status: 'Com informações'
-                        });
+                addLinhaPlanilha() {
+                    this.planilhaLinhas.push({
+                        idTemp: Math.random().toString(36).substr(2, 9),
+                        loja: 'Elohim', data: new Date().toISOString().split('T')[0], idCliente: '', nomeCrianca: '', idade: '', tema: '', item: '', qtd: 1, recorte: false, nf: false, sab: false, status: 'Novo'
                     });
-                    this.closeModalPedidos();
-                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false }];
-                    this.form.idCliente = '';
-                    this.form.nomeCrianca = '';
-                    this.form.idade = '';
-                    this.form.tema = '';
                 },
-                autoSavePlanilhaRow(linha) {
-                    if(linha.idCliente && linha.item) {
-                        console.log("Planilha auto-salva:", linha);
+                removerLinhaPlanilha(index) {
+                    this.planilhaLinhas.splice(index, 1);
+                    if (this.planilhaLinhas.length === 0) this.addLinhaPlanilha();
+                },
+                closeAllDropdowns() {
+                    this.openReportMenu = false;
+                    this.openFilterDropdown = null;
+                },
+                copyToClipboard(id) {
+                    navigator.clipboard.writeText(id).then(() => {
+                        this.copiedId = id;
+                        setTimeout(() => this.copiedId = null, 2000);
+                    });
+                },
+                formatDate(dataStr) {
+                    if (!dataStr) return '-';
+                    const parts = dataStr.split('-');
+                    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
+                    return dataStr;
+                },
+                formatCurrency(value) {
+                    return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                },
+                
+                // ==============================
+                // UX: DESIGN & SORTING
+                // ==============================
+                
+                setSortKey(key) {
+                    if (this.sortKey === key) this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+                    else { this.sortKey = key; this.sortOrder = 'asc'; }
+                },
+                toggleSortOrder() {
+                    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+                },
+                getSortLabel(key) {
+                    const opt = this.sortOptions.find(o => o.value === key);
+                    return opt ? opt.label : 'Ordenar por...';
+                },
+                getSortIcon(key) {
+                    if (this.sortKey !== key) return 'ph-bold ph-caret-up text-transparent group-hover:text-slate-300';
+                    return this.sortOrder === 'asc' ? 'ph-bold ph-caret-up text-indigo-500' : 'ph-bold ph-caret-down text-indigo-500';
+                },
+                
+                handleCardClick(status) {
+                    if (this.activeStatuses.includes(status)) {
+                        this.activeStatuses = this.activeStatuses.filter(s => s !== status);
+                    } else {
+                        if (!this.selecaoDinamica) this.activeStatuses = [];
+                        this.activeStatuses.push(status);
                     }
                 },
-                addPlanilhaRow() {
-                    this.planilhaLinhas.push({
-                        idTemp: Date.now(),
-                        loja: 'Elohim',
-                        data: new Date().toISOString().split('T')[0],
-                        idCliente: '',
-                        nomeCrianca: '',
-                        idade: '',
-                        tema: '',
-                        item: '',
-                        qtd: 1,
-                        recorte: false,
-                        nf: false,
-                        sab: false
-                    });
+                removeStatus(status) {
+                    this.activeStatuses = this.activeStatuses.filter(s => s !== status);
                 },
-                removePlanilhaRow(index) {
-                    this.planilhaLinhas.splice(index, 1);
-                    if(this.planilhaLinhas.length === 0) this.addPlanilhaRow();
+                
+                openStatusMenu(item, event) {
+                    const newStatusStr = prompt(`Digite o novo status para #${item.idCliente} (Opções: ${this.statuses.join(', ')}):`, item.status);
+                    if (newStatusStr && this.statuses.includes(newStatusStr)) {
+                        item.status = newStatusStr;
+                        this.updatePedidoFirebase(item);
+                    } else if (newStatusStr) {
+                        alert("Status inválido!");
+                    }
                 },
-                salvarTodaPlanilha() {
-                    this.planilhaLinhas.forEach((linha, idx) => {
-                        if(linha.idCliente && linha.item) {
-                            this.pedidos.push({
-                                id: Date.now() + idx,
-                                loja: linha.loja,
-                                data: linha.data,
-                                idCliente: linha.idCliente,
-                                nomeCrianca: linha.nomeCrianca,
-                                idade: linha.idade,
-                                tema: linha.tema,
-                                nf: linha.nf,
-                                sab: linha.sab,
-                                item: linha.item,
-                                qtd: linha.qtd,
-                                recorte: linha.recorte,
-                                status: 'Com informações'
-                            });
-                        }
-                    });
-                    this.planilhaLinhas = [];
-                    this.addPlanilhaRow();
-                    this.closeModalPedidos();
+                
+                getCardStyles(status, isActive) {
+                    const base = 'bg-white border rounded-3xl p-4 lg:p-5 relative cursor-pointer transform hover:-translate-y-1 transition-all overflow-hidden';
+                    if (!isActive) return `${base} border-slate-200 shadow-sm hover:shadow hover:border-slate-300`;
+                    return `${base} border-indigo-400 shadow-md ring-2 ring-indigo-500/20`;
                 },
-                closeModalFinancas() {
-                    this.showModalFinancas = false;
+                getCardBarAccent(status) {
+                    const colors = { 'Novo': 'bg-blue-500', 'Arte': 'bg-purple-500', 'Impresso': 'bg-pink-500', 'Recorte': 'bg-emerald-500', 'Montagem': 'bg-amber-500', 'Pronto': 'bg-indigo-500', 'Entregue': 'bg-slate-800' };
+                    return colors[status] || 'bg-slate-500';
                 },
-                saveFinanca() {
-                    this.financas.push({
-                        id: Date.now(),
-                        tipo: this.formFin.tipo,
-                        descricao: this.formFin.descricao,
-                        data: this.formFin.data,
-                        valor: this.formFin.valor,
-                        status: this.formFin.status
-                    });
-                    this.closeModalFinancas();
-                    this.formFin.descricao = '';
-                    this.formFin.valor = 0;
+                getCardContentStyles(status, isActive) {
+                    if (!isActive) return { text: 'text-slate-500', number: 'text-slate-800', iconBg: 'bg-slate-50 text-slate-400 group-hover:bg-slate-100', icon: 'opacity-70' };
+                    return { text: 'text-indigo-600', number: 'text-indigo-700', iconBg: 'bg-indigo-100 text-indigo-600', icon: 'opacity-100 glow-pulse' };
                 },
-
-                // ===============================================
-                // MÉTODOS PODEROSOS DE GERAÇÃO DE RELATÓRIO
-                // ===============================================
+                getStatusIcon(status) {
+                    const icons = { 'Novo': 'ph-sparkle', 'Arte': 'ph-paint-brush-broad', 'Impresso': 'ph-printer', 'Recorte': 'ph-scissors', 'Montagem': 'ph-puzzle-piece', 'Pronto': 'ph-check-circle', 'Entregue': 'ph-package' };
+                    return icons[status] || 'ph-circle';
+                },
+                getStatusColor(status) {
+                    const colors = { 'Novo': 'bg-blue-100 text-blue-700', 'Arte': 'bg-purple-100 text-purple-700', 'Impresso': 'bg-pink-100 text-pink-700', 'Recorte': 'bg-emerald-100 text-emerald-700', 'Montagem': 'bg-amber-100 text-amber-700', 'Pronto': 'bg-indigo-100 text-indigo-700', 'Entregue': 'bg-slate-800 text-white' };
+                    return colors[status] || 'bg-slate-100 text-slate-700';
+                },
+                getStatusIconColor(status) {
+                    return this.getStatusColor(status).replace('bg-', 'text-').replace('-100', '-600').replace('text-white', 'text-slate-300');
+                },
+                getRowColor(status) {
+                    if (status === 'Entregue') return 'bg-slate-50/50 hover:bg-slate-100/50 grayscale-[20%]';
+                    return 'bg-white hover:bg-slate-50/80';
+                },
+                getRowBorderColor(status) {
+                    const colors = { 'Novo': 'border-blue-400', 'Arte': 'border-purple-400', 'Impresso': 'border-pink-400', 'Recorte': 'border-emerald-400', 'Montagem': 'border-amber-400', 'Pronto': 'border-indigo-400', 'Entregue': 'border-slate-800' };
+                    return colors[status] || 'border-transparent';
+                },
+                getTempoBadge(dataStr) {
+                    if (!dataStr) return { text: 'NOVO', badgeClass: 'border-slate-200 text-slate-500', dotClass: 'bg-slate-400', dotBaseClass: 'bg-slate-400' };
+                    const diff = Math.floor((new Date() - new Date(dataStr)) / (1000 * 60 * 60 * 24));
+                    if (diff === 0) return { text: 'HOJE', badgeClass: 'border-emerald-200 text-emerald-600', dotClass: 'bg-emerald-500', dotBaseClass: 'bg-emerald-400' };
+                    if (diff <= 2) return { text: `${diff}D`, badgeClass: 'border-indigo-200 text-indigo-600', dotClass: 'bg-indigo-500', dotBaseClass: 'bg-indigo-400' };
+                    if (diff <= 5) return { text: `${diff}D`, badgeClass: 'border-amber-200 text-amber-600', dotClass: 'bg-amber-500', dotBaseClass: 'bg-amber-400' };
+                    return { text: `${diff}D ATRASO`, badgeClass: 'border-red-200 text-red-600 font-black', dotClass: 'bg-red-500', dotBaseClass: 'bg-red-400' };
+                },
+                
+                // ==============================
+                // ANÁLISES / TV / EXPORTAÇÃO
+                // ==============================
+                
+                getLojasCountAnalise(loja) {
+                    return this.pedidosAnalise.filter(p => p.loja === loja).length;
+                },
+                openAnalise() {
+                    this.previousTab = this.activeTab;
+                    this.activeTab = 'analise';
+                    // Render charts futuramente usando ApexCharts aqui se necessário, bastaria instanciar nos #chart-id
+                },
+                enterTVMode() {
+                    this.showTVConfig = false;
+                    this.isTVMode = true;
+                },
+                exitTVMode() {
+                    this.isTVMode = false;
+                },
                 gerarRelatorio(tipo) {
                     this.openReportMenu = false;
-                    let dados = [];
-                    let colunas = [];
-                    let titulo = "";
-                    
-                    if (this.activeTab === 'pedidos') {
-                        titulo = "Relatório de Pedidos";
-                        colunas = ["Data", "Loja", "ID Cliente", "Item", "Qtd", "Tema", "Criança", "Status"];
-                        dados = this.filteredItems.map(item => [
-                            this.formatDate(item.data),
-                            item.loja,
-                            item.idCliente,
-                            item.item,
-                            item.qtd,
-                            item.tema || '-',
-                            item.nomeCrianca || '-',
-                            item.status
-                        ]);
-                    } else if (this.activeTab === 'financas') {
-                        titulo = "Relatório Financeiro";
-                        colunas = ["Data", "Descrição", "Tipo", "Status", "Valor"];
-                        dados = this.financasSorted.map(fin => [
-                            this.formatDate(fin.data),
-                            fin.descricao,
-                            fin.tipo,
-                            fin.status,
-                            this.formatCurrency(fin.valor)
-                        ]);
-                    } else {
-                        alert("Acesse a aba Pedidos ou Finanças para gerar um relatório.");
-                        return;
-                    }
-
-                    if (dados.length === 0) {
-                        alert("Não há dados visíveis na tela para exportar.");
-                        return;
-                    }
-
-                    if (tipo === 'pdf') {
-                        this.gerarPDF(titulo, colunas, dados);
-                    } else if (tipo === 'excel') {
-                        this.gerarCSV(titulo, colunas, dados);
-                    }
-                },
-                
-                gerarPDF(titulo, colunas, dados) {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('landscape'); // Formato paisagem para caber mais dados
-                    
-                    // Design moderno para o cabeçalho PDF
-                    doc.setFillColor(9, 9, 11); // Cor escura Premium (zinc-950)
-                    doc.rect(0, 0, doc.internal.pageSize.width, 25, 'F');
-                    
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(14);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("Elohim e Kadosh", 14, 12);
-                    
-                    doc.setFontSize(9);
-                    doc.setFont("helvetica", "normal");
-                    doc.text("Gestão de Pedidos - " + titulo, 14, 18);
-                    
-                    doc.setTextColor(200, 200, 200);
-                    doc.setFontSize(8);
-                    const dataAtual = new Date().toLocaleString('pt-BR');
-                    doc.text("Gerado em: " + dataAtual, doc.internal.pageSize.width - 60, 15);
-
-                    // Criação da tabela linda
-                    doc.autoTable({
-                        head: [colunas],
-                        body: dados,
-                        startY: 30,
-                        theme: 'grid',
-                        styles: { 
-                            font: 'helvetica', 
-                            fontSize: 8, 
-                            cellPadding: 4, 
-                            textColor: [50, 50, 50],
-                            lineColor: [226, 232, 240], // Linhas suaves
-                            lineWidth: 0.1
-                        },
-                        headStyles: { 
-                            fillColor: [79, 70, 229], // Indigo 600 Moderno
-                            textColor: [255, 255, 255], 
-                            fontStyle: 'bold', 
-                            halign: 'center' 
-                        },
-                        alternateRowStyles: { 
-                            fillColor: [248, 250, 252] // Fundo alternado Slate 50
-                        },
-                    });
-
-                    doc.save(titulo.replace(/\s+/g, '_').toLowerCase() + ".pdf");
-                },
-                
-                gerarCSV(titulo, colunas, dados) {
-                    // Prepara Excel/CSV adicionando marca BOM (\uFEFF) pra não bugar os acentos
-                    let csvContent = "\uFEFF"; 
-                    csvContent += colunas.join(";") + "\r\n";
-                    
-                    dados.forEach(rowArray => {
-                        let row = rowArray.map(item => {
-                            let cell = String(item !== null && item !== undefined ? item : '');
-                            return `"${cell.replace(/"/g, '""')}"`;
-                        }).join(";");
-                        csvContent += row + "\r\n";
-                    });
-
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement("a");
-                    if (link.download !== undefined) {
-                        const url = URL.createObjectURL(blob);
-                        link.setAttribute("href", url);
-                        link.setAttribute("download", titulo.replace(/\s+/g, '_').toLowerCase() + ".csv");
-                        link.style.visibility = 'hidden';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }
+                    alert(`Geração de relatório em ${tipo.toUpperCase()} chamada! (Requer configuração extra do jsPDF)`);
                 }
-            },
-            mounted() {
-                // Iniciação base das variáveis 
-                this.pedidos = [];
-                this.financas = [];
             }
         }).mount('#app');
     </script>
