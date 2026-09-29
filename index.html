@@ -101,18 +101,22 @@
                     </a>
                 </nav>
 
-                <!-- Botão Exportar Relatório -->
+                <!-- Botão Exportar Relatório com opções de Cores -->
                 <div class="relative group hidden lg:block" @click.stop>
                     <button @click="openReportMenu = !openReportMenu" title="Gerar Relatório" 
                             class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
                         <i class="ph-bold ph-download-simple text-xl"></i>
                     </button>
                     <transition name="fade">
-                        <div v-if="openReportMenu" class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1 z-50">
-                            <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-100">Exportar Relatório</div>
-                            <a href="#" @click.prevent="gerarRelatorio('pdf')" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors">
-                                <i class="ph-fill ph-file-pdf text-red-500 text-lg"></i> PDF Moderno
+                        <div v-if="openReportMenu" class="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1 z-50">
+                            <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-100">Exportar Relatório PDF</div>
+                            <a href="#" @click.prevent="gerarRelatorio('pdf', true)" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors">
+                                <i class="ph-fill ph-file-pdf text-indigo-500 text-lg"></i> PDF Executivo (Com Cor)
                             </a>
+                            <a href="#" @click.prevent="gerarRelatorio('pdf', false)" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-800 flex items-center gap-2 transition-colors">
+                                <i class="ph-fill ph-file-pdf text-slate-500 text-lg"></i> PDF Clean (Sem Cor)
+                            </a>
+                            <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-y border-slate-100">Outros Formatos</div>
                             <a href="#" @click.prevent="gerarRelatorio('excel')" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 flex items-center gap-2 transition-colors">
                                 <i class="ph-fill ph-file-xls text-emerald-500 text-lg"></i> Planilha (CSV)
                             </a>
@@ -1657,7 +1661,7 @@
                     this.formFin.valor = 0;
                 },
 
-                gerarRelatorio(tipo) {
+                gerarRelatorio(tipo, comCor = true) {
                     this.openReportMenu = false;
                     let dados = [];
                     let colunas = [];
@@ -1701,89 +1705,89 @@
                     }
 
                     if (tipo === 'pdf') {
-                        this.gerarPDF(titulo, colunas, dados);
+                        this.gerarPDF(titulo, colunas, dados, comCor);
                     } else if (tipo === 'excel') {
                         this.gerarCSV(titulo, colunas, dados);
                     }
                 },
                 
-                gerarPDF(titulo, colunas, dados) {
+                gerarPDF(titulo, colunas, dados, comCor) {
                     const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('landscape'); // Orientação horizontal para caber todos os cabeçalhos
+                    const doc = new jsPDF('landscape'); 
                     
-                    // Cabeçalho superior executivo escuro
-                    doc.setFillColor(15, 23, 42); // Slate 900
-                    doc.rect(0, 0, doc.internal.pageSize.width, 28, 'F');
+                    const corPrimaria = comCor ? [79, 70, 229] : [30, 41, 59];    
+                    const corBarra = comCor ? [99, 102, 241] : [100, 116, 139];    
+                    const corFundoCabecalho = comCor ? [79, 70, 229] : [15, 23, 42]; 
+                    const corLinhaAlternada = comCor ? [245, 247, 255] : [248, 250, 252]; 
                     
-                    // Barra de destaque colorida
-                    doc.setFillColor(79, 70, 229); // Indigo 600
-                    doc.rect(0, 28, doc.internal.pageSize.width, 2, 'F');
+                    doc.setFillColor(corFundoCabecalho[0], corFundoCabecalho[1], corFundoCabecalho[2]);
+                    doc.rect(0, 0, doc.internal.pageSize.width, 32, 'F');
+                    
+                    doc.setFillColor(corBarra[0], corBarra[1], corBarra[2]);
+                    doc.rect(0, 32, doc.internal.pageSize.width, 3, 'F');
 
-                    // Títulos institucionais
                     doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(14);
+                    doc.setFontSize(15);
                     doc.setFont("helvetica", "bold");
-                    doc.text("Elohim e Kadosh", 14, 12);
+                    doc.text("Elohim e Kadosh", 16, 14);
                     
                     doc.setFontSize(10);
                     doc.setFont("helvetica", "normal");
-                    doc.setTextColor(148, 163, 184); // Slate 400
-                    doc.text(titulo, 14, 20);
+                    doc.setTextColor(203, 213, 225);
+                    doc.text(titulo, 16, 23);
                     
-                    // Data e hora de emissão no canto direito superior
-                    doc.setFontSize(8);
-                    doc.text("Gerado em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 15, 17, { align: 'right' });
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(226, 232, 240);
+                    doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 16, 18, { align: 'right' });
 
-                    // Tabela moderna com AutoTable
                     doc.autoTable({
                         head: [colunas],
                         body: dados,
-                        startY: 36,
+                        startY: 42,
                         theme: 'grid',
                         styles: { 
                             font: 'helvetica', 
                             fontSize: 8.5, 
-                            cellPadding: 4.5, 
-                            textColor: [30, 41, 59], // Slate 800
-                            lineColor: [226, 232, 240], // Slate 200
-                            lineWidth: 0.1,
+                            cellPadding: 5, 
+                            textColor: [51, 65, 85], 
+                            lineColor: [226, 232, 240], 
+                            lineWidth: 0.15,
                             valign: 'middle',
                             halign: 'center'
                         },
                         headStyles: { 
-                            fillColor: [79, 70, 229], // Indigo 600
+                            fillColor: [corPrimaria[0], corPrimaria[1], corPrimaria[2]], 
                             textColor: [255, 255, 255], 
                             fontStyle: 'bold', 
                             halign: 'center',
-                            cellPadding: 5
+                            cellPadding: 6,
+                            lineWidth: 0
                         },
                         alternateRowStyles: { 
-                            fillColor: [248, 250, 252] // Slate 50
+                            fillColor: corLinhaAlternada 
                         },
                         didDrawPage: (data) => {
-                            // Rodapé profissional com numeração de páginas dinâmicas
                             const pageCount = doc.internal.getNumberOfPages();
                             doc.setFontSize(8);
                             doc.setTextColor(148, 163, 184);
                             doc.text(
                                 `Página ${data.pageNumber} de ${pageCount}`, 
-                                doc.internal.pageSize.width - 15, 
+                                doc.internal.pageSize.width - 16, 
                                 doc.internal.pageSize.height - 10, 
                                 { align: 'right' }
                             );
                             doc.text(
-                                "Elohim e Kadosh - Sistema de Gestão Premium", 
-                                15, 
+                                "Elohim e Kadosh • Sistema de Gestão Premium", 
+                                16, 
                                 doc.internal.pageSize.height - 10
                             );
                         }
                     });
 
-                    // Nome limpo do arquivo conforme solicitado
-                    const nomeArquivo = titulo.toLowerCase().includes('finan') ? 'relatorio_de_financas.pdf' : 'relatorio_de_pedidos.pdf';
+                    const nomeArquivo = titulo.toLowerCase().includes('finan') ? 'relatório de finanças.pdf' : 'relatório de pedidos.pdf';
                     doc.save(nomeArquivo);
                 },
-                
+
                 gerarCSV(titulo, colunas, dados) {
                     let csvContent = "\uFEFF"; 
                     csvContent += colunas.join(";") + "\r\n";
@@ -1801,14 +1805,13 @@
                     if (link.download !== undefined) {
                         const url = URL.createObjectURL(blob);
                         link.setAttribute("href", url);
-                        link.setAttribute("download", titulo.replace(/\s+/g, '_').toLowerCase() + ".csv");
+                        link.setAttribute("download", titulo.toLowerCase().includes('finan') ? 'relatório de finanças.csv' : 'relatório de pedidos.csv');
                         link.style.visibility = 'hidden';
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
                     }
-                }
-            },
+                },
             mounted() {
                 const initFirebase = () => {
                     if (window.FirebaseDB) {
