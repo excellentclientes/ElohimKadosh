@@ -271,23 +271,12 @@
                                 :class="['transition-colors duration-200 group border-b border-slate-200', getRowColor(item.status)]">
                                 
                                 <td class="px-3 py-3 border-l-4" :class="getRowBorderColor(item.status)">
-                                    <div class="relative inline-flex items-center select-none" @click.stop>
-                                        <div @click="openDropdownId = openDropdownId === item.id ? null : item.id" 
-                                             :class="['pl-3 pr-7 py-1.5 rounded-lg text-[10px] font-extrabold cursor-pointer outline-none transition-all shadow-sm border border-transparent hover:border-black/20 flex items-center gap-2 min-w-[120px]', getStatusColor(item.status)]">
+                                    <div class="inline-flex items-center select-none" @click.stop>
+                                        <div @click="openStatusMenu(item, $event)" 
+                                             :class="['pl-3 pr-7 py-1.5 rounded-lg text-[10px] font-extrabold cursor-pointer outline-none transition-all shadow-sm border border-transparent hover:border-black/20 flex items-center gap-2 min-w-[120px] relative', getStatusColor(item.status)]">
                                             {{ item.status }}
                                             <i class="ph-bold ph-caret-down absolute right-2.5 text-[10px] opacity-70" :class="getStatusIconColor(item.status)"></i>
                                         </div>
-                                        <transition name="fade">
-                                            <div v-if="openDropdownId === item.id" 
-                                                 class="absolute z-50 left-0 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1"
-                                                 :class="(filteredItems.length > 3 && index >= filteredItems.length - 2) ? 'bottom-[calc(100%+4px)]' : 'top-full mt-1'">
-                                                <div v-for="s in statuses" :key="s" @click="item.status = s; openDropdownId = null; updatePedidoFirebase(item)" 
-                                                     class="px-4 py-2 text-[11px] font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
-                                                     :class="s === item.status ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
-                                                    {{ s }}
-                                                </div>
-                                            </div>
-                                        </transition>
                                     </div>
                                 </td>
 
@@ -311,27 +300,27 @@
                                 </td>
 
                                 <td class="px-3 py-3 font-bold text-slate-900">
-                                    <input type="text" v-model="item.item" 
+                                    <input type="text" v-model="item.item" @change="updatePedidoFirebase(item)"
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-slate-900 text-xs">
                                 </td>
 
                                 <td class="px-2 py-3 text-center">
-                                    <input type="number" min="1" v-model.number="item.qtd" 
+                                    <input type="number" min="1" v-model.number="item.qtd" @change="updatePedidoFirebase(item)"
                                            class="bg-transparent w-10 h-7 text-center rounded-lg border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white outline-none font-bold text-xs text-slate-900 transition-all">
                                 </td>
 
                                 <td class="px-3 py-3 font-bold text-slate-800">
-                                    <input type="text" v-model="item.tema" placeholder="-" 
+                                    <input type="text" v-model="item.tema" placeholder="-" @change="updatePedidoFirebase(item)"
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-slate-800 text-xs">
                                 </td>
 
                                 <td class="px-3 py-3 font-semibold text-slate-800">
-                                    <input type="text" v-model="item.nomeCrianca" placeholder="-" 
+                                    <input type="text" v-model="item.nomeCrianca" placeholder="-" @change="updatePedidoFirebase(item)"
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-slate-800 text-xs">
                                 </td>
 
                                 <td class="px-2 py-3 font-semibold text-slate-800">
-                                    <input type="text" v-model="item.idade" placeholder="-" 
+                                    <input type="text" v-model="item.idade" placeholder="-" @change="updatePedidoFirebase(item)"
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-slate-800 text-xs">
                                 </td>
                                 
@@ -1052,8 +1041,27 @@
 
                     chartInstances: {}, // Para gerenciar as instâncias do ApexCharts dinamicamente
 
-                    form: this.getInitialFormPedido(),
-                    formFin: this.getInitialFormFinanca(),
+                    activeStatusItem: null,
+                    statusMenuPos: { top: '0px', left: '0px' },
+
+                    form: {
+                        loja: 'Elohim',
+                        data: new Date().toISOString().split('T')[0],
+                        idCliente: '',
+                        nomeCrianca: '',
+                        idade: '',
+                        tema: '',
+                        nf: false,
+                        sab: false,
+                        itensPedido: [{ item: '', qtd: 1, recorte: false }]
+                    },
+                    formFin: {
+                        tipo: 'Entrada',
+                        descricao: '',
+                        data: new Date().toISOString().split('T')[0],
+                        valor: 0,
+                        status: 'Pago'
+                    },
                     
                     pedidos: [],
                     financas: []
@@ -1272,9 +1280,32 @@
                 },
 
                 // Utilitários Mantidos Intactos
+                openStatusMenu(item, event) {
+                    if (this.activeStatusItem && this.activeStatusItem.id === item.id) {
+                        this.activeStatusItem = null;
+                        return;
+                    }
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    const dropdownHeight = 250;
+                    let top = rect.bottom + 4;
+                    if (rect.bottom + dropdownHeight > window.innerHeight) {
+                        top = rect.top - dropdownHeight - 4;
+                    }
+                    this.statusMenuPos = {
+                        top: top + 'px',
+                        left: rect.left + 'px'
+                    };
+                    this.activeStatusItem = item;
+                },
+                changeStatus(item, newStatus) {
+                    item.status = newStatus;
+                    this.activeStatusItem = null;
+                    this.updatePedidoFirebase(item);
+                },
                 closeAllDropdowns() {
                     this.openDropdownId = null;
                     this.openFilterDropdown = null;
+                    this.activeStatusItem = null;
                 },
                 setSortKey(key) {
                     if (this.sortKey === key) {
@@ -1415,7 +1446,7 @@
                     };
                     return colors[status] || 'bg-slate-300';
                 },
-                getCardContentStyles(status, isActive) {
+              getCardContentStyles(status, isActive) {
                     const styles = {
                         'Com informações': { text: 'text-slate-600', number: 'text-slate-800', iconBg: 'bg-slate-100', icon: 'text-slate-500' },
                         'Sem informações': { text: 'text-red-600', number: 'text-red-600', iconBg: 'bg-red-100', icon: 'text-red-500' },
@@ -1432,6 +1463,102 @@
                     }
                     return s;
                 },
+
+                // Métodos de Formulário e Salvamento
+                getInitialFormPedido() {
+                    return {
+                        loja: 'Elohim',
+                        data: new Date().toISOString().split('T')[0],
+                        idCliente: '',
+                        nomeCrianca: '',
+                        idade: '',
+                        tema: '',
+                        nf: false,
+                        sab: false,
+                        itensPedido: [{ item: '', qtd: 1, recorte: false }]
+                    };
+                },
+                getInitialFormFinanca() {
+                    return {
+                        tipo: 'Entrada',
+                        descricao: '',
+                        data: new Date().toISOString().split('T')[0],
+                        valor: 0,
+                        status: 'Pago'
+                    };
+                },
+                addNovoItemPedido() {
+                    this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
+                },
+                removerItemPedido(index) {
+                    if (this.form.itensPedido.length > 1) {
+                        this.form.itensPedido.splice(index, 1);
+                    }
+                },
+                closeModalPedidos() {
+                    this.showModalPedidos = false;
+                    this.form = this.getInitialFormPedido();
+                },
+                closeModalFinancas() {
+                    this.showModalFinancas = false;
+                    this.formFin = this.getInitialFormFinanca();
+                },
+                savePedido() {
+                    if (!window.FirebaseDB) return;
+                    this.form.itensPedido.forEach(it => {
+                        const pedidoData = {
+                            loja: this.form.loja,
+                            data: this.form.data,
+                            idCliente: this.form.idCliente,
+                            nomeCrianca: this.form.nomeCrianca,
+                            idade: this.form.idade,
+                            tema: this.form.tema,
+                            nf: this.form.nf,
+                            sab: this.form.sab,
+                            item: it.item,
+                            qtd: it.qtd,
+                            recorte: it.recorte,
+                            status: 'Com informações'
+                        };
+                        window.FirebaseDB.savePedido(pedidoData);
+                    });
+                    this.closeModalPedidos();
+                },
+                saveFinanca() {
+                    if (!window.FirebaseDB) return;
+                    window.FirebaseDB.saveFinanca(this.formFin);
+                    this.closeModalFinancas();
+                },
+
+                // Exclusão
+                confirmDelete(id, type) {
+                    this.itemToDelete = id;
+                    this.deleteType = type;
+                    this.showDeleteModal = true;
+                },
+                cancelDelete() {
+                    this.showDeleteModal = false;
+                    this.itemToDelete = null;
+                    this.deleteType = '';
+                },
+                executeDelete() {
+                    if (!window.FirebaseDB || !this.itemToDelete) return;
+                    if (this.deleteType === 'pedido') {
+                        window.FirebaseDB.deletePedido(this.itemToDelete);
+                    } else if (this.deleteType === 'financa') {
+                        window.FirebaseDB.deleteFinanca(this.itemToDelete);
+                    }
+                    this.cancelDelete();
+                },
+
+                // Modo TV
+                enterTVMode() {
+                    this.showTVConfig = false;
+                    this.isTVMode = true;
+                },
+                exitTVMode() {
+                    this.isTVMode = false;
+                }
 
                 // Formulários e Lógica
                 getInitialFormPedido() {
@@ -1509,5 +1636,19 @@
             }
         }).mount('#app')
     </script>
+<!-- DROPDOWN DE STATUS FLUTUANTE (POSICIONADO NA FRENTE DE TUDO) -->
+    <transition name="fade">
+        <div v-if="activeStatusItem" 
+             class="fixed z-[9999] w-44 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden py-1"
+             :style="statusMenuPos" @click.stop>
+            <div v-for="s in statuses" :key="s" 
+                 @click="changeStatus(activeStatusItem, s)" 
+                 class="px-4 py-2 text-[11px] font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
+                 :class="s === activeStatusItem.status ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                {{ s }}
+            </div>
+        </div>
+    </transition>
+
 </body>
 </html>

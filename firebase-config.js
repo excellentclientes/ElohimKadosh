@@ -49,12 +49,13 @@ window.FirebaseDB = {
 
   // Salva ou atualiza um pedido
   savePedido(pedido) {
-    if (pedido.id) {
-      return set(ref(db, `pedidos/${pedido.id}`), pedido);
+    const dataToSave = JSON.parse(JSON.stringify(pedido));
+    if (dataToSave.id) {
+      return set(ref(db, `pedidos/${dataToSave.id}`), dataToSave);
     } else {
       const newRef = push(ref(db, 'pedidos'));
-      pedido.id = newRef.key;
-      return set(newRef, pedido);
+      dataToSave.id = newRef.key;
+      return set(newRef, dataToSave);
     }
   },
 
@@ -65,17 +66,12 @@ window.FirebaseDB = {
 
   // Salva ou atualiza um lançamento financeiro
   saveFinanca(financa) {
-    if (financa.id) {
-      return set(ref(db, `financas/${financa.id}`), financa);
+    const dataToSave = JSON.parse(JSON.stringify(financa));
+    if (dataToSave.id) {
+      return set(ref(db, `financas/${dataToSave.id}`), dataToSave);
     } else {
       const newRef = push(ref(db, 'financas'));
-      financa.id = newRef.key;
-      return set(newRef, financa);
+      dataToSave.id = newRef.key;
+      return set(newRef, dataToSave);
     }
   },
-
-  // Deleta um lançamento financeiro
-  deleteFinanca(id) {
-    return remove(ref(db, `financas/${id}`));
-  }
-};
