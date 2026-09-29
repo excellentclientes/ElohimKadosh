@@ -105,10 +105,8 @@
         <div v-if="activeTab === 'pedidos'">
             <!-- Topbar de Ações e Ordenação -->
             <div class="flex flex-col mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
-                <!-- Linha Superior Fixa -->
                 <div class="flex flex-col xl:flex-row justify-between items-center gap-3 w-full">
                     
-                    <!-- Campo de Pesquisa -->
                     <div class="relative w-full xl:w-[280px] shrink-0">
                         <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
                         <input type="text" v-model="searchQuery" placeholder="Pesquisar pedidos ou tempo..." 
@@ -118,7 +116,6 @@
                         </button>
                     </div>
 
-                    <!-- Filtro por Loja -->
                     <div class="relative w-full sm:w-auto shrink-0 group" @click.stop>
                         <div @click="openFilterDropdown = openFilterDropdown === 'loja' ? null : 'loja'" 
                              class="w-full sm:w-44 bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-2xl pl-10 pr-8 py-3 cursor-pointer outline-none transition-all shadow-sm flex items-center justify-between">
@@ -141,7 +138,6 @@
 
                     <div class="flex flex-wrap items-center justify-between xl:justify-end gap-3 w-full xl:w-auto flex-1">
                         <div class="flex flex-wrap items-center gap-3">
-                            <!-- Controle de Ordenação -->
                             <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
                                 <div class="relative group" @click.stop>
                                     <div @click="openFilterDropdown = openFilterDropdown === 'sort' ? null : 'sort'" 
@@ -170,7 +166,6 @@
                                 </button>
                             </div>
 
-                            <!-- Seleção Dinâmica -->
                             <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
                                 <label class="relative inline-flex items-center cursor-pointer group" title="Ativar Seleção Inteligente de Cards">
                                     <input type="checkbox" v-model="selecaoDinamica" class="sr-only peer">
@@ -180,7 +175,6 @@
                             </div>
                         </div>
 
-                        <!-- Botões -->
                         <button @click="showTVConfig = true" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-xs shrink-0">
                             <i class="ph-bold ph-monitor-play"></i> Modo TV
                         </button>
@@ -191,7 +185,6 @@
                     </div>
                 </div>
 
-                <!-- Linha Inferior com Altura Fixa -->
                 <div class="flex flex-wrap gap-2 items-center min-h-[34px] pt-3">
                     <transition-group name="fade">
                         <div v-for="status in activeStatuses" :key="status" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-bold border border-indigo-100 whitespace-nowrap">
@@ -202,7 +195,7 @@
                 </div>
             </div>
 
-            <!-- Cards de Status Elegantes -->
+            <!-- Cards de Status -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
                 <div v-for="status in statuses" :key="status"
                      @click="handleCardClick(status)"
@@ -224,7 +217,7 @@
                 </div>
             </div>
 
-            <!-- Tabela de Pedidos -->
+            <!-- Tabela -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full relative z-10">
                 <div class="overflow-x-auto w-full custom-scrollbar">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -470,8 +463,6 @@
     <!-- ========================================== -->
     <transition name="fade">
         <div v-if="activeTab === 'analise'" class="fixed inset-0 z-50 bg-[#f8fafc] flex flex-col p-4 md:p-6 lg:p-8 overflow-hidden h-full w-full">
-            
-            <!-- Header da Tela de Análise -->
             <div class="flex justify-between items-center mb-4 bg-white p-4 lg:px-6 rounded-3xl shadow-sm border border-slate-200 shrink-0">
                 <h2 class="text-xl font-black text-slate-800 flex items-center gap-3">
                     <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg', previousTab === 'financas' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-indigo-500 shadow-indigo-500/30']">
@@ -484,19 +475,14 @@
                 </button>
             </div>
             
-            <!-- Contexto: Pedidos (Layout ajustado para visibilidade total) -->
             <div v-if="previousTab === 'pedidos'" class="flex-1 flex flex-col gap-4 overflow-hidden min-h-0">
-                
-                <!-- TOP CONTROL BAR: Chave de Loja e KPIs Estratégicos -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 flex justify-between items-center shrink-0">
-                    <!-- Chave Moderna de Ativação -->
                     <div class="flex items-center p-1 bg-slate-100/80 rounded-xl border border-slate-200/60 shadow-inner">
                         <button @click="analiseLoja = 'Ambas'" :class="analiseLoja === 'Ambas' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Ambas</button>
                         <button @click="analiseLoja = 'Elohim'" :class="analiseLoja === 'Elohim' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Elohim</button>
                         <button @click="analiseLoja = 'Kadosh'" :class="analiseLoja === 'Kadosh' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Kadosh</button>
                     </div>
                     
-                    <!-- KPIs Pequenos num canto estratégico -->
                     <div class="flex gap-6 items-center px-4">
                         <div class="flex flex-col items-end">
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Pedidos</span>
@@ -510,10 +496,7 @@
                     </div>
                 </div>
 
-                <!-- MAIN GRID: Tudo visível sem rolagem -->
                 <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
-                    
-                    <!-- ESQUERDA: Antigos indicadores reestruturados -->
                     <div class="col-span-3 flex flex-col gap-4 min-h-0">
                         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex-1 flex flex-col min-h-0">
                             <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2 shrink-0">
@@ -553,10 +536,7 @@
                         </div>
                     </div>
 
-                    <!-- DIREITA: Novos Gráficos Inteligentes -->
                     <div class="col-span-9 flex flex-col gap-4 min-h-0">
-                        
-                        <!-- 3 Gráficos em Coluna Modernos -->
                         <div class="flex-1 grid grid-cols-3 gap-4 min-h-0">
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Recorte vs Sem Recorte</h4>
@@ -572,7 +552,6 @@
                             </div>
                         </div>
 
-                        <!-- Gráfico de Linha Comparativo Arredondado -->
                         <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
                             <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Comparativo de Lojas por Data</h4>
                             <div id="chart-lojas" class="flex-1 w-full min-h-0"></div>
@@ -581,9 +560,7 @@
                 </div>
             </div>
 
-            <!-- Contexto: Finanças (Mantido igual) -->
             <div v-else class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
-                <!-- Esquerda: Resumo Financeiro -->
                 <div class="flex flex-col gap-6 overflow-hidden">
                     <div class="grid grid-cols-2 gap-4 shrink-0">
                         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
@@ -601,7 +578,6 @@
                     </div>
                 </div>
                 
-                <!-- Direita: Gráficos Financeiros Detalhados -->
                 <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 flex flex-col overflow-y-auto custom-scrollbar">
                     <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 shrink-0">
                         <i class="ph-bold ph-chart-donut text-emerald-500"></i> Distribuição e Status
@@ -807,8 +783,6 @@
                 
                 <div class="p-8 overflow-y-auto flex-1 custom-scrollbar">
                     <form @submit.prevent="savePedido" id="formPedido" class="space-y-6">
-                        
-                        <!-- DADOS GERAIS DO PEDIDO (TOPO) -->
                         <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
                             <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2 border-b border-slate-200 pb-2">Informações Gerais</h4>
                             
@@ -847,100 +821,144 @@
                                 </div>
                                 <div class="space-y-1.5 md:col-span-2">
                                     <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Idade</label>
-                                    <input type="text" v-model="form.idade" placeholder="Ex: 5 anos" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                    <input type="text" v-model="form.idade" placeholder="Ex: 5" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm text-center">
                                 </div>
-                            </div>
-
-                            <!-- Restante dos Dados do Pedido -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-end mt-2">
-                                <div class="space-y-1.5">
-                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Item *</label>
-                                    <input type="text" v-model="form.item" required placeholder="Ex: Camiseta" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
-                                </div>
-                                <div class="space-y-1.5">
+                                <div class="space-y-1.5 md:col-span-5">
                                     <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Tema</label>
-                                    <input type="text" v-model="form.tema" placeholder="Ex: Fazendinha" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
-                                </div>
-                                <div class="space-y-1.5">
-                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Quantidade *</label>
-                                    <input type="number" v-model.number="form.qtd" min="1" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                    <input type="text" v-model="form.tema" placeholder="Tema da festa" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
                                 </div>
                             </div>
 
-                            <div class="flex gap-4 pt-4 border-t border-slate-200 mt-4">
+                            <div class="flex gap-6 pt-2">
                                 <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" v-model="form.recorte" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
-                                    <span class="text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">Com Recorte</span>
+                                    <div :class="['w-6 h-6 rounded flex items-center justify-center border shadow-sm transition-all', form.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-indigo-400']">
+                                        <i class="ph-bold ph-check text-sm"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Nota Fiscal (NF)</span>
+                                    <input type="checkbox" v-model="form.nf" class="hidden">
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" v-model="form.nf" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
-                                    <span class="text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">Nota Fiscal (NF)</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" v-model="form.sab" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
-                                    <span class="text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">Sábado</span>
+                                    <div :class="['w-6 h-6 rounded flex items-center justify-center border shadow-sm transition-all', form.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-amber-400']">
+                                        <i class="ph-bold ph-check text-sm"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Sábado (SAB)</span>
+                                    <input type="checkbox" v-model="form.sab" class="hidden">
                                 </label>
                             </div>
                         </div>
-                        
-                        <div class="flex gap-3 justify-end mt-6">
-                            <button type="button" @click="closeModalPedidos" class="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors border border-slate-200">Cancelar</button>
-                            <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all">Salvar Pedido</button>
+
+                        <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Itens do Pedido</h4>
+                                <button type="button" @click="addNovoItemPedido" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-1">
+                                    <i class="ph-bold ph-plus"></i> Adicionar Item
+                                </button>
+                            </div>
+
+                            <div class="space-y-3">
+                                <transition-group name="fade">
+                                    <div v-for="(it, index) in form.itensPedido" :key="index" class="flex flex-wrap md:flex-nowrap gap-4 items-end bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm relative group">
+                                        
+                                        <div class="w-full md:w-3/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Nome do Item</label>
+                                            <input type="text" v-model="it.item" required placeholder="Ex: Cartão, Adesivo..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all shadow-sm">
+                                        </div>
+                                        
+                                        <div class="w-1/2 md:w-1/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block text-center">Quantidade</label>
+                                            <input type="number" min="1" v-model.number="it.qtd" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-center shadow-sm">
+                                        </div>
+                                        
+                                        <div class="w-1/2 md:w-1/5 flex flex-col items-center justify-end pb-1">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Recorte</label>
+                                            <button type="button" @click="it.recorte = !it.recorte" :class="['w-8 h-8 rounded flex items-center justify-center border transition-all shadow-sm', it.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-slate-300 hover:border-emerald-400']">
+                                                <i :class="['ph-bold ph-scissors text-base', it.recorte ? 'text-white' : '']"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <button v-if="form.itensPedido.length > 1" type="button" @click="removerItemPedido(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:bg-red-500 hover:text-white border border-red-200">
+                                            <i class="ph-bold ph-minus text-xs"></i>
+                                        </button>
+                                    </div>
+                                </transition-group>
+                            </div>
                         </div>
                     </form>
+                </div>
+                
+                <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
+                    <button type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Finalizar Cadastro</button>
                 </div>
             </div>
         </div>
     </transition>
 
-    <!-- MODAL: NOVO LANÇAMENTO FINANÇAS -->
+    <!-- MODAL: NOVO LANÇAMENTO FINANCEIRO -->
     <transition name="fade">
         <div v-if="showModalFinancas" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
-            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showModalFinancas = false"></div>
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalFinancas"></div>
             <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden transform transition-all border border-slate-200">
-                <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
+                
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
                     <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="ph-fill ph-wallet text-emerald-500"></i> Novo Lançamento
+                        <i class="ph-fill ph-receipt text-emerald-500"></i> Novo Lançamento
                     </h3>
-                    <button type="button" @click="showModalFinancas = false" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                    <button @click="closeModalFinancas" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
                 </div>
-                <div class="p-6">
-                    <form @submit.prevent="saveFinanca" class="space-y-4">
+                
+                <div class="p-8 overflow-y-auto">
+                    <form @submit.prevent="saveFinanca" id="formFinanca" class="space-y-5">
                         <div class="space-y-1.5">
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Descrição *</label>
-                            <input type="text" v-model="formFin.descricao" required placeholder="Ex: Pagamento Fornecedor" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 shadow-sm">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Tipo *</label>
+                            <div class="flex gap-4">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" v-model="formFin.tipo" value="Entrada" class="peer sr-only" required>
+                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-600 transition-all shadow-sm">Entrada</div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" v-model="formFin.tipo" value="Saída" class="peer sr-only" required>
+                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-red-50 peer-checked:border-red-500 peer-checked:text-red-600 transition-all shadow-sm">Saída</div>
+                                </label>
+                            </div>
                         </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Descrição *</label>
+                            <input type="text" v-model="formFin.descricao" required placeholder="Ex: Pagamento Fornecedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-1.5">
-                                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Valor (R$) *</label>
-                                <input type="number" step="0.01" v-model.number="formFin.valor" required placeholder="0.00" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 shadow-sm">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
+                                <input type="date" v-model="formFin.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
                             </div>
                             <div class="space-y-1.5">
-                                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
-                                <input type="date" v-model="formFin.data" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 shadow-sm">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Valor (R$) *</label>
+                                <input type="number" step="0.01" min="0" v-model.number="formFin.valor" required placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="space-y-1.5">
-                                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Tipo *</label>
-                                <select v-model="formFin.tipo" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 shadow-sm">
-                                    <option value="Entrada">Entrada</option>
-                                    <option value="Saída">Saída</option>
-                                </select>
+                        
+                        <div class="space-y-1.5 relative" @click.stop>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Status *</label>
+                            <div @click="openFilterDropdown = openFilterDropdown === 'formStatus' ? null : 'formStatus'" 
+                                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer flex items-center justify-between">
+                                <span>{{ formFin.status }}</span>
+                                <i class="ph-bold ph-caret-down text-slate-400"></i>
                             </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Status *</label>
-                                <select v-model="formFin.status" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 shadow-sm">
-                                    <option value="Pago">Pago</option>
-                                    <option value="Pendente">Pendente</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 justify-end mt-6">
-                            <button type="button" @click="showModalFinancas = false" class="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors border border-slate-200">Cancelar</button>
-                            <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition-all">Salvar Lançamento</button>
+                            <transition name="fade">
+                                <div v-if="openFilterDropdown === 'formStatus'" class="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                    <div @click="formFin.status = 'Pago'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pago' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pago</div>
+                                    <div @click="formFin.status = 'Pendente'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pendente' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pendente</div>
+                                </div>
+                            </transition>
                         </div>
                     </form>
+                </div>
+                
+                <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalFinancas" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
+                    <button type="submit" form="formFinanca" class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5">Salvar</button>
                 </div>
             </div>
         </div>
@@ -956,7 +974,7 @@
                     previousTab: 'pedidos',
                     searchQuery: '',
                     filtroLoja: 'Todas', 
-                    analiseLoja: 'Ambas', // Chave moderna de ativação para Análise
+                    analiseLoja: 'Ambas',
                     sortKey: 'id',
                     sortOrder: 'desc',
                     
@@ -993,9 +1011,7 @@
                     ],
 
                     copiedId: null,
-
-                    chartInstances: {}, // Para gerenciar as instâncias do ApexCharts dinamicamente
-
+                    chartInstances: {}, 
                     activeStatusItem: null,
                     statusMenuPos: { top: '0px', left: '0px' },
 
@@ -1037,12 +1053,8 @@
             mounted() {
                 const initFirebase = () => {
                     if (window.FirebaseDB) {
-                        window.FirebaseDB.listenPedidos((dados) => {
-                            this.pedidos = dados;
-                        });
-                        window.FirebaseDB.listenFinancas((dados) => {
-                            this.financas = dados;
-                        });
+                        window.FirebaseDB.listenPedidos((dados) => { this.pedidos = dados; });
+                        window.FirebaseDB.listenFinancas((dados) => { this.financas = dados; });
                     } else {
                         setTimeout(initFirebase, 100);
                     }
@@ -1092,7 +1104,6 @@
                     });
                 },
                 
-                // Variáveis Computadas para Nova Análise de Pedidos
                 pedidosAnalise() {
                     let p = this.pedidos;
                     if (this.analiseLoja !== 'Ambas') {
@@ -1117,8 +1128,6 @@
                     });
                     return counts;
                 },
-
-                // Lógica Finanças e Painel Antigo
                 statusCounts() {
                     const counts = {};
                     this.statuses.forEach(s => counts[s] = 0);
@@ -1147,7 +1156,7 @@
                     return this.filteredItems.filter(p => p.data === today).slice(0, this.tvLimit);
                 }
             },
-           methods: {
+            methods: {
                 updatePedidoFirebase(item) {
                     if (window.FirebaseDB && item.id) {
                         window.FirebaseDB.savePedido(item);
@@ -1160,10 +1169,7 @@
                 getLojasCountAnalise(loja) {
                     return this.pedidosAnalise.filter(p => p.loja === loja).length;
                 },
-
-                // GERAÇÃO DOS GRÁFICOS APEXCHARTS
                 renderApexCharts() {
-                    // Agrupar dados por data (REFERÊNCIA DE DATA)
                     const dataByDate = {};
                     this.pedidosAnalise.forEach(p => {
                         if (!dataByDate[p.data]) {
@@ -1177,7 +1183,6 @@
                     });
 
                     const sortedDates = Object.keys(dataByDate).sort();
-
                     const recorteSeries = [{ name: 'Com Recorte', data: [] }, { name: 'Sem Recorte', data: [] }];
                     const nfSeries = [{ name: 'Com NF', data: [] }, { name: 'Sem NF', data: [] }];
                     const sabSeries = [{ name: 'Com Sáb', data: [] }, { name: 'Sem Sáb', data: [] }];
@@ -1200,7 +1205,6 @@
                     const formatDateLabel = (d) => d.split('-').reverse().join('/');
                     const categories = sortedDates.map(formatDateLabel);
 
-                    // Função Auxiliar de Criação Elegante
                     const buildChart = (id, type, series, colors, isLine = false) => {
                         if (this.chartInstances[id]) {
                             this.chartInstances[id].destroy();
@@ -1216,7 +1220,7 @@
                             xaxis: { categories: categories, labels: { show: isLine, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: {enabled: false} },
                             yaxis: { labels: { show: false } },
                             grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, right: 0, bottom: 0, left: isLine ? 15 : 0 } },
-                            legend: { show: false }, // SEM LEGENDA COMO PEDIDO
+                            legend: { show: false }, 
                             tooltip: { theme: 'light', shared: true, intersect: false }
                         };
 
@@ -1231,10 +1235,9 @@
                     buildChart('chart-recorte', 'bar', recorteSeries, ['#10b981', '#cbd5e1']);
                     buildChart('chart-nf', 'bar', nfSeries, ['#6366f1', '#cbd5e1']);
                     buildChart('chart-sab', 'bar', sabSeries, ['#f59e0b', '#cbd5e1']);
-                    buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); // LINHA MODERNA ARREDONDADA
+                    buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); 
                 },
 
-                // Utilitários Mantidos Intactos
                 openStatusMenu(item, event) {
                     if (this.activeStatusItem && this.activeStatusItem.id === item.id) {
                         this.activeStatusItem = null;
@@ -1319,7 +1322,6 @@
                     });
                 },
                 
-                // Estilização Mantida
                 getStatusColor(status) {
                     const colors = {
                         'Com informações': 'bg-slate-100 text-slate-700 hover:border-slate-300',
@@ -1370,51 +1372,67 @@
                     const days = this.getDaysPassed(dateStr);
                     if (days <= 1) return { text: 'NOVO', badgeClass: 'text-emerald-600 border-emerald-200 bg-emerald-50/50', dotBaseClass: 'bg-emerald-400', dotClass: 'bg-emerald-500' };
                     if (days <= 3) return { text: days + ' DIAS', badgeClass: 'text-blue-600 border-blue-200 bg-blue-50/50', dotBaseClass: 'bg-blue-400', dotClass: 'bg-blue-500' };
-                    if (days <= 5) return { text: days + ' DIAS', badgeClass: 'text-amber-600 border-amber-200 bg-amber-50/50', dotBaseClass: 'bg-amber-400', dotClass: 'bg-amber-500' };
+                    if (days <= 7) return { text: days + ' DIAS', badgeClass: 'text-orange-600 border-orange-200 bg-orange-50/50', dotBaseClass: 'bg-orange-400', dotClass: 'bg-orange-500' };
                     return { text: days + ' DIAS', badgeClass: 'text-red-600 border-red-200 bg-red-50/50', dotBaseClass: 'bg-red-400', dotClass: 'bg-red-500' };
                 },
-                getStatusIcon(status) {
-                    const icons = {
-                        'Com informações': 'ph-file-text',
-                        'Sem informações': 'ph-warning-circle',
-                        'Para aprovação': 'ph-clock-countdown',
-                        'Aprovado': 'ph-thumbs-up',
-                        'Impresso': 'ph-printer',
-                        'Aguardando coleta': 'ph-package',
-                        'Finalizado': 'ph-check-circle'
-                    };
-                    return icons[status] || 'ph-circle';
-                },
+
+                // Novas Funções Complementares Adicionadas
                 getCardStyles(status, isActive) {
-                    let base = 'bg-white rounded-2xl p-4 lg:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 relative overflow-hidden shadow-sm border ';
-                    return base + (isActive ? 'ring-2 ring-indigo-500 border-transparent shadow-md transform -translate-y-1 scale-[1.02]' : 'border-slate-200 hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5');
+                    const base = "bg-white p-4 rounded-3xl border shadow-sm relative overflow-hidden cursor-pointer transition-all duration-300 transform";
+                    const hover = "hover:-translate-y-1 hover:shadow-md";
+                    const activeClasses = isActive ? "ring-2 ring-indigo-500 border-transparent shadow-md scale-[1.02]" : "border-slate-200";
+                    return `${base} ${hover} ${activeClasses}`;
+                },
+                getCardContentStyles(status, isActive) {
+                    if (isActive) {
+                         return { text: "text-indigo-600", iconBg: "bg-indigo-100", icon: "text-indigo-500", number: "text-indigo-600" };
+                    }
+                    return { text: "text-slate-500", iconBg: "bg-slate-50", icon: "text-slate-400 group-hover:text-slate-600", number: "text-slate-800" };
                 },
                 getCardBarAccent(status) {
                     const colors = {
-                        'Com informações': 'bg-slate-400',
                         'Sem informações': 'bg-red-500',
                         'Para aprovação': 'bg-orange-500',
                         'Aprovado': 'bg-blue-500',
                         'Impresso': 'bg-purple-500',
                         'Aguardando coleta': 'bg-amber-500',
-                        'Finalizado': 'bg-emerald-500'
+                        'Finalizado': 'bg-emerald-500',
+                        'Com informações': 'bg-slate-500'
                     };
-                    return colors[status] || 'bg-slate-300';
+                    return colors[status] || 'bg-slate-200';
                 },
-                getCardContentStyles(status, isActive) {
-                    const styles = {
-                        'Com informações': { text: 'text-slate-600', number: 'text-slate-800', iconBg: 'bg-slate-100', icon: 'text-slate-500' },
-                        'Sem informações': { text: 'text-red-600', number: 'text-red-600', iconBg: 'bg-red-100', icon: 'text-red-500' },
-                        'Para aprovação': { text: 'text-orange-600', number: 'text-orange-600', iconBg: 'bg-orange-100', icon: 'text-orange-500' },
-                        'Aprovado': { text: 'text-blue-600', number: 'text-blue-600', iconBg: 'bg-blue-100', icon: 'text-blue-500' },
-                        'Impresso': { text: 'text-purple-600', number: 'text-purple-600', iconBg: 'bg-purple-100', icon: 'text-purple-500' },
-                        'Aguardando coleta': { text: 'text-amber-600', number: 'text-amber-600', iconBg: 'bg-amber-100', icon: 'text-amber-500' },
-                        'Finalizado': { text: 'text-emerald-600', number: 'text-emerald-600', iconBg: 'bg-emerald-100', icon: 'text-emerald-500' }
+                getStatusIcon(status) {
+                    const icons = {
+                        'Com informações': 'ph-info',
+                        'Sem informações': 'ph-warning-circle',
+                        'Para aprovação': 'ph-clock-counter-clockwise',
+                        'Aprovado': 'ph-check-circle',
+                        'Impresso': 'ph-printer',
+                        'Aguardando coleta': 'ph-package',
+                        'Finalizado': 'ph-flag-checkered'
                     };
-                    return styles[status] || { text: 'text-slate-600', number: 'text-slate-800', iconBg: 'bg-slate-100', icon: 'text-slate-500' };
+                    return icons[status] || 'ph-circle';
                 },
-
-                // Controle dos Modais e Funções que Faltavam
+                confirmDelete(id, type) {
+                    this.itemToDelete = id;
+                    this.deleteType = type;
+                    this.showDeleteModal = true;
+                },
+                cancelDelete() {
+                    this.showDeleteModal = false;
+                    this.itemToDelete = null;
+                    this.deleteType = '';
+                },
+                executeDelete() {
+                    if (this.itemToDelete && window.FirebaseDB) {
+                        if (this.deleteType === 'pedido') {
+                            window.FirebaseDB.deletePedido(this.itemToDelete);
+                        } else if (this.deleteType === 'financa') {
+                            window.FirebaseDB.deleteFinanca(this.itemToDelete);
+                        }
+                    }
+                    this.cancelDelete();
+                },
                 closeModalPedidos() {
                     this.showModalPedidos = false;
                     this.form = {
@@ -1429,29 +1447,16 @@
                         itensPedido: [{ item: '', qtd: 1, recorte: false }]
                     };
                 },
-                closeModalFinancas() {
-                    this.showModalFinancas = false;
-                    this.formFin = {
-                        tipo: 'Entrada',
-                        descricao: '',
-                        data: new Date().toISOString().split('T')[0],
-                        valor: 0,
-                        status: 'Pago'
-                    };
-                },
                 addNovoItemPedido() {
                     this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
                 },
                 removerItemPedido(index) {
                     this.form.itensPedido.splice(index, 1);
                 },
-
-                // Salvar Pedido e Finanças no Firebase
                 savePedido() {
                     if (window.FirebaseDB) {
                         this.form.itensPedido.forEach(it => {
-                            const novoPedido = {
-                                id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+                            const newPedido = {
                                 loja: this.form.loja,
                                 data: this.form.data,
                                 idCliente: this.form.idCliente,
@@ -1463,60 +1468,56 @@
                                 item: it.item,
                                 qtd: it.qtd,
                                 recorte: it.recorte,
-                                status: 'Com informações'
+                                status: 'Sem informações' 
                             };
-                            window.FirebaseDB.savePedido(novoPedido);
+                            window.FirebaseDB.addPedido(newPedido);
                         });
-                        this.closeModalPedidos();
                     }
+                    this.closeModalPedidos();
+                },
+                closeModalFinancas() {
+                    this.showModalFinancas = false;
+                    this.formFin = {
+                        tipo: 'Entrada',
+                        descricao: '',
+                        data: new Date().toISOString().split('T')[0],
+                        valor: 0,
+                        status: 'Pago'
+                    };
                 },
                 saveFinanca() {
                     if (window.FirebaseDB) {
-                        const novaFinanca = {
-                            id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
-                            tipo: this.formFin.tipo,
-                            descricao: this.formFin.descricao,
-                            data: this.formFin.data,
-                            valor: this.formFin.valor,
-                            status: this.formFin.status
-                        };
-                        window.FirebaseDB.saveFinanca(novaFinanca);
-                        this.closeModalFinancas();
+                        window.FirebaseDB.addFinanca({ ...this.formFin });
                     }
+                    this.closeModalFinancas();
                 },
-
-                // Controle do Modal de Exclusão
-                confirmDelete(id, type) {
-                    this.itemToDelete = id;
-                    this.deleteType = type;
-                    this.showDeleteModal = true;
-                },
-                cancelDelete() {
-                    this.showDeleteModal = false;
-                    this.itemToDelete = null;
-                    this.deleteType = '';
-                },
-                executeDelete() {
-                    if (window.FirebaseDB && this.itemToDelete) {
-                        if (this.deleteType === 'pedido') {
-                            window.FirebaseDB.deletePedido(this.itemToDelete);
-                        } else if (this.deleteType === 'financa') {
-                            window.FirebaseDB.deleteFinanca(this.itemToDelete);
-                        }
-                    }
-                    this.cancelDelete();
-                },
-
-                // Controle do Modo TV
                 enterTVMode() {
-                    this.isTVMode = true;
                     this.showTVConfig = false;
+                    this.isTVMode = true;
                 },
                 exitTVMode() {
                     this.isTVMode = false;
                 }
-            }
+            } 
         }).mount('#app');
     </script>
+    
+    <!-- GLOBAL MENU DE STATUS (Portal / Absoluto) -->
+    <transition name="fade">
+        <div v-if="activeStatusItem" @click.stop class="fixed z-[100] bg-white border border-slate-200 rounded-xl shadow-2xl py-2 w-48" :style="{ top: statusMenuPos.top, left: statusMenuPos.left }">
+            <div class="px-3 pb-2 mb-2 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Alterar Status
+            </div>
+            <div class="max-h-60 overflow-y-auto custom-scrollbar">
+                <div v-for="s in statuses" :key="'menu-'+s" 
+                     @click="changeStatus(activeStatusItem, s)" 
+                     class="px-4 py-2 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-2"
+                     :class="activeStatusItem.status === s ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                    <i :class="[getStatusIcon(s), activeStatusItem.status === s ? 'text-indigo-500' : 'text-slate-400']"></i>
+                    {{ s }}
+                </div>
+            </div>
+        </div>
+    </transition>
 </body>
 </html>
