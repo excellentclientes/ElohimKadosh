@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elohim e Kadosh - Gestão Premium</title>
+    <title>Elohim e Kadosh - Gestão de pedidos</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,6 +16,10 @@
 
     <!-- ApexCharts (Para os gráficos modernos) -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- jsPDF e AutoTable (Para geração de relatórios modernos) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <!-- Conexão com Firebase Externa -->
     <script type="module" src="firebase-config.js"></script>
@@ -75,12 +79,13 @@
         <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
             
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-                    <i class="ph-fill ph-crown text-xl"></i>
+                <div class="flex items-center gap-2">
+                    <img src="logo1.png" alt="Logo Elohim" class="h-10 w-auto object-contain">
+                    <img src="logo2.png" alt="Logo Kadosh" class="h-10 w-auto object-contain">
                 </div>
-                <div class="flex flex-col">
+                <div class="flex flex-col ml-1">
                     <h1 class="text-lg font-bold text-white tracking-wide leading-tight">Elohim e Kadosh</h1>
-                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Gestão Premium</span>
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Gestão de pedidos</span>
                 </div>
             </div>
 
@@ -95,6 +100,25 @@
                         <i class="ph-fill ph-currency-dollar text-lg"></i> Finanças
                     </a>
                 </nav>
+
+                <!-- Botão Exportar Relatório -->
+                <div class="relative group hidden lg:block" @click.stop>
+                    <button @click="openReportMenu = !openReportMenu" title="Gerar Relatório" 
+                            class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="ph-bold ph-download-simple text-xl"></i>
+                    </button>
+                    <transition name="fade">
+                        <div v-if="openReportMenu" class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1 z-50">
+                            <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-100">Exportar Relatório</div>
+                            <a href="#" @click.prevent="gerarRelatorio('pdf')" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors">
+                                <i class="ph-fill ph-file-pdf text-red-500 text-lg"></i> PDF Moderno
+                            </a>
+                            <a href="#" @click.prevent="gerarRelatorio('excel')" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 flex items-center gap-2 transition-colors">
+                                <i class="ph-fill ph-file-xls text-emerald-500 text-lg"></i> Planilha (CSV)
+                            </a>
+                        </div>
+                    </transition>
+                </div>
 
                 <button @click="openAnalise" title="Análise" 
                         class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner hidden lg:flex bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
@@ -1112,6 +1136,7 @@
 
                     openDropdownId: null,
                     openFilterDropdown: null,
+                    openReportMenu: false, // Variável para controlar dropdown de relatórios
 
                     showTVConfig: false,
                     isTVMode: false,
@@ -1140,7 +1165,6 @@
                     activeStatusItem: null,
                     statusMenuPos: { top: '0px', left: '0px' },
 
-                    // ADIÇÃO: Variáveis do Modo Planilha
                     modoPlanilha: false,
                     planilhaLinhas: [{
                         idTemp: Date.now(),
@@ -1175,134 +1199,243 @@
                         valor: 0,
                         status: 'Pago'
                     },
-                    
                     pedidos: [],
                     financas: []
-                }
-            },
-            watch: {
-                activeTab(newVal) {
-                    if (newVal === 'analise' && this.previousTab === 'pedidos') {
-                        this.$nextTick(() => { this.renderApexCharts(); });
-                    }
-                },
-                analiseLoja() {
-                    if (this.activeTab === 'analise' && this.previousTab === 'pedidos') {
-                        this.$nextTick(() => { this.renderApexCharts(); });
-                    }
-                }
-            },
-            mounted() {
-                const initFirebase = () => {
-                    if (window.FirebaseDB) {
-                        window.FirebaseDB.listenPedidos((dados) => { this.pedidos = dados; });
-                        window.FirebaseDB.listenFinancas((dados) => { this.financas = dados; });
-                    } else {
-                        setTimeout(initFirebase, 100);
-                    }
                 };
-                initFirebase();
             },
             computed: {
                 filteredItems() {
                     let result = this.pedidos;
                     
                     if (this.filtroLoja !== 'Todas') {
-                        result = result.filter(i => i.loja === this.filtroLoja);
+                        result = result.filter(p => p.loja === this.filtroLoja);
+                    }
+                    
+                    if (this.activeStatuses.length > 0) {
+                        result = result.filter(p => this.activeStatuses.includes(p.status));
                     }
                     
                     if (this.searchQuery) {
                         const q = this.searchQuery.toLowerCase();
-                        result = result.filter(i => {
-                            const tempoText = this.getTempoBadge(i.data).text.toLowerCase();
-                            return (i.idCliente && i.idCliente.toLowerCase().includes(q)) || 
-                                   (i.loja && i.loja.toLowerCase().includes(q)) ||
-                                   (i.item && i.item.toLowerCase().includes(q)) ||
-                                   (i.tema && i.tema.toLowerCase().includes(q)) ||
-                                   (i.nomeCrianca && i.nomeCrianca.toLowerCase().includes(q)) ||
-                                   tempoText.includes(q); 
-                        });
-                    }
-
-                    if (this.activeStatuses.length > 0) {
-                        result = result.filter(i => this.activeStatuses.includes(i.status));
+                        result = result.filter(p => 
+                            p.idCliente.toString().toLowerCase().includes(q) ||
+                            p.item.toLowerCase().includes(q) ||
+                            (p.tema && p.tema.toLowerCase().includes(q)) ||
+                            (p.nomeCrianca && p.nomeCrianca.toLowerCase().includes(q))
+                        );
                     }
                     
-                    return result.sort((a, b) => {
+                    result.sort((a, b) => {
                         let valA = a[this.sortKey];
                         let valB = b[this.sortKey];
                         
-                        if (this.sortKey === 'tempo') {
-                            valA = this.getDaysPassed(a.data);
-                            valB = this.getDaysPassed(b.data);
+                        if (this.sortKey === 'id' || this.sortKey === 'tempo') {
+                            valA = new Date(a.data).getTime();
+                            valB = new Date(b.data).getTime();
                         }
-
-                        if (typeof valA === 'string') valA = valA.toLowerCase();
-                        if (typeof valB === 'string') valB = valB.toLowerCase();
                         
                         if (valA < valB) return this.sortOrder === 'asc' ? -1 : 1;
                         if (valA > valB) return this.sortOrder === 'asc' ? 1 : -1;
                         return 0;
                     });
-                },
-                
-                pedidosAnalise() {
-                    let p = this.pedidos;
-                    if (this.analiseLoja !== 'Ambas') {
-                        p = p.filter(x => x.loja === this.analiseLoja);
-                    }
-                    return p;
-                },
-                idadeMedia() {
-                    let validAges = this.pedidosAnalise
-                        .filter(x => x.idade && !isNaN(parseInt(x.idade)))
-                        .map(x => parseInt(x.idade));
                     
-                    if (validAges.length === 0) return 0;
-                    let sum = validAges.reduce((a, b) => a + b, 0);
-                    return Math.round(sum / validAges.length);
-                },
-                statusCountsAnalise() {
-                    const counts = {};
-                    this.statuses.forEach(s => counts[s] = 0);
-                    this.pedidosAnalise.forEach(p => {
-                        if (counts[p.status] !== undefined) counts[p.status]++;
-                    });
-                    return counts;
-                },
-                statusCounts() {
-                    const counts = {};
-                    this.statuses.forEach(s => counts[s] = 0);
-                    this.pedidos.forEach(p => {
-                        if (counts[p.status] !== undefined) counts[p.status]++;
-                    });
-                    return counts;
+                    return result;
                 },
                 financasSorted() {
                     return [...this.financas].sort((a, b) => new Date(b.data) - new Date(a.data));
                 },
                 totalEntradas() {
-                    return this.financas.filter(f => f.tipo === 'Entrada').reduce((acc, curr) => acc + curr.valor, 0);
+                    return this.financas.filter(f => f.tipo === 'Entrada' && f.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
                 },
                 totalSaidas() {
-                    return this.financas.filter(f => f.tipo === 'Saída').reduce((acc, curr) => acc + curr.valor, 0);
+                    return this.financas.filter(f => f.tipo === 'Saída' && f.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
                 },
                 saldoTotal() {
                     return this.totalEntradas - this.totalSaidas;
                 },
+                statusCounts() {
+                    const counts = {};
+                    this.statuses.forEach(s => counts[s] = 0);
+                    this.pedidos.forEach(p => {
+                        if(counts[p.status] !== undefined) counts[p.status]++;
+                    });
+                    return counts;
+                },
+                pedidosAnalise() {
+                    if (this.analiseLoja === 'Ambas') return this.pedidos;
+                    return this.pedidos.filter(p => p.loja === this.analiseLoja);
+                },
+                idadeMedia() {
+                    const comIdade = this.pedidosAnalise.filter(p => p.idade && !isNaN(p.idade));
+                    if(comIdade.length === 0) return 0;
+                    const soma = comIdade.reduce((acc, p) => acc + parseInt(p.idade), 0);
+                    return Math.round(soma / comIdade.length);
+                },
+                statusCountsAnalise() {
+                    const counts = {};
+                    this.statuses.forEach(s => counts[s] = 0);
+                    this.pedidosAnalise.forEach(p => {
+                        if(counts[p.status] !== undefined) counts[p.status]++;
+                    });
+                    return counts;
+                },
                 tvAllOrders() {
-                    return this.filteredItems.slice(0, this.tvLimit);
+                    return [...this.pedidos].sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, this.tvLimit);
                 },
                 tvTodayOrders() {
                     const today = new Date().toISOString().split('T')[0];
-                    return this.filteredItems.filter(p => p.data === today).slice(0, this.tvLimit);
+                    return this.pedidos.filter(p => p.data === today).slice(0, this.tvLimit);
                 }
             },
             methods: {
-                updatePedidoFirebase(item) {
-                    if (window.FirebaseDB && item.id) {
-                        window.FirebaseDB.savePedido(item);
+                closeAllDropdowns() {
+                    this.openFilterDropdown = null;
+                    this.openReportMenu = false;
+                    this.activeStatusItem = null;
+                },
+                getSortLabel(key) {
+                    const opt = this.sortOptions.find(o => o.value === key);
+                    return opt ? opt.label : key;
+                },
+                toggleSortOrder() {
+                    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+                },
+                setSortKey(key) {
+                    if (this.sortKey === key) {
+                        this.toggleSortOrder();
+                    } else {
+                        this.sortKey = key;
+                        this.sortOrder = 'asc';
                     }
+                },
+                getSortIcon(key) {
+                    if (this.sortKey !== key) return 'ph-bold ph-minus text-slate-300';
+                    return this.sortOrder === 'asc' ? 'ph-bold ph-arrow-up text-indigo-600' : 'ph-bold ph-arrow-down text-indigo-600';
+                },
+                handleCardClick(status) {
+                    if (this.selecaoDinamica) {
+                        const idx = this.activeStatuses.indexOf(status);
+                        if (idx > -1) this.activeStatuses.splice(idx, 1);
+                        else this.activeStatuses.push(status);
+                    } else {
+                        this.activeStatuses = [status];
+                    }
+                },
+                removeStatus(status) {
+                    this.activeStatuses = this.activeStatuses.filter(s => s !== status);
+                },
+                getCardStyles(status, isActive) {
+                    let base = "relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all duration-300 transform shadow-sm ";
+                    if (isActive) base += "ring-2 ring-offset-2 scale-105 ";
+                    else base += "hover:-translate-y-1 hover:shadow-md bg-white ";
+                    
+                    if (isActive) {
+                        if (status === 'Finalizado') base += "bg-emerald-500 border-emerald-600 text-white ring-emerald-500";
+                        else if (status === 'Sem informações') base += "bg-red-500 border-red-600 text-white ring-red-500";
+                        else if (status.includes('Para aprovação') || status.includes('Aguardando')) base += "bg-amber-500 border-amber-600 text-white ring-amber-500";
+                        else base += "bg-indigo-500 border-indigo-600 text-white ring-indigo-500";
+                    } else {
+                        base += "border-slate-200";
+                    }
+                    return base;
+                },
+                getCardBarAccent(status) {
+                    if (status === 'Finalizado') return "bg-emerald-500";
+                    if (status === 'Sem informações') return "bg-red-500";
+                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "bg-amber-500";
+                    return "bg-indigo-500";
+                },
+                getCardContentStyles(status, isActive) {
+                    if (isActive) {
+                        return { text: "text-white/90", number: "text-white", iconBg: "bg-white/20", icon: "text-white" };
+                    }
+                    return { text: "text-slate-500", number: "text-slate-800", iconBg: "bg-slate-50", icon: "text-slate-400" };
+                },
+                getStatusIcon(status) {
+                    if (status === 'Finalizado') return "ph-check-circle";
+                    if (status === 'Sem informações') return "ph-warning-circle";
+                    if (status.includes('Para aprovação')) return "ph-clock";
+                    if (status === 'Aprovado') return "ph-thumbs-up";
+                    if (status === 'Impresso') return "ph-printer";
+                    if (status === 'Aguardando coleta') return "ph-package";
+                    return "ph-info";
+                },
+                getRowColor(status) {
+                    if (status === 'Finalizado') return "bg-emerald-50/30 hover:bg-emerald-50/80";
+                    if (status === 'Sem informações') return "bg-red-50/30 hover:bg-red-50/80";
+                    return "bg-white hover:bg-slate-50/80";
+                },
+                getRowBorderColor(status) {
+                    if (status === 'Finalizado') return "border-emerald-400";
+                    if (status === 'Sem informações') return "border-red-400";
+                    if (status.includes('Para aprovação')) return "border-amber-400";
+                    return "border-indigo-400";
+                },
+                getStatusColor(status) {
+                    if (status === 'Finalizado') return "bg-emerald-100 text-emerald-700";
+                    if (status === 'Sem informações') return "bg-red-100 text-red-700";
+                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "bg-amber-100 text-amber-700";
+                    if (status === 'Aprovado') return "bg-blue-100 text-blue-700";
+                    if (status === 'Impresso') return "bg-purple-100 text-purple-700";
+                    return "bg-slate-100 text-slate-700";
+                },
+                getStatusIconColor(status) {
+                    if (status === 'Finalizado') return "text-emerald-600";
+                    if (status === 'Sem informações') return "text-red-600";
+                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "text-amber-600";
+                    return "text-indigo-600";
+                },
+                getTempoBadge(data) {
+                    const diffDias = Math.floor((new Date() - new Date(data)) / (1000 * 60 * 60 * 24));
+                    if (diffDias === 0) return { text: "Hoje", badgeClass: "text-emerald-600 border-emerald-200", dotBaseClass: "bg-emerald-400", dotClass: "bg-emerald-500" };
+                    if (diffDias === 1) return { text: "Ontem", badgeClass: "text-blue-600 border-blue-200", dotBaseClass: "bg-blue-400", dotClass: "bg-blue-500" };
+                    if (diffDias <= 3) return { text: diffDias + " Dias", badgeClass: "text-amber-600 border-amber-200", dotBaseClass: "bg-amber-400", dotClass: "bg-amber-500" };
+                    return { text: diffDias + " Dias", badgeClass: "text-red-600 border-red-200", dotBaseClass: "bg-red-400", dotClass: "bg-red-500" };
+                },
+                formatDate(dateStr) {
+                    if (!dateStr) return '';
+                    const [y, m, d] = dateStr.split('-');
+                    return `${d}/${m}/${y}`;
+                },
+                formatCurrency(val) {
+                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+                },
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(text);
+                    this.copiedId = text;
+                    setTimeout(() => this.copiedId = null, 2000);
+                },
+                updatePedidoFirebase(item) {
+                    // Update Firebase placeholder
+                    console.log("Item atualizado no banco", item);
+                },
+                openStatusMenu(item, event) {
+                    this.activeStatusItem = item;
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    this.statusMenuPos = { top: (rect.bottom + window.scrollY + 5) + 'px', left: rect.left + 'px' };
+                },
+                changeStatus(item, status) {
+                    item.status = status;
+                    this.updatePedidoFirebase(item);
+                    this.activeStatusItem = null;
+                },
+                confirmDelete(id, type) {
+                    this.itemToDelete = id;
+                    this.deleteType = type;
+                    this.showDeleteModal = true;
+                },
+                cancelDelete() {
+                    this.itemToDelete = null;
+                    this.deleteType = '';
+                    this.showDeleteModal = false;
+                },
+                executeDelete() {
+                    if (this.deleteType === 'pedido') {
+                        this.pedidos = this.pedidos.filter(p => p.id !== this.itemToDelete);
+                    } else {
+                        this.financas = this.financas.filter(f => f.id !== this.itemToDelete);
+                    }
+                    this.cancelDelete();
                 },
                 openAnalise() {
                     this.previousTab = this.activeTab;
@@ -1311,299 +1444,57 @@
                 getLojasCountAnalise(loja) {
                     return this.pedidosAnalise.filter(p => p.loja === loja).length;
                 },
-                renderApexCharts() {
-                    const dataByDate = {};
-                    this.pedidosAnalise.forEach(p => {
-                        if (!dataByDate[p.data]) {
-                            dataByDate[p.data] = { recorteYes: 0, recorteNo: 0, nfYes: 0, nfNo: 0, sabYes: 0, sabNo: 0, elohim: 0, kadosh: 0 };
-                        }
-                        if (p.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
-                        if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
-                        if (p.sab) dataByDate[p.data].sabYes++; else dataByDate[p.data].sabNo++;
-                        if (p.loja === 'Elohim') dataByDate[p.data].elohim++;
-                        if (p.loja === 'Kadosh') dataByDate[p.data].kadosh++;
-                    });
-
-                    const sortedDates = Object.keys(dataByDate).sort();
-                    const recorteSeries = [{ name: 'Com Recorte', data: [] }, { name: 'Sem Recorte', data: [] }];
-                    const nfSeries = [{ name: 'Com NF', data: [] }, { name: 'Sem NF', data: [] }];
-                    const sabSeries = [{ name: 'Com Sáb', data: [] }, { name: 'Sem Sáb', data: [] }];
-                    const lojaSeries = [{ name: 'Elohim', data: [] }, { name: 'Kadosh', data: [] }];
-
-                    sortedDates.forEach(d => {
-                        recorteSeries[0].data.push(dataByDate[d].recorteYes);
-                        recorteSeries[1].data.push(dataByDate[d].recorteNo);
-                        
-                        nfSeries[0].data.push(dataByDate[d].nfYes);
-                        nfSeries[1].data.push(dataByDate[d].nfNo);
-                        
-                        sabSeries[0].data.push(dataByDate[d].sabYes);
-                        sabSeries[1].data.push(dataByDate[d].sabNo);
-                        
-                        lojaSeries[0].data.push(dataByDate[d].elohim);
-                        lojaSeries[1].data.push(dataByDate[d].kadosh);
-                    });
-
-                    const formatDateLabel = (d) => d.split('-').reverse().join('/');
-                    const categories = sortedDates.map(formatDateLabel);
-
-                    const buildChart = (id, type, series, colors, isLine = false) => {
-                        if (this.chartInstances[id]) {
-                            this.chartInstances[id].destroy();
-                        }
-                        
-                        const options = {
-                            series: series,
-                            chart: { type: type, height: '100%', width: '100%', toolbar: { show: false }, parentHeightOffset: 0 },
-                            colors: colors,
-                            plotOptions: isLine ? {} : { bar: { columnWidth: '35%', borderRadius: 2 } },
-                            dataLabels: { enabled: false },
-                            stroke: isLine ? { curve: 'smooth', width: 3 } : { show: true, width: 2, colors: ['transparent'] },
-                            xaxis: { categories: categories, labels: { show: isLine, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: {enabled: false} },
-                            yaxis: { labels: { show: false } },
-                            grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, right: 0, bottom: 0, left: isLine ? 15 : 0 } },
-                            legend: { show: false }, 
-                            tooltip: { theme: 'light', shared: true, intersect: false }
-                        };
-
-                        const el = document.querySelector(`#${id}`);
-                        if(el) {
-                            const chart = new ApexCharts(el, options);
-                            chart.render();
-                            this.chartInstances[id] = chart;
-                        }
-                    };
-
-                    buildChart('chart-recorte', 'bar', recorteSeries, ['#10b981', '#cbd5e1']);
-                    buildChart('chart-nf', 'bar', nfSeries, ['#6366f1', '#cbd5e1']);
-                    buildChart('chart-sab', 'bar', sabSeries, ['#f59e0b', '#cbd5e1']);
-                    buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); 
+                showTVConfigModal() {
+                    this.showTVConfig = true;
                 },
-
-                openStatusMenu(item, event) {
-                    if (this.activeStatusItem && this.activeStatusItem.id === item.id) {
-                        this.activeStatusItem = null;
-                        return;
-                    }
-                    const rect = event.currentTarget.getBoundingClientRect();
-                    const dropdownHeight = 250;
-                    let top = rect.bottom + 4;
-                    if (rect.bottom + dropdownHeight > window.innerHeight) {
-                        top = rect.top - dropdownHeight - 4;
-                    }
-                    this.statusMenuPos = {
-                        top: top + 'px',
-                        left: rect.left + 'px'
-                    };
-                    this.activeStatusItem = item;
+                enterTVMode() {
+                    this.isTVMode = true;
+                    this.showTVConfig = false;
                 },
-                changeStatus(item, newStatus) {
-                    item.status = newStatus;
-                    this.activeStatusItem = null;
-                    this.updatePedidoFirebase(item);
+                exitTVMode() {
+                    this.isTVMode = false;
                 },
-                closeAllDropdowns() {
-                    this.openDropdownId = null;
-                    this.openFilterDropdown = null;
-                    this.activeStatusItem = null;
+                closeModalPedidos() {
+                    this.showModalPedidos = false;
                 },
-                setSortKey(key) {
-                    if (this.sortKey === key) {
-                        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        this.sortKey = key;
-                        this.sortOrder = 'asc';
-                    }
-                },
-                toggleSortOrder() {
-                    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-                },
-                getSortIcon(key) {
-                    if (this.sortKey !== key) return 'ph-bold ph-caret-up opacity-30 text-[10px]';
-                    return this.sortOrder === 'asc' ? 'ph-bold ph-caret-up text-indigo-500 text-[10px]' : 'ph-bold ph-caret-down text-indigo-500 text-[10px]';
-                },
-                getSortLabel(val) {
-                    const opt = this.sortOptions.find(o => o.value === val);
-                    return opt ? opt.label : val;
-                },
-                handleCardClick(status) {
-                    if (!this.selecaoDinamica) {
-                        this.activeStatuses = this.activeStatuses[0] === status ? [] : [status];
-                    } else {
-                        const index = this.activeStatuses.indexOf(status);
-                        if (index > -1) {
-                            this.activeStatuses.splice(index, 1);
-                        } else {
-                            this.activeStatuses.push(status);
-                        }
-                    }
-                },
-                removeStatus(status) {
-                    this.activeStatuses = this.activeStatuses.filter(s => s !== status);
-                },
-                formatDate(dateStr) {
-                    if(!dateStr) return '-';
-                    const parts = dateStr.split('-');
-                    if(parts.length !== 3) return dateStr;
-                    return `${parts[2]}/${parts[1]}/${parts[0].substring(2)}`;
-                },
-                formatCurrency(val) {
-                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
-                },
-                getDaysPassed(dateStr) {
-                    if(!dateStr) return 0;
-                    const today = new Date();
-                    const past = new Date(dateStr);
-                    const diffTime = Math.abs(today - past);
-                    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1;
-                },
-                copyToClipboard(text) {
-                    if (!text) return;
-                    navigator.clipboard.writeText(text).then(() => {
-                        this.copiedId = text;
-                        setTimeout(() => this.copiedId = null, 2000);
-                    });
-                },
-                
-                getStatusColor(status) {
-                    const colors = {
-                        'Com informações': 'bg-slate-100 text-slate-700 hover:border-slate-300',
-                        'Sem informações': 'bg-red-50 text-red-700 border-red-200 hover:border-red-300',
-                        'Para aprovação': 'bg-orange-50 text-orange-700 border-orange-200 hover:border-orange-300',
-                        'Aprovado': 'bg-blue-50 text-blue-700 border-blue-200 hover:border-blue-300',
-                        'Impresso': 'bg-purple-50 text-purple-700 border-purple-200 hover:border-purple-300',
-                        'Aguardando coleta': 'bg-amber-50 text-amber-700 border-amber-200 hover:border-amber-300',
-                        'Finalizado': 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-300'
-                    };
-                    return colors[status] || 'bg-slate-100 text-slate-700';
-                },
-                getStatusIconColor(status) {
-                    const colors = {
-                        'Sem informações': 'text-red-400',
-                        'Para aprovação': 'text-orange-400',
-                        'Aprovado': 'text-blue-400',
-                        'Impresso': 'text-purple-400',
-                        'Aguardando coleta': 'text-amber-400',
-                        'Finalizado': 'text-emerald-400'
-                    };
-                    return colors[status] || 'text-slate-400';
-                },
-                getRowColor(status) {
-                    const colors = {
-                        'Sem informações': 'hover:bg-red-50/50',
-                        'Para aprovação': 'hover:bg-orange-50/50',
-                        'Aprovado': 'hover:bg-blue-50/50',
-                        'Impresso': 'hover:bg-purple-50/50',
-                        'Aguardando coleta': 'hover:bg-amber-50/50',
-                        'Finalizado': 'hover:bg-emerald-50/50'
-                    };
-                    return colors[status] || 'hover:bg-slate-50';
-                },
-                getRowBorderColor(status) {
-                    const colors = {
-                        'Com informações': 'border-slate-300',
-                        'Sem informações': 'border-red-400',
-                        'Para aprovação': 'border-orange-400',
-                        'Aprovado': 'border-blue-400',
-                        'Impresso': 'border-purple-400',
-                        'Aguardando coleta': 'border-amber-400',
-                        'Finalizado': 'border-emerald-400'
-                    };
-                    return colors[status] || 'border-transparent';
-                },
-                getTempoBadge(dateStr) {
-                    const days = this.getDaysPassed(dateStr);
-                    if (days <= 1) return { text: 'NOVO', badgeClass: 'text-emerald-600 border-emerald-200 bg-emerald-50/50', dotBaseClass: 'bg-emerald-400', dotClass: 'bg-emerald-500' };
-                    if (days <= 3) return { text: days + ' DIAS', badgeClass: 'text-blue-600 border-blue-200 bg-blue-50/50', dotBaseClass: 'bg-blue-400', dotClass: 'bg-blue-500' };
-                    if (days <= 7) return { text: days + ' DIAS', badgeClass: 'text-orange-600 border-orange-200 bg-orange-50/50', dotBaseClass: 'bg-orange-400', dotClass: 'bg-orange-500' };
-                    return { text: days + ' DIAS', badgeClass: 'text-red-600 border-red-200 bg-red-50/50', dotBaseClass: 'bg-red-400', dotClass: 'bg-red-500' };
-                },
-
-                getCardStyles(status, isActive) {
-                    const base = "bg-white p-4 rounded-3xl border shadow-sm relative overflow-hidden cursor-pointer transition-all duration-300 transform";
-                    const hover = "hover:-translate-y-1 hover:shadow-md";
-                    const activeClasses = isActive ? "ring-2 ring-indigo-500 border-transparent shadow-md scale-[1.02]" : "border-slate-200";
-                    return `${base} ${hover} ${activeClasses}`;
-                },
-                getCardContentStyles(status, isActive) {
-                    if (isActive) {
-                         return { text: "text-indigo-600", iconBg: "bg-indigo-100", icon: "text-indigo-500", number: "text-indigo-600" };
-                    }
-                    return { text: "text-slate-500", iconBg: "bg-slate-50", icon: "text-slate-400 group-hover:text-slate-600", number: "text-slate-800" };
-                },
-                getCardBarAccent(status) {
-                    const colors = {
-                        'Sem informações': 'bg-red-500',
-                        'Para aprovação': 'bg-orange-500',
-                        'Aprovado': 'bg-blue-500',
-                        'Impresso': 'bg-purple-500',
-                        'Aguardando coleta': 'bg-amber-500',
-                        'Finalizado': 'bg-emerald-500',
-                        'Com informações': 'bg-slate-500'
-                    };
-                    return colors[status] || 'bg-slate-200';
-                },
-                getStatusIcon(status) {
-                    const icons = {
-                        'Com informações': 'ph-info',
-                        'Sem informações': 'ph-warning-circle',
-                        'Para aprovação': 'ph-clock-counter-clockwise',
-                        'Aprovado': 'ph-check-circle',
-                        'Impresso': 'ph-printer',
-                        'Aguardando coleta': 'ph-package',
-                        'Finalizado': 'ph-flag-checkered'
-                    };
-                    return icons[status] || 'ph-circle';
-                },
-                confirmDelete(id, type) {
-                    this.itemToDelete = id;
-                    this.deleteType = type;
-                    this.showDeleteModal = true;
-                },
-                cancelDelete() {
-                    this.showDeleteModal = false;
-                    this.itemToDelete = null;
-                    this.deleteType = '';
-                },
-                executeDelete() {
-                    if (this.itemToDelete && window.FirebaseDB) {
-                        if (this.deleteType === 'pedido') {
-                            window.FirebaseDB.deletePedido(this.itemToDelete);
-                        } else if (this.deleteType === 'financa') {
-                            window.FirebaseDB.deleteFinanca(this.itemToDelete);
-                        }
-                    }
-                    this.cancelDelete();
-                },
-
-                // Lógica de Cadastro e Resets de Pedidos
                 addNovoItemPedido() {
                     this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
                 },
                 removerItemPedido(index) {
-                    if (this.form.itensPedido.length > 1) {
-                        this.form.itensPedido.splice(index, 1);
+                    this.form.itensPedido.splice(index, 1);
+                },
+                savePedido() {
+                    this.form.itensPedido.forEach((it, idx) => {
+                        this.pedidos.push({
+                            id: Date.now() + idx,
+                            loja: this.form.loja,
+                            data: this.form.data,
+                            idCliente: this.form.idCliente,
+                            nomeCrianca: this.form.nomeCrianca,
+                            idade: this.form.idade,
+                            tema: this.form.tema,
+                            nf: this.form.nf,
+                            sab: this.form.sab,
+                            item: it.item,
+                            qtd: it.qtd,
+                            recorte: it.recorte,
+                            status: 'Com informações'
+                        });
+                    });
+                    this.closeModalPedidos();
+                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false }];
+                    this.form.idCliente = '';
+                    this.form.nomeCrianca = '';
+                    this.form.idade = '';
+                    this.form.tema = '';
+                },
+                autoSavePlanilhaRow(linha) {
+                    if(linha.idCliente && linha.item) {
+                        console.log("Planilha auto-salva:", linha);
                     }
                 },
-                closeModalPedidos() {
-                    this.showModalPedidos = false;
-                    this.modoPlanilha = false;
-                    
-                    // Reset Form Padrão
-                    this.form = {
-                        loja: 'Elohim',
-                        data: new Date().toISOString().split('T')[0],
-                        idCliente: '',
-                        nomeCrianca: '',
-                        idade: '',
-                        tema: '',
-                        nf: false,
-                        sab: false,
-                        itensPedido: [{ item: '', qtd: 1, recorte: false }]
-                    };
-
-                    // Reset Planilha
-                    this.planilhaLinhas = [{
+                addPlanilhaRow() {
+                    this.planilhaLinhas.push({
                         idTemp: Date.now(),
                         loja: 'Elohim',
                         data: new Date().toISOString().split('T')[0],
@@ -1616,135 +1507,182 @@
                         recorte: false,
                         nf: false,
                         sab: false
-                    }];
-                },
-                savePedido() {
-                    if (!this.form.loja || !this.form.data || !this.form.idCliente) return;
-                    
-                    this.form.itensPedido.forEach(it => {
-                        if (it.item && it.qtd > 0) {
-                            const novoPedido = {
-                                id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                                status: 'Com informações',
-                                data: this.form.data,
-                                loja: this.form.loja,
-                                idCliente: this.form.idCliente,
-                                nomeCrianca: this.form.nomeCrianca,
-                                idade: this.form.idade,
-                                tema: this.form.tema,
-                                nf: this.form.nf,
-                                sab: this.form.sab,
-                                item: it.item,
-                                qtd: it.qtd,
-                                recorte: it.recorte
-                            };
-                            
-                            if (window.FirebaseDB) {
-                                window.FirebaseDB.savePedido(novoPedido);
-                            }
-                        }
-                    });
-                    this.closeModalPedidos();
-                },
-
-                // ADIÇÕES METODOS MODO PLANILHA
-                addPlanilhaRow() {
-                    const lastRow = this.planilhaLinhas[this.planilhaLinhas.length - 1];
-                    this.planilhaLinhas.push({
-                        idTemp: Date.now() + Math.random(),
-                        loja: lastRow ? lastRow.loja : 'Elohim',
-                        data: lastRow ? lastRow.data : new Date().toISOString().split('T')[0],
-                        idCliente: '',
-                        nomeCrianca: '',
-                        idade: '',
-                        tema: '',
-                        item: '',
-                        qtd: 1,
-                        recorte: false,
-                        nf: false,
-                        sab: false
                     });
                 },
                 removePlanilhaRow(index) {
-                    if (this.planilhaLinhas.length > 1) {
-                        this.planilhaLinhas.splice(index, 1);
-                    }
-                },
-                autoSavePlanilhaRow(linha) {
-                    if (linha.idCliente && linha.item) {
-                        let isNew = false;
-                        if (!linha.id) {
-                            linha.id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
-                            linha.status = 'Com informações';
-                            isNew = true;
-                        }
-                        
-                        // Objeto exato para limpar sujeira
-                        const pedidoToSave = {
-                            id: linha.id,
-                            status: linha.status,
-                            loja: linha.loja,
-                            data: linha.data,
-                            idCliente: linha.idCliente,
-                            nomeCrianca: linha.nomeCrianca,
-                            idade: linha.idade,
-                            tema: linha.tema,
-                            item: linha.item,
-                            qtd: linha.qtd,
-                            recorte: linha.recorte,
-                            nf: linha.nf,
-                            sab: linha.sab
-                        };
-
-                        if (window.FirebaseDB) {
-                            window.FirebaseDB.savePedido(pedidoToSave);
-                        }
-                        
-                        // Auto adiciona linha abaixo se eu acabei de criar a ultima
-                        const lastRow = this.planilhaLinhas[this.planilhaLinhas.length - 1];
-                        if (lastRow.id === linha.id && isNew) {
-                            this.addPlanilhaRow();
-                        }
-                    }
+                    this.planilhaLinhas.splice(index, 1);
+                    if(this.planilhaLinhas.length === 0) this.addPlanilhaRow();
                 },
                 salvarTodaPlanilha() {
-                    this.planilhaLinhas.forEach(linha => {
-                        this.autoSavePlanilhaRow(linha);
+                    this.planilhaLinhas.forEach((linha, idx) => {
+                        if(linha.idCliente && linha.item) {
+                            this.pedidos.push({
+                                id: Date.now() + idx,
+                                loja: linha.loja,
+                                data: linha.data,
+                                idCliente: linha.idCliente,
+                                nomeCrianca: linha.nomeCrianca,
+                                idade: linha.idade,
+                                tema: linha.tema,
+                                nf: linha.nf,
+                                sab: linha.sab,
+                                item: linha.item,
+                                qtd: linha.qtd,
+                                recorte: linha.recorte,
+                                status: 'Com informações'
+                            });
+                        }
                     });
+                    this.planilhaLinhas = [];
+                    this.addPlanilhaRow();
                     this.closeModalPedidos();
                 },
-
-                // Lógica Finanças
                 closeModalFinancas() {
                     this.showModalFinancas = false;
-                    this.formFin = {
-                        tipo: 'Entrada',
-                        descricao: '',
-                        data: new Date().toISOString().split('T')[0],
-                        valor: 0,
-                        status: 'Pago'
-                    };
                 },
                 saveFinanca() {
-                    if (!this.formFin.descricao || this.formFin.valor <= 0) return;
-                    const novaFinanca = {
-                        id: Date.now().toString(),
-                        ...this.formFin
-                    };
-                    if (window.FirebaseDB) {
-                        window.FirebaseDB.saveFinanca(novaFinanca);
-                    }
+                    this.financas.push({
+                        id: Date.now(),
+                        tipo: this.formFin.tipo,
+                        descricao: this.formFin.descricao,
+                        data: this.formFin.data,
+                        valor: this.formFin.valor,
+                        status: this.formFin.status
+                    });
                     this.closeModalFinancas();
+                    this.formFin.descricao = '';
+                    this.formFin.valor = 0;
                 },
 
-                // Modo TV
-                enterTVMode() {
-                    this.showTVConfig = false;
-                    this.isTVMode = true;
+                // ===============================================
+                // MÉTODOS PODEROSOS DE GERAÇÃO DE RELATÓRIO
+                // ===============================================
+                gerarRelatorio(tipo) {
+                    this.openReportMenu = false;
+                    let dados = [];
+                    let colunas = [];
+                    let titulo = "";
+                    
+                    if (this.activeTab === 'pedidos') {
+                        titulo = "Relatório de Pedidos";
+                        colunas = ["Data", "Loja", "ID Cliente", "Item", "Qtd", "Tema", "Criança", "Status"];
+                        dados = this.filteredItems.map(item => [
+                            this.formatDate(item.data),
+                            item.loja,
+                            item.idCliente,
+                            item.item,
+                            item.qtd,
+                            item.tema || '-',
+                            item.nomeCrianca || '-',
+                            item.status
+                        ]);
+                    } else if (this.activeTab === 'financas') {
+                        titulo = "Relatório Financeiro";
+                        colunas = ["Data", "Descrição", "Tipo", "Status", "Valor"];
+                        dados = this.financasSorted.map(fin => [
+                            this.formatDate(fin.data),
+                            fin.descricao,
+                            fin.tipo,
+                            fin.status,
+                            this.formatCurrency(fin.valor)
+                        ]);
+                    } else {
+                        alert("Acesse a aba Pedidos ou Finanças para gerar um relatório.");
+                        return;
+                    }
+
+                    if (dados.length === 0) {
+                        alert("Não há dados visíveis na tela para exportar.");
+                        return;
+                    }
+
+                    if (tipo === 'pdf') {
+                        this.gerarPDF(titulo, colunas, dados);
+                    } else if (tipo === 'excel') {
+                        this.gerarCSV(titulo, colunas, dados);
+                    }
                 },
-                exitTVMode() {
-                    this.isTVMode = false;
+                
+                gerarPDF(titulo, colunas, dados) {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('landscape'); // Formato paisagem para caber mais dados
+                    
+                    // Design moderno para o cabeçalho PDF
+                    doc.setFillColor(9, 9, 11); // Cor escura Premium (zinc-950)
+                    doc.rect(0, 0, doc.internal.pageSize.width, 25, 'F');
+                    
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Elohim e Kadosh", 14, 12);
+                    
+                    doc.setFontSize(9);
+                    doc.setFont("helvetica", "normal");
+                    doc.text("Gestão de Pedidos - " + titulo, 14, 18);
+                    
+                    doc.setTextColor(200, 200, 200);
+                    doc.setFontSize(8);
+                    const dataAtual = new Date().toLocaleString('pt-BR');
+                    doc.text("Gerado em: " + dataAtual, doc.internal.pageSize.width - 60, 15);
+
+                    // Criação da tabela linda
+                    doc.autoTable({
+                        head: [colunas],
+                        body: dados,
+                        startY: 30,
+                        theme: 'grid',
+                        styles: { 
+                            font: 'helvetica', 
+                            fontSize: 8, 
+                            cellPadding: 4, 
+                            textColor: [50, 50, 50],
+                            lineColor: [226, 232, 240], // Linhas suaves
+                            lineWidth: 0.1
+                        },
+                        headStyles: { 
+                            fillColor: [79, 70, 229], // Indigo 600 Moderno
+                            textColor: [255, 255, 255], 
+                            fontStyle: 'bold', 
+                            halign: 'center' 
+                        },
+                        alternateRowStyles: { 
+                            fillColor: [248, 250, 252] // Fundo alternado Slate 50
+                        },
+                    });
+
+                    doc.save(titulo.replace(/\s+/g, '_').toLowerCase() + ".pdf");
+                },
+                
+                gerarCSV(titulo, colunas, dados) {
+                    // Prepara Excel/CSV adicionando marca BOM (\uFEFF) pra não bugar os acentos
+                    let csvContent = "\uFEFF"; 
+                    csvContent += colunas.join(";") + "\r\n";
+                    
+                    dados.forEach(rowArray => {
+                        let row = rowArray.map(item => {
+                            let cell = String(item !== null && item !== undefined ? item : '');
+                            return `"${cell.replace(/"/g, '""')}"`;
+                        }).join(";");
+                        csvContent += row + "\r\n";
+                    });
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    if (link.download !== undefined) {
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", titulo.replace(/\s+/g, '_').toLowerCase() + ".csv");
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
                 }
+            },
+            mounted() {
+                // Iniciação base das variáveis 
+                this.pedidos = [];
+                this.financas = [];
             }
         }).mount('#app');
     </script>
