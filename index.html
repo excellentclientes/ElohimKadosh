@@ -964,6 +964,21 @@
         </div>
     </transition>
 
+    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO -->
+    <transition name="fade">
+        <div v-if="activeStatusItem" @click.stop 
+             :style="{ top: statusMenuPos.top, left: statusMenuPos.left }" 
+             class="fixed z-[100] w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden py-1">
+            <div v-for="st in statuses" :key="st" 
+                 @click="changeStatus(activeStatusItem, st)" 
+                 class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors"
+                 :class="activeStatusItem.status === st ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                <span>{{ st }}</span>
+                <i v-if="activeStatusItem.status === st" class="ph-bold ph-check text-indigo-600"></i>
+            </div>
+        </div>
+    </transition>
+
     <script>
         const { createApp } = Vue;
 
@@ -1073,9 +1088,9 @@
                         const q = this.searchQuery.toLowerCase();
                         result = result.filter(i => {
                             const tempoText = this.getTempoBadge(i.data).text.toLowerCase();
-                            return i.idCliente.toLowerCase().includes(q) || 
-                                   i.loja.toLowerCase().includes(q) ||
-                                   i.item.toLowerCase().includes(q) ||
+                            return (i.idCliente && i.idCliente.toLowerCase().includes(q)) || 
+                                   (i.loja && i.loja.toLowerCase().includes(q)) ||
+                                   (i.item && i.item.toLowerCase().includes(q)) ||
                                    (i.tema && i.tema.toLowerCase().includes(q)) ||
                                    (i.nomeCrianca && i.nomeCrianca.toLowerCase().includes(q)) ||
                                    tempoText.includes(q); 
@@ -1306,7 +1321,7 @@
                     return `${parts[2]}/${parts[1]}/${parts[0].substring(2)}`;
                 },
                 formatCurrency(val) {
-                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
                 },
                 getDaysPassed(dateStr) {
                     if(!dateStr) return 0;
@@ -1316,6 +1331,7 @@
                     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1;
                 },
                 copyToClipboard(text) {
+                    if (!text) return;
                     navigator.clipboard.writeText(text).then(() => {
                         this.copiedId = text;
                         setTimeout(() => this.copiedId = null, 2000);
@@ -1376,7 +1392,6 @@
                     return { text: days + ' DIAS', badgeClass: 'text-red-600 border-red-200 bg-red-50/50', dotBaseClass: 'bg-red-400', dotClass: 'bg-red-500' };
                 },
 
-                // Novas Funções Complementares Adicionadas
                 getCardStyles(status, isActive) {
                     const base = "bg-white p-4 rounded-3xl border shadow-sm relative overflow-hidden cursor-pointer transition-all duration-300 transform";
                     const hover = "hover:-translate-y-1 hover:shadow-md";
@@ -1433,6 +1448,16 @@
                     }
                     this.cancelDelete();
                 },
+
+                // Lógica de Cadastro e Resets de Pedidos
+                addNovoItemPedido() {
+                    this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
+                },
+                removerItemPedido(index) {
+                    if (this.form.itensPedido.length > 1) {
+                        this.form.itensPedido.splice(index, 1);
+                    }
+                },
                 closeModalPedidos() {
                     this.showModalPedidos = false;
                     this.form = {
@@ -1447,18 +1472,16 @@
                         itensPedido: [{ item: '', qtd: 1, recorte: false }]
                     };
                 },
-                addNovoItemPedido() {
-                    this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
-                },
-                removerItemPedido(index) {
-                    this.form.itensPedido.splice(index, 1);
-                },
                 savePedido() {
-                    if (window.FirebaseDB) {
-                        this.form.itensPedido.forEach(it => {
-                            const newPedido = {
-                                loja: this.form.loja,
+                    if (!this.form.loja || !this.form.data || !this.form.idCliente) return;
+                    
+                    this.form.itensPedido.forEach(it => {
+                        if (it.item && it.qtd > 0) {
+                            const novoPedido = {
+                                id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                                status: 'Com informações',
                                 data: this.form.data,
+                                loja: this.form.loja,
                                 idCliente: this.form.idCliente,
                                 nomeCrianca: this.form.nomeCrianca,
                                 idade: this.form.idade,
@@ -1467,14 +1490,18 @@
                                 sab: this.form.sab,
                                 item: it.item,
                                 qtd: it.qtd,
-                                recorte: it.recorte,
-                                status: 'Sem informações' 
+                                recorte: it.recorte
                             };
-                            window.FirebaseDB.addPedido(newPedido);
-                        });
-                    }
+                            
+                            if (window.FirebaseDB) {
+                                window.FirebaseDB.savePedido(novoPedido);
+                            }
+                        }
+                    });
                     this.closeModalPedidos();
                 },
+
+                // Lógica Finanças
                 closeModalFinancas() {
                     this.showModalFinancas = false;
                     this.formFin = {
@@ -1486,11 +1513,18 @@
                     };
                 },
                 saveFinanca() {
+                    if (!this.formFin.descricao || this.formFin.valor <= 0) return;
+                    const novaFinanca = {
+                        id: Date.now().toString(),
+                        ...this.formFin
+                    };
                     if (window.FirebaseDB) {
-                        window.FirebaseDB.addFinanca({ ...this.formFin });
+                        window.FirebaseDB.saveFinanca(novaFinanca);
                     }
                     this.closeModalFinancas();
                 },
+
+                // Modo TV
                 enterTVMode() {
                     this.showTVConfig = false;
                     this.isTVMode = true;
@@ -1498,26 +1532,8 @@
                 exitTVMode() {
                     this.isTVMode = false;
                 }
-            } 
+            }
         }).mount('#app');
     </script>
-    
-    <!-- GLOBAL MENU DE STATUS (Portal / Absoluto) -->
-    <transition name="fade">
-        <div v-if="activeStatusItem" @click.stop class="fixed z-[100] bg-white border border-slate-200 rounded-xl shadow-2xl py-2 w-48" :style="{ top: statusMenuPos.top, left: statusMenuPos.left }">
-            <div class="px-3 pb-2 mb-2 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Alterar Status
-            </div>
-            <div class="max-h-60 overflow-y-auto custom-scrollbar">
-                <div v-for="s in statuses" :key="'menu-'+s" 
-                     @click="changeStatus(activeStatusItem, s)" 
-                     class="px-4 py-2 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors flex items-center gap-2"
-                     :class="activeStatusItem.status === s ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
-                    <i :class="[getStatusIcon(s), activeStatusItem.status === s ? 'text-indigo-500' : 'text-slate-400']"></i>
-                    {{ s }}
-                </div>
-            </div>
-        </div>
-    </transition>
 </body>
 </html>
