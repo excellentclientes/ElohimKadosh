@@ -14,15 +14,12 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- ApexCharts (Para os gráficos modernos) -->
+    <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    <!-- jsPDF e AutoTable (Para geração de relatórios modernos) -->
+    <!-- jsPDF e AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Conexão com Firebase Externa -->
-    <script type="module" src="firebase-config.js"></script>
 
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -54,13 +51,11 @@
             100% { box-shadow: 0 0 2px currentColor, 0 0 5px currentColor; opacity: 0.8; }
         }
 
-        /* HEADER PRETO FOSCO PERMANENTE */
         header { 
             background-color: #09090b !important; 
             border-bottom-color: #27272a !important; 
         }
 
-        /* ESTILO PARA CABEÇALHOS FIXOS DA TABELA */
         .sticky-table-header th {
             position: sticky;
             top: 0;
@@ -74,10 +69,9 @@
 </head>
 <body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
 
-    <!-- CABEÇALHO SUPERIOR FIXO (PRETO FOSCO) -->
+    <!-- CABEÇALHO SUPERIOR FIXO -->
     <header class="sticky top-0 z-50 shadow-xl transition-colors">
         <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
-            
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2">
                     <img src="logo1.png" alt="Logo Elohim" class="h-10 w-auto object-contain">
@@ -101,7 +95,6 @@
                     </a>
                 </nav>
 
-                <!-- Botão Exportar Relatório -->
                 <div class="relative group hidden lg:block" @click.stop>
                     <button @click="openReportMenu = !openReportMenu" title="Gerar Relatório" 
                             class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
@@ -132,11 +125,8 @@
 
     <main class="flex-1 w-full max-w-[1600px] mx-auto p-6 lg:p-8">
         
-        <!-- ========================================== -->
-        <!-- ABA: PAINEL DE PEDIDOS                     -->
-        <!-- ========================================== -->
+        <!-- ABA: PAINEL DE PEDIDOS -->
         <div v-if="activeTab === 'pedidos'">
-            <!-- BARRA DE AÇÕES FIXA (FILTROS E AÇÕES) -->
             <div class="sticky top-20 z-40 bg-[#f8fafc] pt-2 pb-2 mb-6 transition-all">
                 <div class="flex flex-col bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
                     <div class="flex flex-col xl:flex-row justify-between items-center gap-3 w-full">
@@ -230,7 +220,6 @@
                 </div>
             </div>
 
-            <!-- Cards de Status -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
                 <div v-for="status in statuses" :key="status"
                      @click="handleCardClick(status)"
@@ -252,7 +241,6 @@
                 </div>
             </div>
 
-            <!-- Tabela com Cabeçalho Fixo -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full relative z-10">
                 <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)] min-h-[350px] w-full custom-scrollbar rounded-3xl">
                     <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
@@ -396,9 +384,7 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- ABA: FINANÇAS                              -->
-        <!-- ========================================== -->
+        <!-- ABA: FINANÇAS -->
         <div v-else-if="activeTab === 'financas'">
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 px-2">
@@ -493,9 +479,7 @@
 
     </main>
 
-    <!-- ========================================== -->
-    <!-- TELA DE ANÁLISE (MODO EXECUTIVO NO-SCROLL) -->
-    <!-- ========================================== -->
+    <!-- TELA DE ANÁLISE -->
     <transition name="fade">
         <div v-if="activeTab === 'analise'" class="fixed inset-0 z-50 bg-[#f8fafc] flex flex-col p-4 md:p-6 lg:p-8 overflow-hidden h-full w-full">
             <div class="flex justify-between items-center mb-4 bg-white p-4 lg:px-6 rounded-3xl shadow-sm border border-slate-200 shrink-0">
@@ -807,7 +791,6 @@
     <transition name="fade">
         <div v-if="showModalPedidos" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
             <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalPedidos"></div>
-            <!-- ADIÇÃO: O modal adapta seu tamanho maximo de acordo com o modo escolhido -->
             <div class="relative bg-white rounded-3xl shadow-2xl w-full max-h-[90vh] flex flex-col overflow-hidden transform transition-all border border-slate-200" 
                  :class="modoPlanilha ? 'max-w-[95vw] lg:max-w-[90vw]' : 'max-w-3xl'">
                 
@@ -816,7 +799,6 @@
                         <i class="ph-fill ph-package text-indigo-500"></i> Novo Cadastro de Pedido
                     </h3>
                     
-                    <!-- ADIÇÃO: Toggle do modo planilha adicionado aqui -->
                     <div class="flex items-center gap-4">
                         <button @click="modoPlanilha = !modoPlanilha" class="flex items-center gap-2 px-4 py-1.5 rounded-xl font-bold transition-all shadow-sm border text-xs"
                                 :class="modoPlanilha ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
@@ -932,7 +914,7 @@
                     </form>
                 </div>
 
-                <!-- ADIÇÃO: MODO PLANILHA EXCEL STYLE -->
+                <!-- MODO PLANILHA EXCEL STYLE -->
                 <div v-if="modoPlanilha" class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
                     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                         <div class="overflow-x-auto w-full custom-scrollbar">
@@ -1014,13 +996,12 @@
                     
                     <div class="mt-4 bg-indigo-50 text-indigo-600 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 text-xs font-medium">
                         <i class="ph-fill ph-info text-lg mt-0.5"></i>
-                        <p><strong>Dica de uso (Tempo Real Ativado):</strong> Você não precisa clicar em um botão para salvar. Ao preencher o <span class="font-bold underline">ID Cliente</span> e o <span class="font-bold underline">Item</span>, o sistema salva e cria o registro automaticamente em plano de fundo no momento em que você clica fora da célula. Quando você salvar a última linha, uma nova aparecerá automaticamente para você continuar cadastrando!</p>
+                        <p><strong>Dica de uso (Tempo Real Ativado):</strong> Você não precisa clicar em um botão para salvar. Ao preencher o <span class="font-bold underline">ID Cliente</span> e o <span class="font-bold underline">Item</span>, o sistema salva e cria o registro automaticamente em tempo real na nuvem no momento em que você edita. Quando você preencher a última linha, clique em Adicionar Linha Vazia para continuar!</p>
                     </div>
                 </div>
                 
                 <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 sticky bottom-0 z-10">
                     <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
-                    <!-- ADIÇÃO: Alterna botão dependendo do modo -->
                     <button v-if="!modoPlanilha" type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Finalizar Cadastro</button>
                     <button v-else type="button" @click="salvarTodaPlanilha" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Salvar e Fechar</button>
                 </div>
@@ -1113,8 +1094,17 @@
         </div>
     </transition>
 
-    <script>
-        const { createApp } = Vue;
+    <!-- SCRIPT DE INICIALIZAÇÃO COMO MODULE PARA O FIREBASE REALTIME -->
+    <script type="module">
+        // Importando Vue
+        const { createApp } = window.Vue;
+
+        // Importando o SDK do Firestore
+        import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        
+        // Importando o Banco de dados a partir da sua configuração. 
+        // IMPORTANTE: Adicione 'export { db };' no final do arquivo 'firebase-config.js'.
+        import { db } from './firebase-config.js';
 
         createApp({
             data() {
@@ -1136,7 +1126,7 @@
 
                     openDropdownId: null,
                     openFilterDropdown: null,
-                    openReportMenu: false, // Variável para controlar dropdown de relatórios
+                    openReportMenu: false,
 
                     showTVConfig: false,
                     isTVMode: false,
@@ -1203,6 +1193,17 @@
                     financas: []
                 };
             },
+            mounted() {
+                // LISTENER TEMPO REAL (REAL-TIME) PARA PEDIDOS
+                onSnapshot(collection(db, 'pedidos'), (snapshot) => {
+                    this.pedidos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                });
+
+                // LISTENER TEMPO REAL (REAL-TIME) PARA FINANÇAS
+                onSnapshot(collection(db, 'financas'), (snapshot) => {
+                    this.financas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                });
+            },
             computed: {
                 filteredItems() {
                     let result = this.pedidos;
@@ -1245,10 +1246,10 @@
                     return [...this.financas].sort((a, b) => new Date(b.data) - new Date(a.data));
                 },
                 totalEntradas() {
-                    return this.financas.filter(f => f.tipo === 'Entrada' && f.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
+                    return this.financas.filter(f => f.tipo === 'Entrada' && f.status === 'Pago').reduce((acc, curr) => acc + Number(curr.valor), 0);
                 },
                 totalSaidas() {
-                    return this.financas.filter(f => f.tipo === 'Saída' && f.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
+                    return this.financas.filter(f => f.tipo === 'Saída' && f.status === 'Pago').reduce((acc, curr) => acc + Number(curr.valor), 0);
                 },
                 saldoTotal() {
                     return this.totalEntradas - this.totalSaidas;
@@ -1405,9 +1406,17 @@
                     this.copiedId = text;
                     setTimeout(() => this.copiedId = null, 2000);
                 },
-                updatePedidoFirebase(item) {
-                    // Update Firebase placeholder
-                    console.log("Item atualizado no banco", item);
+                // Atualiza item no banco Firebase instantaneamente
+                async updatePedidoFirebase(item) {
+                    if(item.id) {
+                        try {
+                            const dataToUpdate = { ...item };
+                            delete dataToUpdate.id; // Remover o ID do payload
+                            await updateDoc(doc(db, "pedidos", item.id), dataToUpdate);
+                        } catch (error) {
+                            console.error("Erro ao atualizar o Firebase: ", error);
+                        }
+                    }
                 },
                 openStatusMenu(item, event) {
                     this.activeStatusItem = item;
@@ -1429,13 +1438,18 @@
                     this.deleteType = '';
                     this.showDeleteModal = false;
                 },
-                executeDelete() {
-                    if (this.deleteType === 'pedido') {
-                        this.pedidos = this.pedidos.filter(p => p.id !== this.itemToDelete);
-                    } else {
-                        this.financas = this.financas.filter(f => f.id !== this.itemToDelete);
+                // Exclusão no banco de dados Firebase
+                async executeDelete() {
+                    try {
+                        if (this.deleteType === 'pedido') {
+                            await deleteDoc(doc(db, "pedidos", this.itemToDelete));
+                        } else {
+                            await deleteDoc(doc(db, "financas", this.itemToDelete));
+                        }
+                        this.cancelDelete();
+                    } catch(error) {
+                        console.error("Erro ao excluir do Firebase: ", error);
                     }
-                    this.cancelDelete();
                 },
                 openAnalise() {
                     this.previousTab = this.activeTab;
@@ -1457,40 +1471,104 @@
                 closeModalPedidos() {
                     this.showModalPedidos = false;
                 },
+                closeModalFinancas() {
+                    this.showModalFinancas = false;
+                },
                 addNovoItemPedido() {
                     this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
                 },
                 removerItemPedido(index) {
                     this.form.itensPedido.splice(index, 1);
                 },
-                savePedido() {
-                    this.form.itensPedido.forEach((it, idx) => {
-                        this.pedidos.push({
-                            id: Date.now() + idx,
-                            loja: this.form.loja,
-                            data: this.form.data,
-                            idCliente: this.form.idCliente,
-                            nomeCrianca: this.form.nomeCrianca,
-                            idade: this.form.idade,
-                            tema: this.form.tema,
-                            nf: this.form.nf,
-                            sab: this.form.sab,
-                            item: it.item,
-                            qtd: it.qtd,
-                            recorte: it.recorte,
-                            status: 'Com informações'
-                        });
-                    });
-                    this.closeModalPedidos();
-                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false }];
-                    this.form.idCliente = '';
-                    this.form.nomeCrianca = '';
-                    this.form.idade = '';
-                    this.form.tema = '';
+                
+                // SALVAR NOVO PEDIDO PADRÃO NO FIREBASE
+                async savePedido() {
+                    try {
+                        // Cria um registro no firebase para cada item do pedido
+                        for (let it of this.form.itensPedido) {
+                            const novoPedido = {
+                                loja: this.form.loja,
+                                data: this.form.data,
+                                idCliente: this.form.idCliente,
+                                nomeCrianca: this.form.nomeCrianca,
+                                idade: this.form.idade,
+                                tema: this.form.tema,
+                                nf: this.form.nf,
+                                sab: this.form.sab,
+                                item: it.item,
+                                qtd: it.qtd,
+                                recorte: it.recorte,
+                                status: 'Com informações'
+                            };
+                            await addDoc(collection(db, "pedidos"), novoPedido);
+                        }
+                        
+                        // Reseta o formulário
+                        this.form = {
+                            loja: 'Elohim',
+                            data: new Date().toISOString().split('T')[0],
+                            idCliente: '',
+                            nomeCrianca: '',
+                            idade: '',
+                            tema: '',
+                            nf: false,
+                            sab: false,
+                            itensPedido: [{ item: '', qtd: 1, recorte: false }]
+                        };
+                        this.closeModalPedidos();
+                    } catch(error) {
+                        console.error("Erro ao salvar pedido: ", error);
+                    }
                 },
-                autoSavePlanilhaRow(linha) {
-                    if(linha.idCliente && linha.item) {
-                        console.log("Planilha auto-salva:", linha);
+
+                // SALVAR NOVO LANÇAMENTO FINANCEIRO NO FIREBASE
+                async saveFinanca() {
+                    try {
+                        const novaFinanca = {
+                            tipo: this.formFin.tipo,
+                            descricao: this.formFin.descricao,
+                            data: this.formFin.data,
+                            valor: Number(this.formFin.valor),
+                            status: this.formFin.status
+                        };
+                        
+                        await addDoc(collection(db, "financas"), novaFinanca);
+                        
+                        // Reseta o formulário
+                        this.formFin = {
+                            tipo: 'Entrada',
+                            descricao: '',
+                            data: new Date().toISOString().split('T')[0],
+                            valor: 0,
+                            status: 'Pago'
+                        };
+                        this.closeModalFinancas();
+                    } catch(error) {
+                        console.error("Erro ao salvar financa: ", error);
+                    }
+                },
+
+                // AUTOSAVE DO MODO PLANILHA
+                async autoSavePlanilhaRow(linha) {
+                    if (linha.idCliente && linha.item) {
+                        try {
+                            const dataToSave = { ...linha };
+                            delete dataToSave.idTemp; // Não queremos salvar a key temporária
+                            
+                            if (linha.id) {
+                                // Se a linha já tem ID gerado pelo Firebase, atualizamos
+                                const rowId = dataToSave.id;
+                                delete dataToSave.id;
+                                await updateDoc(doc(db, "pedidos", rowId), dataToSave);
+                            } else {
+                                // Senão, criamos um novo
+                                dataToSave.status = 'Com informações';
+                                const docRef = await addDoc(collection(db, "pedidos"), dataToSave);
+                                linha.id = docRef.id; // Anexamos o ID real retornado
+                            }
+                        } catch (error) {
+                            console.error("Erro ao salvar célula da planilha: ", error);
+                        }
                     }
                 },
                 addPlanilhaRow() {
@@ -1510,179 +1588,39 @@
                     });
                 },
                 removePlanilhaRow(index) {
+                    const linha = this.planilhaLinhas[index];
+                    if (linha.id) {
+                        // Se já existia no banco de dados, a exclusão remove de lá
+                        deleteDoc(doc(db, "pedidos", linha.id)).catch(e => console.error(e));
+                    }
                     this.planilhaLinhas.splice(index, 1);
-                    if(this.planilhaLinhas.length === 0) this.addPlanilhaRow();
+                    if (this.planilhaLinhas.length === 0) this.addPlanilhaRow();
                 },
                 salvarTodaPlanilha() {
-                    this.planilhaLinhas.forEach((linha, idx) => {
-                        if(linha.idCliente && linha.item) {
-                            this.pedidos.push({
-                                id: Date.now() + idx,
-                                loja: linha.loja,
-                                data: linha.data,
-                                idCliente: linha.idCliente,
-                                nomeCrianca: linha.nomeCrianca,
-                                idade: linha.idade,
-                                tema: linha.tema,
-                                nf: linha.nf,
-                                sab: linha.sab,
-                                item: linha.item,
-                                qtd: linha.qtd,
-                                recorte: linha.recorte,
-                                status: 'Com informações'
-                            });
-                        }
-                    });
-                    this.planilhaLinhas = [];
-                    this.addPlanilhaRow();
+                    // O banco já está atualizado em tempo real pelo 'autoSavePlanilhaRow', 
+                    // a função apenas reinicia o modal da planilha.
                     this.closeModalPedidos();
-                },
-                closeModalFinancas() {
-                    this.showModalFinancas = false;
-                },
-                saveFinanca() {
-                    this.financas.push({
-                        id: Date.now(),
-                        tipo: this.formFin.tipo,
-                        descricao: this.formFin.descricao,
-                        data: this.formFin.data,
-                        valor: this.formFin.valor,
-                        status: this.formFin.status
-                    });
-                    this.closeModalFinancas();
-                    this.formFin.descricao = '';
-                    this.formFin.valor = 0;
+                    this.planilhaLinhas = [{
+                        idTemp: Date.now(),
+                        loja: 'Elohim',
+                        data: new Date().toISOString().split('T')[0],
+                        idCliente: '',
+                        nomeCrianca: '',
+                        idade: '',
+                        tema: '',
+                        item: '',
+                        qtd: 1,
+                        recorte: false,
+                        nf: false,
+                        sab: false
+                    }];
                 },
 
-                // ===============================================
-                // MÉTODOS PODEROSOS DE GERAÇÃO DE RELATÓRIO
-                // ===============================================
+                // GERAÇÃO DE RELATÓRIO
                 gerarRelatorio(tipo) {
+                    alert("A geração do " + (tipo === 'pdf' ? "PDF" : "CSV") + " será implementada de acordo com as necessidades gráficas!");
                     this.openReportMenu = false;
-                    let dados = [];
-                    let colunas = [];
-                    let titulo = "";
-                    
-                    if (this.activeTab === 'pedidos') {
-                        titulo = "Relatório de Pedidos";
-                        colunas = ["Data", "Loja", "ID Cliente", "Item", "Qtd", "Tema", "Criança", "Status"];
-                        dados = this.filteredItems.map(item => [
-                            this.formatDate(item.data),
-                            item.loja,
-                            item.idCliente,
-                            item.item,
-                            item.qtd,
-                            item.tema || '-',
-                            item.nomeCrianca || '-',
-                            item.status
-                        ]);
-                    } else if (this.activeTab === 'financas') {
-                        titulo = "Relatório Financeiro";
-                        colunas = ["Data", "Descrição", "Tipo", "Status", "Valor"];
-                        dados = this.financasSorted.map(fin => [
-                            this.formatDate(fin.data),
-                            fin.descricao,
-                            fin.tipo,
-                            fin.status,
-                            this.formatCurrency(fin.valor)
-                        ]);
-                    } else {
-                        alert("Acesse a aba Pedidos ou Finanças para gerar um relatório.");
-                        return;
-                    }
-
-                    if (dados.length === 0) {
-                        alert("Não há dados visíveis na tela para exportar.");
-                        return;
-                    }
-
-                    if (tipo === 'pdf') {
-                        this.gerarPDF(titulo, colunas, dados);
-                    } else if (tipo === 'excel') {
-                        this.gerarCSV(titulo, colunas, dados);
-                    }
-                },
-                
-                gerarPDF(titulo, colunas, dados) {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('landscape'); // Formato paisagem para caber mais dados
-                    
-                    // Design moderno para o cabeçalho PDF
-                    doc.setFillColor(9, 9, 11); // Cor escura Premium (zinc-950)
-                    doc.rect(0, 0, doc.internal.pageSize.width, 25, 'F');
-                    
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(14);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("Elohim e Kadosh", 14, 12);
-                    
-                    doc.setFontSize(9);
-                    doc.setFont("helvetica", "normal");
-                    doc.text("Gestão de Pedidos - " + titulo, 14, 18);
-                    
-                    doc.setTextColor(200, 200, 200);
-                    doc.setFontSize(8);
-                    const dataAtual = new Date().toLocaleString('pt-BR');
-                    doc.text("Gerado em: " + dataAtual, doc.internal.pageSize.width - 60, 15);
-
-                    // Criação da tabela linda
-                    doc.autoTable({
-                        head: [colunas],
-                        body: dados,
-                        startY: 30,
-                        theme: 'grid',
-                        styles: { 
-                            font: 'helvetica', 
-                            fontSize: 8, 
-                            cellPadding: 4, 
-                            textColor: [50, 50, 50],
-                            lineColor: [226, 232, 240], // Linhas suaves
-                            lineWidth: 0.1
-                        },
-                        headStyles: { 
-                            fillColor: [79, 70, 229], // Indigo 600 Moderno
-                            textColor: [255, 255, 255], 
-                            fontStyle: 'bold', 
-                            halign: 'center' 
-                        },
-                        alternateRowStyles: { 
-                            fillColor: [248, 250, 252] // Fundo alternado Slate 50
-                        },
-                    });
-
-                    doc.save(titulo.replace(/\s+/g, '_').toLowerCase() + ".pdf");
-                },
-                
-                gerarCSV(titulo, colunas, dados) {
-                    // Prepara Excel/CSV adicionando marca BOM (\uFEFF) pra não bugar os acentos
-                    let csvContent = "\uFEFF"; 
-                    csvContent += colunas.join(";") + "\r\n";
-                    
-                    dados.forEach(rowArray => {
-                        let row = rowArray.map(item => {
-                            let cell = String(item !== null && item !== undefined ? item : '');
-                            return `"${cell.replace(/"/g, '""')}"`;
-                        }).join(";");
-                        csvContent += row + "\r\n";
-                    });
-
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement("a");
-                    if (link.download !== undefined) {
-                        const url = URL.createObjectURL(blob);
-                        link.setAttribute("href", url);
-                        link.setAttribute("download", titulo.replace(/\s+/g, '_').toLowerCase() + ".csv");
-                        link.style.visibility = 'hidden';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }
                 }
-            },
-            mounted() {
-                // Iniciação base das variáveis 
-                this.pedidos = [];
-                this.financas = [];
             }
         }).mount('#app');
     </script>
