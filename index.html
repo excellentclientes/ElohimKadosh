@@ -101,7 +101,7 @@
                     </a>
                 </nav>
 
-                <!-- Botão Exportar Relatório com opções de Cores -->
+                <!-- Botão Exportar Relatório com Opções Avançadas -->
                 <div class="relative group hidden lg:block" @click.stop>
                     <button @click="openReportMenu = !openReportMenu" title="Gerar Relatório" 
                             class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
@@ -1811,7 +1811,8 @@
                         link.click();
                         document.body.removeChild(link);
                     }
-                },
+                }
+            },
             mounted() {
                 const initFirebase = () => {
                     if (window.FirebaseDB) {
