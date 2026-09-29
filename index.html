@@ -1665,19 +1665,23 @@
                     
                     if (this.activeTab === 'pedidos') {
                         titulo = "Relatório de Pedidos";
-                        colunas = ["Data", "Loja", "ID Cliente", "Item", "Qtd", "Tema", "Criança", "Status"];
+                        colunas = ["Data", "Loja", "ID Cliente", "Criança", "Idade", "Tema", "Item", "Qtd", "Recorte", "NF", "Sab", "Status"];
                         dados = this.filteredItems.map(item => [
                             this.formatDate(item.data),
                             item.loja,
-                            item.idCliente,
+                            "#" + item.idCliente,
+                            item.nomeCrianca || '-',
+                            item.idade || '-',
+                            item.tema || '-',
                             item.item,
                             item.qtd,
-                            item.tema || '-',
-                            item.nomeCrianca || '-',
+                            item.recorte ? "Sim" : "Não",
+                            item.nf ? "Sim" : "Não",
+                            item.sab ? "Sim" : "Não",
                             item.status
                         ]);
                     } else if (this.activeTab === 'financas') {
-                        titulo = "Relatório Financeiro";
+                        titulo = "Relatório de Finanças";
                         colunas = ["Data", "Descrição", "Tipo", "Status", "Valor"];
                         dados = this.financasSorted.map(fin => [
                             this.formatDate(fin.data),
@@ -1705,50 +1709,79 @@
                 
                 gerarPDF(titulo, colunas, dados) {
                     const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('landscape');
+                    const doc = new jsPDF('landscape'); // Orientação horizontal para caber todos os cabeçalhos
                     
-                    doc.setFillColor(9, 9, 11);
-                    doc.rect(0, 0, doc.internal.pageSize.width, 25, 'F');
+                    // Cabeçalho superior executivo escuro
+                    doc.setFillColor(15, 23, 42); // Slate 900
+                    doc.rect(0, 0, doc.internal.pageSize.width, 28, 'F');
                     
+                    // Barra de destaque colorida
+                    doc.setFillColor(79, 70, 229); // Indigo 600
+                    doc.rect(0, 28, doc.internal.pageSize.width, 2, 'F');
+
+                    // Títulos institucionais
                     doc.setTextColor(255, 255, 255);
                     doc.setFontSize(14);
                     doc.setFont("helvetica", "bold");
                     doc.text("Elohim e Kadosh", 14, 12);
                     
-                    doc.setFontSize(9);
+                    doc.setFontSize(10);
                     doc.setFont("helvetica", "normal");
-                    doc.text("Gestão de Pedidos - " + titulo, 14, 18);
+                    doc.setTextColor(148, 163, 184); // Slate 400
+                    doc.text(titulo, 14, 20);
                     
-                    doc.setTextColor(200, 200, 200);
+                    // Data e hora de emissão no canto direito superior
                     doc.setFontSize(8);
-                    const dataAtual = new Date().toLocaleString('pt-BR');
-                    doc.text("Gerado em: " + dataAtual, doc.internal.pageSize.width - 60, 15);
+                    doc.text("Gerado em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 15, 17, { align: 'right' });
 
+                    // Tabela moderna com AutoTable
                     doc.autoTable({
                         head: [colunas],
                         body: dados,
-                        startY: 30,
+                        startY: 36,
                         theme: 'grid',
                         styles: { 
                             font: 'helvetica', 
-                            fontSize: 8, 
-                            cellPadding: 4, 
-                            textColor: [50, 50, 50],
-                            lineColor: [226, 232, 240],
-                            lineWidth: 0.1
+                            fontSize: 8.5, 
+                            cellPadding: 4.5, 
+                            textColor: [30, 41, 59], // Slate 800
+                            lineColor: [226, 232, 240], // Slate 200
+                            lineWidth: 0.1,
+                            valign: 'middle',
+                            halign: 'center'
                         },
                         headStyles: { 
-                            fillColor: [79, 70, 229], 
+                            fillColor: [79, 70, 229], // Indigo 600
                             textColor: [255, 255, 255], 
                             fontStyle: 'bold', 
-                            halign: 'center' 
+                            halign: 'center',
+                            cellPadding: 5
                         },
                         alternateRowStyles: { 
-                            fillColor: [248, 250, 252] 
+                            fillColor: [248, 250, 252] // Slate 50
                         },
+                        didDrawPage: (data) => {
+                            // Rodapé profissional com numeração de páginas dinâmicas
+                            const pageCount = doc.internal.getNumberOfPages();
+                            doc.setFontSize(8);
+                            doc.setTextColor(148, 163, 184);
+                            doc.text(
+                                `Página ${data.pageNumber} de ${pageCount}`, 
+                                doc.internal.pageSize.width - 15, 
+                                doc.internal.pageSize.height - 10, 
+                                { align: 'right' }
+                            );
+                            doc.text(
+                                "Elohim e Kadosh - Sistema de Gestão Premium", 
+                                15, 
+                                doc.internal.pageSize.height - 10
+                            );
+                        }
                     });
 
-                    doc.save(titulo.replace(/\s+/g, '_').toLowerCase() + ".pdf");
+                    // Nome limpo do arquivo conforme solicitado
+                    const nomeArquivo = titulo.toLowerCase().includes('finan') ? 'relatorio_de_financas.pdf' : 'relatorio_de_pedidos.pdf';
+                    doc.save(nomeArquivo);
                 },
                 
                 gerarCSV(titulo, colunas, dados) {
