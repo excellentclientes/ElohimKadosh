@@ -14,20 +14,54 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- ApexCharts -->
+    <!-- ApexCharts (Para os gráficos modernos) -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- ARQUIVO CSS EXTERNO -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        .scale-enter-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .scale-leave-active { transition: all 0.2s ease; }
+        .scale-enter-from, .scale-leave-to { opacity: 0; transform: scale(0.97) translateY(10px); }
+
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+        
+        .glow-pulse { animation: glow 2s infinite alternate; }
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px currentColor, 0 0 10px currentColor; }
+            100% { box-shadow: 0 0 2px currentColor, 0 0 5px currentColor; opacity: 0.8; }
+        }
+
+        /* HEADER PRETO FOSCO PERMANENTE */
+        header { 
+            background-color: #09090b !important; 
+            border-bottom-color: #27272a !important; 
+        }
+
+        select::-ms-expand { display: none; }
+    </style>
 </head>
 <body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
 
     <!-- CABEÇALHO SUPERIOR (PRETO FOSCO) -->
     <header class="sticky top-0 z-40 shadow-xl transition-colors">
         <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
+            
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
                     <i class="ph-fill ph-crown text-xl"></i>
@@ -50,7 +84,8 @@
                     </a>
                 </nav>
 
-                <button @click="openAnalise" title="Análise" class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner hidden lg:flex bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
+                <button @click="openAnalise" title="Análise" 
+                        class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner hidden lg:flex bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
                     <i class="ph-bold ph-chart-bar text-xl"></i>
                 </button>
                 
@@ -67,6 +102,7 @@
         <div v-if="activeTab === 'pedidos'">
             <!-- Topbar de Ações e Ordenação -->
             <div class="flex flex-col mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <!-- Linha Superior Fixa -->
                 <div class="flex flex-col xl:flex-row justify-between items-center gap-3 w-full">
                     
                     <!-- Campo de Pesquisa -->
@@ -81,7 +117,8 @@
 
                     <!-- Filtro por Loja -->
                     <div class="relative w-full sm:w-auto shrink-0 group" @click.stop>
-                        <div @click="openFilterDropdown = openFilterDropdown === 'loja' ? null : 'loja'" class="w-full sm:w-44 bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-2xl pl-10 pr-8 py-3 cursor-pointer outline-none transition-all shadow-sm flex items-center justify-between">
+                        <div @click="openFilterDropdown = openFilterDropdown === 'loja' ? null : 'loja'" 
+                             class="w-full sm:w-44 bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-2xl pl-10 pr-8 py-3 cursor-pointer outline-none transition-all shadow-sm flex items-center justify-between">
                             <div class="absolute left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="ph-fill ph-storefront text-indigo-500 text-lg"></i>
                             </div>
@@ -104,7 +141,8 @@
                             <!-- Controle de Ordenação -->
                             <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
                                 <div class="relative group" @click.stop>
-                                    <div @click="openFilterDropdown = openFilterDropdown === 'sort' ? null : 'sort'" class="bg-slate-100 hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-xl pl-8 pr-8 py-2 cursor-pointer outline-none transition-all shadow-sm w-44 flex items-center justify-between">
+                                    <div @click="openFilterDropdown = openFilterDropdown === 'sort' ? null : 'sort'" 
+                                         class="bg-slate-100 hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-xl pl-8 pr-8 py-2 cursor-pointer outline-none transition-all shadow-sm w-44 flex items-center justify-between">
                                         <div class="absolute left-0 pl-3 flex items-center pointer-events-none">
                                             <i class="ph-bold ph-arrows-down-up text-indigo-500 text-sm"></i>
                                         </div>
@@ -115,13 +153,16 @@
                                     </div>
                                     <transition name="fade">
                                         <div v-if="openFilterDropdown === 'sort'" class="absolute z-50 top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
-                                            <div v-for="option in sortOptions" :key="option.value" @click="sortKey = option.value; openFilterDropdown = null" class="px-4 py-2 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="sortKey === option.value ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                                            <div v-for="option in sortOptions" :key="option.value" 
+                                                 @click="sortKey = option.value; openFilterDropdown = null" 
+                                                 class="px-4 py-2 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
+                                                 :class="sortKey === option.value ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
                                                 {{ option.label }}
                                             </div>
                                         </div>
                                     </transition>
                                 </div>
-                                <button @click="toggleSortOrder" class="w-8 h-8 flex items-center justify-center bg-white rounded-xl shadow-sm hover:shadow text-indigo-600 transition-all border border-slate-200 hover:border-indigo-300 ml-1">
+                                <button @click="toggleSortOrder" title="Alternar direção da ordem" class="w-8 h-8 flex items-center justify-center bg-white rounded-xl shadow-sm hover:shadow text-indigo-600 transition-all border border-slate-200 hover:border-indigo-300 ml-1">
                                     <i :class="sortOrder === 'asc' ? 'ph-bold ph-arrow-up' : 'ph-bold ph-arrow-down'" class="text-sm"></i>
                                 </button>
                             </div>
@@ -158,7 +199,7 @@
                 </div>
             </div>
 
-            <!-- Cards de Status -->
+            <!-- Cards de Status Elegantes -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
                 <div v-for="status in statuses" :key="status"
                      @click="handleCardClick(status)"
@@ -223,7 +264,6 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
-                            <!-- NOTA: Adicionado v-model.lazy e @change para salvar no firebase sem perder foco -->
                             <tr v-for="(item, index) in filteredItems" :key="item.id" 
                                 :class="['transition-colors duration-200 group border-b border-slate-200', getRowColor(item.status)]">
                                 
@@ -235,9 +275,10 @@
                                             <i class="ph-bold ph-caret-down absolute right-2.5 text-[10px] opacity-70" :class="getStatusIconColor(item.status)"></i>
                                         </div>
                                         <transition name="fade">
-                                            <div v-if="openDropdownId === item.id" class="absolute z-50 left-0 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1" :class="(filteredItems.length > 3 && index >= filteredItems.length - 2) ? 'bottom-[calc(100%+4px)]' : 'top-full mt-1'">
-                                                <!-- Atualiza status com método especifico pro firebase -->
-                                                <div v-for="s in statuses" :key="s" @click="updateStatus(item, s)" 
+                                            <div v-if="openDropdownId === item.id" 
+                                                 class="absolute z-50 left-0 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1"
+                                                 :class="(filteredItems.length > 3 && index >= filteredItems.length - 2) ? 'bottom-[calc(100%+4px)]' : 'top-full mt-1'">
+                                                <div v-for="s in statuses" :key="s" @click="item.status = s; openDropdownId = null" 
                                                      class="px-4 py-2 text-[11px] font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
                                                      :class="s === item.status ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
                                                     {{ s }}
@@ -251,11 +292,15 @@
                                 <td class="px-3 py-3 font-bold text-slate-900 text-xs">{{ item.loja }}</td>
                                 
                                 <td class="px-3 py-3">
-                                    <button @click="copyToClipboard(item.idCliente)" class="group/copy relative text-slate-800 font-mono text-[11px] bg-transparent hover:bg-white border border-transparent hover:border-slate-300 focus:border-indigo-400 rounded-md px-1.5 py-1 font-bold transition-all inline-flex items-center gap-1 shadow-none hover:shadow-sm">
+                                    <button @click="copyToClipboard(item.idCliente)" 
+                                            title="Clique para copiar ID" 
+                                            class="group/copy relative text-slate-800 font-mono text-[11px] bg-transparent hover:bg-white border border-transparent hover:border-slate-300 focus:border-indigo-400 rounded-md px-1.5 py-1 font-bold transition-all inline-flex items-center gap-1 active:scale-95 shadow-none hover:shadow-sm">
                                         #{{ item.idCliente }}
                                         <i class="ph-bold ph-copy text-[10px] opacity-0 group-hover/copy:opacity-100 text-slate-400 group-hover/copy:text-indigo-600 transition-opacity"></i>
+                                        
                                         <transition name="fade">
-                                            <span v-if="copiedId === item.idCliente" class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-sans font-bold py-1 px-2 rounded-lg shadow-lg whitespace-nowrap z-20 flex items-center gap-1">
+                                            <span v-if="copiedId === item.idCliente" 
+                                                  class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-sans font-bold py-1 px-2 rounded-lg shadow-lg whitespace-nowrap z-20 flex items-center gap-1">
                                                 <i class="ph-bold ph-check text-emerald-400"></i> Copiado!
                                             </span>
                                         </transition>
@@ -263,42 +308,42 @@
                                 </td>
 
                                 <td class="px-3 py-3 font-bold text-slate-900">
-                                    <input type="text" v-model.lazy="item.item" @change="updatePedidoInline(item)"
+                                    <input type="text" v-model="item.item" 
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-slate-900 text-xs">
                                 </td>
 
                                 <td class="px-2 py-3 text-center">
-                                    <input type="number" min="1" v-model.number.lazy="item.qtd" @change="updatePedidoInline(item)"
+                                    <input type="number" min="1" v-model.number="item.qtd" 
                                            class="bg-transparent w-10 h-7 text-center rounded-lg border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white outline-none font-bold text-xs text-slate-900 transition-all">
                                 </td>
 
                                 <td class="px-3 py-3 font-bold text-slate-800">
-                                    <input type="text" v-model.lazy="item.tema" placeholder="-" @change="updatePedidoInline(item)"
+                                    <input type="text" v-model="item.tema" placeholder="-" 
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-slate-800 text-xs">
                                 </td>
 
                                 <td class="px-3 py-3 font-semibold text-slate-800">
-                                    <input type="text" v-model.lazy="item.nomeCrianca" placeholder="-" @change="updatePedidoInline(item)"
+                                    <input type="text" v-model="item.nomeCrianca" placeholder="-" 
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-slate-800 text-xs">
                                 </td>
 
                                 <td class="px-2 py-3 font-semibold text-slate-800">
-                                    <input type="text" v-model.lazy="item.idade" placeholder="-" @change="updatePedidoInline(item)"
+                                    <input type="text" v-model="item.idade" placeholder="-" 
                                            class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-slate-800 text-xs">
                                 </td>
                                 
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.recorte = !item.recorte; updatePedidoInline(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                    <button @click="item.recorte = !item.recorte" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.nf = !item.nf; updatePedidoInline(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                    <button @click="item.nf = !item.nf" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.sab = !item.sab; updatePedidoInline(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                    <button @click="item.sab = !item.sab" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
                                         <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
@@ -335,7 +380,6 @@
         <!-- ABA: FINANÇAS                              -->
         <!-- ========================================== -->
         <div v-else-if="activeTab === 'financas'">
-            <!-- ... O CONTEÚDO DE FINANÇAS PERMANECE EXATAMENTE IGUAL AO SEU ORIGINAL ... -->
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 px-2">
                     <i class="ph-fill ph-wallet text-emerald-500 text-2xl"></i> Gestão Financeira
@@ -426,106 +470,621 @@
                 </div>
             </div>
         </div>
-        
-        <!-- O RESTANTE DO HTML (MODAIS, TELA DE ANALISE, MODO TV) PERMANECE EXATAMENTE IGUAL -->
-        <!-- Colete aqui os blocos <transition name="fade"> referentes aos Modais (Delete, TV, Novo Pedido, Nova Finança) que estão no seu código original -->
-        <!-- Omitido para não estourar o limite de resposta, mas o seu HTML dessas divs fica inalterado -->
 
     </main>
 
-    <!-- ====== SCRIPT COM FIREBASE ====== -->
-    <!-- Type module para permitir imports no navegador direto dos CDNs oficiais do Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    <!-- ========================================== -->
+    <!-- TELA DE ANÁLISE (MODO EXECUTIVO NO-SCROLL) -->
+    <!-- ========================================== -->
+    <transition name="fade">
+        <div v-if="activeTab === 'analise'" class="fixed inset-0 z-50 bg-[#f8fafc] flex flex-col p-4 md:p-6 lg:p-8 overflow-hidden h-full w-full">
+            
+            <!-- Header da Tela de Análise -->
+            <div class="flex justify-between items-center mb-4 bg-white p-4 lg:px-6 rounded-3xl shadow-sm border border-slate-200 shrink-0">
+                <h2 class="text-xl font-black text-slate-800 flex items-center gap-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg', previousTab === 'financas' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-indigo-500 shadow-indigo-500/30']">
+                        <i :class="['ph-bold text-xl', previousTab === 'financas' ? 'ph-currency-dollar' : 'ph-chart-line-up']"></i>
+                    </div>
+                    Análise de {{ previousTab === 'financas' ? 'Finanças' : 'Pedidos' }}
+                </h2>
+                <button @click="activeTab = previousTab" class="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-sm">
+                    <i class="ph-bold ph-arrow-left"></i> Voltar
+                </button>
+            </div>
+            
+            <!-- Contexto: Pedidos (Layout ajustado para visibilidade total) -->
+            <div v-if="previousTab === 'pedidos'" class="flex-1 flex flex-col gap-4 overflow-hidden min-h-0">
+                
+                <!-- TOP CONTROL BAR: Chave de Loja e KPIs Estratégicos -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 flex justify-between items-center shrink-0">
+                    <!-- Chave Moderna de Ativação -->
+                    <div class="flex items-center p-1 bg-slate-100/80 rounded-xl border border-slate-200/60 shadow-inner">
+                        <button @click="analiseLoja = 'Ambas'" :class="analiseLoja === 'Ambas' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Ambas</button>
+                        <button @click="analiseLoja = 'Elohim'" :class="analiseLoja === 'Elohim' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Elohim</button>
+                        <button @click="analiseLoja = 'Kadosh'" :class="analiseLoja === 'Kadosh' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Kadosh</button>
+                    </div>
+                    
+                    <!-- KPIs Pequenos num canto estratégico -->
+                    <div class="flex gap-6 items-center px-4">
+                        <div class="flex flex-col items-end">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Pedidos</span>
+                            <span class="text-2xl font-black text-slate-800 leading-none">{{ pedidosAnalise.length }}</span>
+                        </div>
+                        <div class="w-px h-8 bg-slate-200"></div>
+                        <div class="flex flex-col items-end">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Idade Média</span>
+                            <span class="text-2xl font-black text-indigo-500 leading-none">{{ idadeMedia }}</span>
+                        </div>
+                    </div>
+                </div>
 
-        // Configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyC1jwUTzCC2FRZ6FjGc0ZvI7ech7tUNwi4",
-            authDomain: "elohimekadosh.firebaseapp.com",
-            databaseURL: "https://elohimekadosh-default-rtdb.firebaseio.com",
-            projectId: "elohimekadosh",
-            storageBucket: "elohimekadosh.firebasestorage.app",
-            messagingSenderId: "830982284704",
-            appId: "1:830982284704:web:16220a5c1c98feaf5670c5"
-        };
+                <!-- MAIN GRID: Tudo visível sem rolagem -->
+                <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
+                    
+                    <!-- ESQUERDA: Antigos indicadores reestruturados -->
+                    <div class="col-span-3 flex flex-col gap-4 min-h-0">
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex-1 flex flex-col min-h-0">
+                            <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2 shrink-0">
+                                <i class="ph-bold ph-storefront text-indigo-500"></i> Volume por Loja
+                            </h3>
+                            <div class="overflow-y-auto custom-scrollbar flex-1 space-y-4 pr-1">
+                                <div v-for="loja in lojas" :key="'chart-'+loja">
+                                    <div class="flex justify-between items-center text-[11px] font-bold mb-1.5">
+                                        <span class="text-slate-600 uppercase">{{ loja }}</span>
+                                        <span class="text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{{ getLojasCountAnalise(loja) }}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                        <div :class="['h-full rounded-full transition-all duration-1000', loja === 'Elohim' ? 'bg-indigo-500' : 'bg-blue-500']" 
+                                             :style="{ width: Math.max((getLojasCountAnalise(loja) / Math.max(pedidosAnalise.length, 1)) * 100, 1) + '%' }">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex-1 flex flex-col min-h-0">
+                            <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2 shrink-0">
+                                <i class="ph-bold ph-chart-pie-slice text-indigo-500"></i> Status Atual
+                            </h3>
+                            <div class="overflow-y-auto custom-scrollbar flex-1 space-y-4 pr-1">
+                                <div v-for="status in statuses" :key="'chart-'+status">
+                                    <div class="flex justify-between items-center text-[10px] font-bold mb-1.5">
+                                        <span class="text-slate-600 uppercase">{{ status }}</span>
+                                        <span class="text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{{ statusCountsAnalise[status] }}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner">
+                                        <div :class="['h-full rounded-full transition-all duration-1000', getCardBarAccent(status)]" 
+                                             :style="{ width: Math.max((statusCountsAnalise[status] / Math.max(...Object.values(statusCountsAnalise), 1)) * 100, 1) + '%' }">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+                    <!-- DIREITA: Novos Gráficos Inteligentes -->
+                    <div class="col-span-9 flex flex-col gap-4 min-h-0">
+                        
+                        <!-- 3 Gráficos em Coluna Modernos -->
+                        <div class="flex-1 grid grid-cols-3 gap-4 min-h-0">
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Recorte vs Sem Recorte</h4>
+                                <div id="chart-recorte" class="flex-1 w-full min-h-0"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">NF vs Sem NF</h4>
+                                <div id="chart-nf" class="flex-1 w-full min-h-0"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Sábado vs Sem Sábado</h4>
+                                <div id="chart-sab" class="flex-1 w-full min-h-0"></div>
+                            </div>
+                        </div>
 
+                        <!-- Gráfico de Linha Comparativo Arredondado -->
+                        <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Comparativo de Lojas por Data</h4>
+                            <div id="chart-lojas" class="flex-1 w-full min-h-0"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contexto: Finanças (Mantido igual) -->
+            <div v-else class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+                <!-- Esquerda: Resumo Financeiro -->
+                <div class="flex flex-col gap-6 overflow-hidden">
+                    <div class="grid grid-cols-2 gap-4 shrink-0">
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Entradas Totais</span>
+                            <span class="text-3xl font-black text-emerald-500">{{ formatCurrency(totalEntradas) }}</span>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Saídas Totais</span>
+                            <span class="text-3xl font-black text-red-500">{{ formatCurrency(totalSaidas) }}</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 rounded-3xl border border-slate-800 shadow-xl p-8 flex-1 flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Saldo Geral Consolidado</span>
+                        <span :class="['text-5xl lg:text-6xl font-black', saldoTotal >= 0 ? 'text-emerald-400' : 'text-red-400']">{{ formatCurrency(saldoTotal) }}</span>
+                    </div>
+                </div>
+                
+                <!-- Direita: Gráficos Financeiros Detalhados -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 flex flex-col overflow-y-auto custom-scrollbar">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 shrink-0">
+                        <i class="ph-bold ph-chart-donut text-emerald-500"></i> Distribuição e Status
+                    </h3>
+                    
+                    <div class="space-y-10 mt-4 flex-1 flex flex-col justify-center">
+                        <div>
+                            <div class="flex justify-between items-center text-sm font-bold mb-3">
+                                <span class="text-slate-700 uppercase tracking-wider">Proporção (Entradas vs Saídas)</span>
+                            </div>
+                            <div class="w-full bg-red-400 rounded-full h-8 overflow-hidden shadow-inner flex">
+                                <div class="h-full bg-emerald-500 transition-all duration-1000" 
+                                     :style="{ width: (totalEntradas === 0 && totalSaidas === 0) ? '50%' : (totalEntradas / (totalEntradas + totalSaidas) * 100) + '%' }">
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mt-2">
+                                <span class="text-emerald-600">Entradas ({{ ((totalEntradas / (totalEntradas + totalSaidas) * 100) || 0).toFixed(1) }}%)</span>
+                                <span class="text-red-500">Saídas ({{ ((totalSaidas / (totalEntradas + totalSaidas) * 100) || 0).toFixed(1) }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-8 border-t border-slate-100">
+                            <div class="flex justify-between items-center text-sm font-bold mb-6">
+                                <span class="text-slate-700 uppercase tracking-wider">Controle de Status</span>
+                            </div>
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between items-center text-xs font-bold mb-2">
+                                        <span class="text-slate-600 uppercase">Lançamentos Pagos</span>
+                                        <span class="text-slate-800 bg-slate-100 px-3 py-1 rounded-md">{{ financas.filter(f => f.status === 'Pago').length }}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-indigo-500 rounded-full transition-all duration-1000" 
+                                             :style="{ width: Math.max((financas.filter(f => f.status === 'Pago').length / Math.max(financas.length, 1)) * 100, 1) + '%' }">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center text-xs font-bold mb-2">
+                                        <span class="text-slate-600 uppercase">Lançamentos Pendentes</span>
+                                        <span class="text-slate-800 bg-slate-100 px-3 py-1 rounded-md">{{ financas.filter(f => f.status === 'Pendente').length }}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-yellow-400 rounded-full transition-all duration-1000" 
+                                             :style="{ width: Math.max((financas.filter(f => f.status === 'Pendente').length / Math.max(financas.length, 1)) * 100, 1) + '%' }">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </transition>
+
+    <!-- MODAL CONFIRMAÇÃO DE EXCLUSÃO -->
+    <transition name="scale">
+        <div v-if="showDeleteModal" class="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="cancelDelete"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 border border-slate-200 text-center transform transition-all">
+                <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner border border-red-100">
+                    <i class="ph-fill ph-trash text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-800 mb-3">Confirmar Exclusão</h3>
+                <p class="text-sm font-medium text-slate-500 mb-8 leading-relaxed">
+                    Tem certeza que deseja excluir permanentemente este registro?<br>Esta ação não poderá ser desfeita.
+                </p>
+                <div class="flex gap-3 justify-center">
+                    <button @click="cancelDelete" class="w-full px-5 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors border border-slate-200">Cancelar</button>
+                    <button @click="executeDelete" class="w-full px-5 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all transform hover:-translate-y-0.5">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODAL: CONFIGURAR MODO TV -->
+    <transition name="scale">
+        <div v-if="showTVConfig" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showTVConfig = false"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="ph-bold ph-monitor-play text-indigo-500"></i> Configurar Modo TV
+                </h3>
+                <label class="block text-sm font-bold text-slate-600 mb-2">Quantidade máxima de pedidos:</label>
+                <input type="number" v-model.number="tvLimit" min="1" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 mb-6 transition-colors focus:border-indigo-500 focus:bg-white">
+                
+                <div class="flex gap-3 justify-end">
+                    <button @click="showTVConfig = false" class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
+                    <button @click="enterTVMode" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all">Iniciar TV</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- TELA: MODO TV -->
+    <transition name="fade">
+        <div v-if="isTVMode" class="fixed inset-0 z-[100] bg-slate-100 flex flex-col text-slate-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white shadow-sm">
+                <div class="flex items-center gap-3">
+                    <i class="ph-fill ph-monitor-play text-3xl text-indigo-600 glow-pulse"></i>
+                    <h1 class="text-2xl font-black tracking-wider uppercase text-slate-900">
+                        Modo TV <span class="text-sm text-slate-500 ml-2 font-medium tracking-normal">Acompanhamento em Tempo Real</span>
+                    </h1>
+                </div>
+                <button @click="exitTVMode" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl font-bold transition-all border border-red-200">
+                    <i class="ph-bold ph-x"></i> Sair
+                </button>
+            </div>
+            
+            <div class="flex-1 flex gap-4 p-4 overflow-hidden">
+                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
+                        <h2 class="text-xl font-black text-indigo-600 uppercase tracking-widest">Todos os Pedidos ({{tvAllOrders.length}})</h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3">Cliente / Loja</th>
+                                    <th class="px-4 py-3">Tema / Criança</th>
+                                    <th class="px-4 py-3">Item / Qtd</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr v-for="item in tvAllOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
+                                    <td class="px-4 py-3 border-l-4" :class="getRowBorderColor(item.status)">
+                                        <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
+                                        <div class="font-bold text-slate-900">{{item.loja}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-indigo-700">{{item.tema || '-'}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">{{item.nomeCrianca || '-'}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-slate-900">{{item.item}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">Qtd: {{item.qtd}}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
+                        <h2 class="text-xl font-black text-emerald-600 uppercase tracking-widest">Pedidos de Hoje ({{tvTodayOrders.length}})</h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3">Cliente / Loja</th>
+                                    <th class="px-4 py-3">Tema / Criança</th>
+                                    <th class="px-4 py-3">Item / Qtd</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr v-for="item in tvTodayOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
+                                    <td class="px-4 py-3 border-l-4" :class="getRowBorderColor(item.status)">
+                                        <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
+                                        <div class="font-bold text-slate-900">{{item.loja}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-indigo-700">{{item.tema || '-'}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">{{item.nomeCrianca || '-'}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-slate-900">{{item.item}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">Qtd: {{item.qtd}}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODAL: NOVO PEDIDO -->
+    <transition name="fade">
+        <div v-if="showModalPedidos" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalPedidos"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all border border-slate-200">
+                
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-package text-indigo-500"></i> Novo Cadastro de Pedido
+                    </h3>
+                    <button @click="closeModalPedidos" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                </div>
+                
+                <div class="p-8 overflow-y-auto flex-1 custom-scrollbar">
+                    <form @submit.prevent="savePedido" id="formPedido" class="space-y-6">
+                        
+                        <!-- DADOS GERAIS DO PEDIDO (TOPO) -->
+                        <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
+                            <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2 border-b border-slate-200 pb-2">Informações Gerais</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div class="space-y-1.5 relative" @click.stop>
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Loja *</label>
+                                    <div @click="openFilterDropdown = openFilterDropdown === 'formLoja' ? null : 'formLoja'" 
+                                         class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm cursor-pointer flex items-center justify-between">
+                                        <span>{{ form.loja || 'Selecionar...' }}</span>
+                                        <i class="ph-bold ph-caret-down text-slate-400"></i>
+                                    </div>
+                                    <transition name="fade">
+                                        <div v-if="openFilterDropdown === 'formLoja'" class="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                            <div v-for="loja in lojas" :key="loja" @click="form.loja = loja; openFilterDropdown = null" 
+                                                 class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors"
+                                                 :class="form.loja === loja ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                                                {{ loja }}
+                                            </div>
+                                        </div>
+                                    </transition>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
+                                    <input type="date" v-model="form.data" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">ID Cliente *</label>
+                                    <input type="text" v-model="form.idCliente" required placeholder="Ex: 10459" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+                                <div class="space-y-1.5 md:col-span-5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Criança</label>
+                                    <input type="text" v-model="form.nomeCrianca" placeholder="Nome da Criança" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                                <div class="space-y-1.5 md:col-span-2">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Idade</label>
+                                    <input type="text" v-model="form.idade" placeholder="Ex: 5" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm text-center">
+                                </div>
+                                <div class="space-y-1.5 md:col-span-5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Tema</label>
+                                    <input type="text" v-model="form.tema" placeholder="Tema da festa" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                            </div>
+
+                            <div class="flex gap-6 pt-2">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <div :class="['w-6 h-6 rounded flex items-center justify-center border shadow-sm transition-all', form.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-indigo-400']">
+                                        <i class="ph-bold ph-check text-sm"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Nota Fiscal (NF)</span>
+                                    <input type="checkbox" v-model="form.nf" class="hidden">
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <div :class="['w-6 h-6 rounded flex items-center justify-center border shadow-sm transition-all', form.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-amber-400']">
+                                        <i class="ph-bold ph-check text-sm"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Sábado (SAB)</span>
+                                    <input type="checkbox" v-model="form.sab" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- LISTA DE ITENS DINÂMICA -->
+                        <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Itens do Pedido</h4>
+                                <button type="button" @click="addNovoItemPedido" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-1">
+                                    <i class="ph-bold ph-plus"></i> Adicionar Item
+                                </button>
+                            </div>
+
+                            <div class="space-y-3">
+                                <transition-group name="fade">
+                                    <div v-for="(it, index) in form.itensPedido" :key="index" class="flex flex-wrap md:flex-nowrap gap-4 items-end bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm relative group">
+                                        
+                                        <div class="w-full md:w-3/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Nome do Item</label>
+                                            <input type="text" v-model="it.item" required placeholder="Ex: Cartão, Adesivo..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all shadow-sm">
+                                        </div>
+                                        
+                                        <div class="w-1/2 md:w-1/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block text-center">Quantidade</label>
+                                            <input type="number" min="1" v-model.number="it.qtd" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-center shadow-sm">
+                                        </div>
+                                        
+                                        <div class="w-1/2 md:w-1/5 flex flex-col items-center justify-end pb-1">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Recorte</label>
+                                            <button type="button" @click="it.recorte = !it.recorte" :class="['w-8 h-8 rounded flex items-center justify-center border transition-all shadow-sm', it.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-slate-300 hover:border-emerald-400']">
+                                                <i :class="['ph-bold ph-scissors text-base', it.recorte ? 'text-white' : '']"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <button v-if="form.itensPedido.length > 1" type="button" @click="removerItemPedido(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:bg-red-500 hover:text-white border border-red-200">
+                                            <i class="ph-bold ph-minus text-xs"></i>
+                                        </button>
+                                    </div>
+                                </transition-group>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
+                    <button type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Finalizar Cadastro</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODAL: NOVO LANÇAMENTO FINANCEIRO -->
+    <transition name="fade">
+        <div v-if="showModalFinancas" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalFinancas"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden transform transition-all border border-slate-200">
+                
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-receipt text-emerald-500"></i> Novo Lançamento
+                    </h3>
+                    <button @click="closeModalFinancas" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                </div>
+                
+                <div class="p-8 overflow-y-auto">
+                    <form @submit.prevent="saveFinanca" id="formFinanca" class="space-y-5">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Tipo *</label>
+                            <div class="flex gap-4">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" v-model="formFin.tipo" value="Entrada" class="peer sr-only" required>
+                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-600 transition-all shadow-sm">Entrada</div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" v-model="formFin.tipo" value="Saída" class="peer sr-only" required>
+                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-red-50 peer-checked:border-red-500 peer-checked:text-red-600 transition-all shadow-sm">Saída</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Descrição *</label>
+                            <input type="text" v-model="formFin.descricao" required placeholder="Ex: Pagamento Fornecedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
+                                <input type="date" v-model="formFin.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Valor (R$) *</label>
+                                <input type="number" step="0.01" min="0" v-model.number="formFin.valor" required placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-1.5 relative" @click.stop>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Status *</label>
+                            <div @click="openFilterDropdown = openFilterDropdown === 'formStatus' ? null : 'formStatus'" 
+                                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer flex items-center justify-between">
+                                <span>{{ formFin.status }}</span>
+                                <i class="ph-bold ph-caret-down text-slate-400"></i>
+                            </div>
+                            <transition name="fade">
+                                <div v-if="openFilterDropdown === 'formStatus'" class="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                    <div @click="formFin.status = 'Pago'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pago' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pago</div>
+                                    <div @click="formFin.status = 'Pendente'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pendente' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pendente</div>
+                                </div>
+                            </transition>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalFinancas" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
+                    <button type="submit" form="formFinanca" class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <script>
         const { createApp } = Vue;
 
         createApp({
             data() {
                 return {
-                    // ... [Suas outras variaveis mantidas (activeTab, form, search, etc)] ...
                     activeTab: 'pedidos',
                     previousTab: 'pedidos',
                     searchQuery: '',
                     filtroLoja: 'Todas', 
-                    analiseLoja: 'Ambas', 
+                    analiseLoja: 'Ambas', // Chave moderna de ativação para Análise
                     sortKey: 'id',
                     sortOrder: 'desc',
+                    
                     showModalPedidos: false,
                     showModalFinancas: false,
+                    
                     showDeleteModal: false,
                     itemToDelete: null,
                     deleteType: '',
+
                     openDropdownId: null,
                     openFilterDropdown: null,
+
                     showTVConfig: false,
                     isTVMode: false,
                     tvLimit: 10,
+                    
                     activeStatuses: [],
                     selecaoDinamica: false,
+                    
                     lojas: ['Elohim', 'Kadosh'],
                     statuses: ['Com informações', 'Sem informações', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
+                    
                     sortOptions: [
                         { value: 'id', label: 'Data de Criação' },
                         { value: 'tempo', label: 'Tempo (Dias)' },
                         { value: 'data', label: 'Data do Pedido' },
                         { value: 'status', label: 'Status' },
-                        { value: 'loja', label: 'Loja' }
+                        { value: 'loja', label: 'Loja' },
+                        { value: 'idCliente', label: 'Cliente ID' },
+                        { value: 'item', label: 'Item' },
+                        { value: 'tema', label: 'Tema' },
+                        { value: 'nomeCrianca', label: 'Criança' }
                     ],
+
                     copiedId: null,
-                    chartInstances: {},
-                    
+
+                    chartInstances: {}, // Para gerenciar as instâncias do ApexCharts dinamicamente
+
                     form: this.getInitialFormPedido(),
                     formFin: this.getInitialFormFinanca(),
                     
-                    // Arrays agora começam vazios e são preenchidos pelo Firebase
-                    pedidos: [],
-                    financas: []
+                    pedidos: [
+                        { id: 1, data: '2023-10-25', loja: 'Elohim', idCliente: '10459', item: 'Adesivo', qtd: 50, tema: 'Patrulha', nomeCrianca: 'João', idade: '5', recorte: true, nf: false, sab: true, status: 'Com informações' },
+                        { id: 2, data: '2023-10-26', loja: 'Kadosh', idCliente: '88231', item: 'Banner', qtd: 1, tema: 'Homem Aranha', nomeCrianca: 'Pedro', idade: '7', recorte: false, nf: true, sab: false, status: 'Aprovado' },
+                        { id: 3, data: '2023-10-20', loja: 'Elohim', idCliente: '33102', item: 'Cartão', qtd: 100, tema: '-', nomeCrianca: '-', idade: '-', recorte: false, nf: false, sab: false, status: 'Aguardando coleta' },
+                        { id: 4, data: '2023-10-26', loja: 'Elohim', idCliente: '11202', item: 'Caixinha', qtd: 20, tema: 'Mickey', nomeCrianca: 'Lucas', idade: '2', recorte: true, nf: true, sab: true, status: 'Finalizado' },
+                    ],
+                    
+                    financas: [
+                        { id: 1, data: '2023-10-25', descricao: 'Venda Adesivos', tipo: 'Entrada', valor: 150.00, status: 'Pago' },
+                        { id: 2, data: '2023-10-26', descricao: 'Compra Papel', tipo: 'Saída', valor: 85.50, status: 'Pago' }
+                    ]
                 }
             },
-            mounted() {
-                // Sincronização em Tempo Real (Pedidos)
-                const pedidosRef = ref(db, 'pedidos');
-                onValue(pedidosRef, (snapshot) => {
-                    const data = snapshot.val();
-                    const list = [];
-                    for (let key in data) {
-                        list.push({ id: key, ...data[key] });
+            watch: {
+                activeTab(newVal) {
+                    if (newVal === 'analise' && this.previousTab === 'pedidos') {
+                        this.$nextTick(() => { this.renderApexCharts(); });
                     }
-                    this.pedidos = list;
-                });
-
-                // Sincronização em Tempo Real (Finanças)
-                const financasRef = ref(db, 'financas');
-                onValue(financasRef, (snapshot) => {
-                    const data = snapshot.val();
-                    const list = [];
-                    for (let key in data) {
-                        list.push({ id: key, ...data[key] });
+                },
+                analiseLoja() {
+                    if (this.activeTab === 'analise' && this.previousTab === 'pedidos') {
+                        this.$nextTick(() => { this.renderApexCharts(); });
                     }
-                    this.financas = list;
-                });
+                }
             },
-            // Computed methods continuam IGUAIS [filteredItems, saldoTotal, etc]...
             computed: {
                 filteredItems() {
                     let result = this.pedidos;
-                    if (this.filtroLoja !== 'Todas') result = result.filter(i => i.loja === this.filtroLoja);
+                    
+                    if (this.filtroLoja !== 'Todas') {
+                        result = result.filter(i => i.loja === this.filtroLoja);
+                    }
+                    
                     if (this.searchQuery) {
                         const q = this.searchQuery.toLowerCase();
                         result = result.filter(i => {
@@ -538,119 +1097,401 @@
                                    tempoText.includes(q); 
                         });
                     }
-                    if (this.activeStatuses.length > 0) result = result.filter(i => this.activeStatuses.includes(i.status));
-                    return result; // Adicione o .sort() igual ao seu original aqui
+
+                    if (this.activeStatuses.length > 0) {
+                        result = result.filter(i => this.activeStatuses.includes(i.status));
+                    }
+                    
+                    return result.sort((a, b) => {
+                        let valA = a[this.sortKey];
+                        let valB = b[this.sortKey];
+                        
+                        if (this.sortKey === 'tempo') {
+                            valA = this.getDaysPassed(a.data);
+                            valB = this.getDaysPassed(b.data);
+                        }
+
+                        if (typeof valA === 'string') valA = valA.toLowerCase();
+                        if (typeof valB === 'string') valB = valB.toLowerCase();
+                        
+                        if (valA < valB) return this.sortOrder === 'asc' ? -1 : 1;
+                        if (valA > valB) return this.sortOrder === 'asc' ? 1 : -1;
+                        return 0;
+                    });
                 },
+                
+                // Variáveis Computadas para Nova Análise de Pedidos
+                pedidosAnalise() {
+                    let p = this.pedidos;
+                    if (this.analiseLoja !== 'Ambas') {
+                        p = p.filter(x => x.loja === this.analiseLoja);
+                    }
+                    return p;
+                },
+                idadeMedia() {
+                    let validAges = this.pedidosAnalise
+                        .filter(x => x.idade && !isNaN(parseInt(x.idade)))
+                        .map(x => parseInt(x.idade));
+                    
+                    if (validAges.length === 0) return 0;
+                    let sum = validAges.reduce((a, b) => a + b, 0);
+                    return Math.round(sum / validAges.length);
+                },
+                statusCountsAnalise() {
+                    const counts = {};
+                    this.statuses.forEach(s => counts[s] = 0);
+                    this.pedidosAnalise.forEach(p => {
+                        if (counts[p.status] !== undefined) counts[p.status]++;
+                    });
+                    return counts;
+                },
+
+                // Lógica Finanças e Painel Antigo
                 statusCounts() {
                     const counts = {};
                     this.statuses.forEach(s => counts[s] = 0);
-                    this.pedidos.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
+                    this.pedidos.forEach(p => {
+                        if (counts[p.status] !== undefined) counts[p.status]++;
+                    });
                     return counts;
                 },
-                financasSorted() { return [...this.financas].sort((a, b) => new Date(b.data) - new Date(a.data)); },
-                totalEntradas() { return this.financas.filter(f => f.tipo === 'Entrada').reduce((acc, curr) => acc + curr.valor, 0); },
-                totalSaidas() { return this.financas.filter(f => f.tipo === 'Saída').reduce((acc, curr) => acc + curr.valor, 0); },
-                saldoTotal() { return this.totalEntradas - this.totalSaidas; },
-                tvAllOrders() { return this.filteredItems.slice(0, this.tvLimit); },
+                financasSorted() {
+                    return [...this.financas].sort((a, b) => new Date(b.data) - new Date(a.data));
+                },
+                totalEntradas() {
+                    return this.financas.filter(f => f.tipo === 'Entrada').reduce((acc, curr) => acc + curr.valor, 0);
+                },
+                totalSaidas() {
+                    return this.financas.filter(f => f.tipo === 'Saída').reduce((acc, curr) => acc + curr.valor, 0);
+                },
+                saldoTotal() {
+                    return this.totalEntradas - this.totalSaidas;
+                },
+                tvAllOrders() {
+                    return this.filteredItems.slice(0, this.tvLimit);
+                },
                 tvTodayOrders() {
                     const today = new Date().toISOString().split('T')[0];
                     return this.filteredItems.filter(p => p.data === today).slice(0, this.tvLimit);
                 }
             },
             methods: {
-                // Métodos Visuais mantidos (fechar dropdown, estilos, datas, copiar texto)...
-                // [COLOQUE SEUS METODOS getStatusColor, getTempoBadge, formatCurrency AQUI]
+                openAnalise() {
+                    this.previousTab = this.activeTab;
+                    this.activeTab = 'analise';
+                },
+                getLojasCountAnalise(loja) {
+                    return this.pedidosAnalise.filter(p => p.loja === loja).length;
+                },
+
+                // GERAÇÃO DOS GRÁFICOS APEXCHARTS
+                renderApexCharts() {
+                    // Agrupar dados por data (REFERÊNCIA DE DATA)
+                    const dataByDate = {};
+                    this.pedidosAnalise.forEach(p => {
+                        if (!dataByDate[p.data]) {
+                            dataByDate[p.data] = { recorteYes: 0, recorteNo: 0, nfYes: 0, nfNo: 0, sabYes: 0, sabNo: 0, elohim: 0, kadosh: 0 };
+                        }
+                        if (p.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
+                        if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
+                        if (p.sab) dataByDate[p.data].sabYes++; else dataByDate[p.data].sabNo++;
+                        if (p.loja === 'Elohim') dataByDate[p.data].elohim++;
+                        if (p.loja === 'Kadosh') dataByDate[p.data].kadosh++;
+                    });
+
+                    const sortedDates = Object.keys(dataByDate).sort();
+
+                    const recorteSeries = [{ name: 'Com Recorte', data: [] }, { name: 'Sem Recorte', data: [] }];
+                    const nfSeries = [{ name: 'Com NF', data: [] }, { name: 'Sem NF', data: [] }];
+                    const sabSeries = [{ name: 'Com Sáb', data: [] }, { name: 'Sem Sáb', data: [] }];
+                    const lojaSeries = [{ name: 'Elohim', data: [] }, { name: 'Kadosh', data: [] }];
+
+                    sortedDates.forEach(d => {
+                        recorteSeries[0].data.push(dataByDate[d].recorteYes);
+                        recorteSeries[1].data.push(dataByDate[d].recorteNo);
+                        
+                        nfSeries[0].data.push(dataByDate[d].nfYes);
+                        nfSeries[1].data.push(dataByDate[d].nfNo);
+                        
+                        sabSeries[0].data.push(dataByDate[d].sabYes);
+                        sabSeries[1].data.push(dataByDate[d].sabNo);
+                        
+                        lojaSeries[0].data.push(dataByDate[d].elohim);
+                        lojaSeries[1].data.push(dataByDate[d].kadosh);
+                    });
+
+                    const formatDateLabel = (d) => d.split('-').reverse().join('/');
+                    const categories = sortedDates.map(formatDateLabel);
+
+                    // Função Auxiliar de Criação Elegante
+                    const buildChart = (id, type, series, colors, isLine = false) => {
+                        if (this.chartInstances[id]) {
+                            this.chartInstances[id].destroy();
+                        }
+                        
+                        const options = {
+                            series: series,
+                            chart: { type: type, height: '100%', width: '100%', toolbar: { show: false }, parentHeightOffset: 0 },
+                            colors: colors,
+                            plotOptions: isLine ? {} : { bar: { columnWidth: '35%', borderRadius: 2 } },
+                            dataLabels: { enabled: false },
+                            stroke: isLine ? { curve: 'smooth', width: 3 } : { show: true, width: 2, colors: ['transparent'] },
+                            xaxis: { categories: categories, labels: { show: isLine, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: {enabled: false} },
+                            yaxis: { labels: { show: false } },
+                            grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, right: 0, bottom: 0, left: isLine ? 15 : 0 } },
+                            legend: { show: false }, // SEM LEGENDA COMO PEDIDO
+                            tooltip: { theme: 'light', shared: true, intersect: false }
+                        };
+
+                        const el = document.querySelector(`#${id}`);
+                        if(el) {
+                            const chart = new ApexCharts(el, options);
+                            chart.render();
+                            this.chartInstances[id] = chart;
+                        }
+                    };
+
+                    buildChart('chart-recorte', 'bar', recorteSeries, ['#10b981', '#cbd5e1']);
+                    buildChart('chart-nf', 'bar', nfSeries, ['#6366f1', '#cbd5e1']);
+                    buildChart('chart-sab', 'bar', sabSeries, ['#f59e0b', '#cbd5e1']);
+                    buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); // LINHA MODERNA ARREDONDADA
+                },
+
+                // Utilitários Mantidos Intactos
+                closeAllDropdowns() {
+                    this.openDropdownId = null;
+                    this.openFilterDropdown = null;
+                },
+                setSortKey(key) {
+                    if (this.sortKey === key) {
+                        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        this.sortKey = key;
+                        this.sortOrder = 'asc';
+                    }
+                },
+                toggleSortOrder() {
+                    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+                },
+                getSortIcon(key) {
+                    if (this.sortKey !== key) return 'ph-bold ph-caret-up opacity-30 text-[10px]';
+                    return this.sortOrder === 'asc' ? 'ph-bold ph-caret-up text-indigo-500 text-[10px]' : 'ph-bold ph-caret-down text-indigo-500 text-[10px]';
+                },
+                getSortLabel(val) {
+                    const opt = this.sortOptions.find(o => o.value === val);
+                    return opt ? opt.label : val;
+                },
+                handleCardClick(status) {
+                    if (!this.selecaoDinamica) {
+                        this.activeStatuses = this.activeStatuses[0] === status ? [] : [status];
+                    } else {
+                        const index = this.activeStatuses.indexOf(status);
+                        if (index > -1) {
+                            this.activeStatuses.splice(index, 1);
+                        } else {
+                            this.activeStatuses.push(status);
+                        }
+                    }
+                },
+                removeStatus(status) {
+                    this.activeStatuses = this.activeStatuses.filter(s => s !== status);
+                },
                 formatDate(dateStr) {
                     if(!dateStr) return '-';
                     const parts = dateStr.split('-');
                     if(parts.length !== 3) return dateStr;
                     return `${parts[2]}/${parts[1]}/${parts[0].substring(2)}`;
                 },
-                formatCurrency(val) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val); },
+                formatCurrency(val) {
+                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+                },
                 getDaysPassed(dateStr) {
                     if(!dateStr) return 0;
-                    const diffTime = Math.abs(new Date() - new Date(dateStr));
+                    const today = new Date();
+                    const past = new Date(dateStr);
+                    const diffTime = Math.abs(today - past);
                     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1;
+                },
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.copiedId = text;
+                        setTimeout(() => this.copiedId = null, 2000);
+                    });
+                },
+                
+                // Estilização Mantida
+                getStatusColor(status) {
+                    const colors = {
+                        'Com informações': 'bg-slate-100 text-slate-700 hover:border-slate-300',
+                        'Sem informações': 'bg-red-50 text-red-700 border-red-200 hover:border-red-300',
+                        'Para aprovação': 'bg-orange-50 text-orange-700 border-orange-200 hover:border-orange-300',
+                        'Aprovado': 'bg-blue-50 text-blue-700 border-blue-200 hover:border-blue-300',
+                        'Impresso': 'bg-purple-50 text-purple-700 border-purple-200 hover:border-purple-300',
+                        'Aguardando coleta': 'bg-amber-50 text-amber-700 border-amber-200 hover:border-amber-300',
+                        'Finalizado': 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-300'
+                    };
+                    return colors[status] || 'bg-slate-100 text-slate-700';
+                },
+                getStatusIconColor(status) {
+                    const colors = {
+                        'Sem informações': 'text-red-400',
+                        'Para aprovação': 'text-orange-400',
+                        'Aprovado': 'text-blue-400',
+                        'Impresso': 'text-purple-400',
+                        'Aguardando coleta': 'text-amber-400',
+                        'Finalizado': 'text-emerald-400'
+                    };
+                    return colors[status] || 'text-slate-400';
+                },
+                getRowColor(status) {
+                    const colors = {
+                        'Sem informações': 'hover:bg-red-50/50',
+                        'Para aprovação': 'hover:bg-orange-50/50',
+                        'Aprovado': 'hover:bg-blue-50/50',
+                        'Impresso': 'hover:bg-purple-50/50',
+                        'Aguardando coleta': 'hover:bg-amber-50/50',
+                        'Finalizado': 'hover:bg-emerald-50/50'
+                    };
+                    return colors[status] || 'hover:bg-slate-50';
+                },
+                getRowBorderColor(status) {
+                    const colors = {
+                        'Com informações': 'border-slate-300',
+                        'Sem informações': 'border-red-400',
+                        'Para aprovação': 'border-orange-400',
+                        'Aprovado': 'border-blue-400',
+                        'Impresso': 'border-purple-400',
+                        'Aguardando coleta': 'border-amber-400',
+                        'Finalizado': 'border-emerald-400'
+                    };
+                    return colors[status] || 'border-transparent';
                 },
                 getTempoBadge(dateStr) {
                     const days = this.getDaysPassed(dateStr);
                     if (days <= 1) return { text: 'NOVO', badgeClass: 'text-emerald-600 border-emerald-200 bg-emerald-50/50', dotBaseClass: 'bg-emerald-400', dotClass: 'bg-emerald-500' };
+                    if (days <= 3) return { text: days + ' DIAS', badgeClass: 'text-blue-600 border-blue-200 bg-blue-50/50', dotBaseClass: 'bg-blue-400', dotClass: 'bg-blue-500' };
+                    if (days <= 5) return { text: days + ' DIAS', badgeClass: 'text-amber-600 border-amber-200 bg-amber-50/50', dotBaseClass: 'bg-amber-400', dotClass: 'bg-amber-500' };
                     return { text: days + ' DIAS', badgeClass: 'text-red-600 border-red-200 bg-red-50/50', dotBaseClass: 'bg-red-400', dotClass: 'bg-red-500' };
                 },
-                getRowColor(status) { return 'hover:bg-slate-50'; },
-                getRowBorderColor(status) { return 'border-transparent'; },
-                getStatusColor(status) { return 'bg-slate-100 text-slate-700'; },
-                getStatusIconColor(status) { return 'text-slate-400'; },
-                getCardStyles(status, isActive) { return 'bg-white rounded-2xl p-4 border border-slate-200'; },
-                getCardBarAccent(status) { return 'bg-slate-300'; },
-                getCardContentStyles(status, isActive) { return { text: 'text-slate-600', number: 'text-slate-800', iconBg: 'bg-slate-100', icon: 'text-slate-500' }; },
-                getStatusIcon(status) { return 'ph-circle'; },
-                getSortIcon(key) { return 'ph-bold ph-caret-down'; },
-                getSortLabel(val) { return val; },
-                
-                // MÉTODOS DE FIREBASE
-                getInitialFormPedido() { return { loja: '', data: new Date().toISOString().split('T')[0], idCliente: '', nomeCrianca: '', idade: '', tema: '', nf: false, sab: false, itensPedido: [{ item: '', qtd: 1, recorte: false }] }; },
-                getInitialFormFinanca() { return { tipo: 'Entrada', descricao: '', data: new Date().toISOString().split('T')[0], valor: null, status: 'Pago' }; },
-                
-                closeModalPedidos() { this.showModalPedidos = false; this.form = this.getInitialFormPedido(); },
-                closeModalFinancas() { this.showModalFinancas = false; this.formFin = this.getInitialFormFinanca(); },
+                getStatusIcon(status) {
+                    const icons = {
+                        'Com informações': 'ph-file-text',
+                        'Sem informações': 'ph-warning-circle',
+                        'Para aprovação': 'ph-clock-countdown',
+                        'Aprovado': 'ph-thumbs-up',
+                        'Impresso': 'ph-printer',
+                        'Aguardando coleta': 'ph-package',
+                        'Finalizado': 'ph-check-circle'
+                    };
+                    return icons[status] || 'ph-circle';
+                },
+                getCardStyles(status, isActive) {
+                    let base = 'bg-white rounded-2xl p-4 lg:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 relative overflow-hidden shadow-sm border ';
+                    return base + (isActive ? 'ring-2 ring-indigo-500 border-transparent shadow-md transform -translate-y-1 scale-[1.02]' : 'border-slate-200 hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5');
+                },
+                getCardBarAccent(status) {
+                    const colors = {
+                        'Com informações': 'bg-slate-400',
+                        'Sem informações': 'bg-red-500',
+                        'Para aprovação': 'bg-orange-500',
+                        'Aprovado': 'bg-blue-500',
+                        'Impresso': 'bg-purple-500',
+                        'Aguardando coleta': 'bg-amber-500',
+                        'Finalizado': 'bg-emerald-500'
+                    };
+                    return colors[status] || 'bg-slate-300';
+                },
+                getCardContentStyles(status, isActive) {
+                    const styles = {
+                        'Com informações': { text: 'text-slate-600', number: 'text-slate-800', iconBg: 'bg-slate-100', icon: 'text-slate-500' },
+                        'Sem informações': { text: 'text-red-600', number: 'text-red-600', iconBg: 'bg-red-100', icon: 'text-red-500' },
+                        'Para aprovação': { text: 'text-orange-600', number: 'text-orange-600', iconBg: 'bg-orange-100', icon: 'text-orange-500' },
+                        'Aprovado': { text: 'text-blue-600', number: 'text-blue-600', iconBg: 'bg-blue-100', icon: 'text-blue-500' },
+                        'Impresso': { text: 'text-purple-600', number: 'text-purple-600', iconBg: 'bg-purple-100', icon: 'text-purple-500' },
+                        'Aguardando coleta': { text: 'text-amber-600', number: 'text-amber-600', iconBg: 'bg-amber-100', icon: 'text-amber-500' },
+                        'Finalizado': { text: 'text-emerald-600', number: 'text-emerald-600', iconBg: 'bg-emerald-100', icon: 'text-emerald-500' }
+                    };
+                    
+                    let s = styles[status] || styles['Com informações'];
+                    if (isActive) {
+                        return { text: s.text, number: s.number, iconBg: `${s.iconBg} ring-2 ring-white shadow-sm`, icon: s.icon };
+                    }
+                    return s;
+                },
 
+                // Formulários e Lógica
+                getInitialFormPedido() {
+                    return { loja: '', data: new Date().toISOString().split('T')[0], idCliente: '', nomeCrianca: '', idade: '', tema: '', nf: false, sab: false, itensPedido: [{ item: '', qtd: 1, recorte: false }] };
+                },
+                getInitialFormFinanca() {
+                    return { tipo: 'Entrada', descricao: '', data: new Date().toISOString().split('T')[0], valor: null, status: 'Pago' };
+                },
+                addNovoItemPedido() {
+                    this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
+                },
+                removerItemPedido(index) {
+                    this.form.itensPedido.splice(index, 1);
+                },
+                closeModalPedidos() {
+                    this.showModalPedidos = false;
+                    this.form = this.getInitialFormPedido();
+                },
                 savePedido() {
-                    // Firebase gera o ID automaticamente através do comando push()
-                    this.form.itensPedido.forEach((it) => {
-                        const novo = {
-                            data: this.form.data, loja: this.form.loja, idCliente: this.form.idCliente,
-                            nomeCrianca: this.form.nomeCrianca || '-', idade: this.form.idade || '-', tema: this.form.tema || '-',
-                            nf: this.form.nf, sab: this.form.sab, item: it.item, qtd: it.qtd, recorte: it.recorte, status: 'Com informações'
-                        };
-                        push(ref(db, 'pedidos'), novo);
+                    const newId = this.pedidos.length > 0 ? Math.max(...this.pedidos.map(p => p.id)) + 1 : 1;
+                    this.form.itensPedido.forEach((it, idx) => {
+                        this.pedidos.push({
+                            id: newId + idx,
+                            data: this.form.data,
+                            loja: this.form.loja,
+                            idCliente: this.form.idCliente,
+                            nomeCrianca: this.form.nomeCrianca || '-',
+                            idade: this.form.idade || '-',
+                            tema: this.form.tema || '-',
+                            nf: this.form.nf,
+                            sab: this.form.sab,
+                            item: it.item,
+                            qtd: it.qtd,
+                            recorte: it.recorte,
+                            status: 'Com informações'
+                        });
                     });
                     this.closeModalPedidos();
                 },
-
+                closeModalFinancas() {
+                    this.showModalFinancas = false;
+                    this.formFin = this.getInitialFormFinanca();
+                },
                 saveFinanca() {
-                    push(ref(db, 'financas'), { ...this.formFin });
+                    const newId = this.financas.length > 0 ? Math.max(...this.financas.map(f => f.id)) + 1 : 1;
+                    this.financas.push({ ...this.formFin, id: newId });
                     this.closeModalFinancas();
                 },
-
                 confirmDelete(id, type) {
-                    this.itemToDelete = id; this.deleteType = type; this.showDeleteModal = true; this.openDropdownId = null;
+                    this.itemToDelete = id;
+                    this.deleteType = type;
+                    this.showDeleteModal = true;
+                    this.openDropdownId = null;
                 },
-                cancelDelete() { this.showDeleteModal = false; this.itemToDelete = null; this.deleteType = ''; },
-                
+                cancelDelete() {
+                    this.showDeleteModal = false;
+                    this.itemToDelete = null;
+                    this.deleteType = '';
+                },
                 executeDelete() {
-                    // Firebase Exclusão
                     if (this.deleteType === 'pedido') {
-                        remove(ref(db, `pedidos/${this.itemToDelete}`));
+                        this.pedidos = this.pedidos.filter(p => p.id !== this.itemToDelete);
                     } else if (this.deleteType === 'financa') {
-                        remove(ref(db, `financas/${this.itemToDelete}`));
+                        this.financas = this.financas.filter(f => f.id !== this.itemToDelete);
                     }
                     this.cancelDelete();
                 },
-
-                // NOVO: Atualiza edição "inline" diretamente no Firebase
-                updatePedidoInline(item) {
-                    const dadosParaAtualizar = { ...item };
-                    delete dadosParaAtualizar.id; // removemos a chave 'id' pois no firebase ela é a chave principal do nó
-                    update(ref(db, `pedidos/${item.id}`), dadosParaAtualizar);
+                enterTVMode() {
+                    this.showTVConfig = false;
+                    this.isTVMode = true;
                 },
-
-                // NOVO: Atualiza especificamente o Status no Firebase
-                updateStatus(item, novoStatus) {
-                    item.status = novoStatus;
-                    this.updatePedidoInline(item);
-                    this.openDropdownId = null;
-                },
-
-                // Outros metodos (TV, UI)...
-                closeAllDropdowns() { this.openDropdownId = null; this.openFilterDropdown = null; },
-                addNovoItemPedido() { this.form.itensPedido.push({ item: '', qtd: 1, recorte: false }); },
-                removerItemPedido(index) { this.form.itensPedido.splice(index, 1); },
-                toggleSortOrder() { this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'; },
-                setSortKey(key) { this.sortKey = key; },
-                handleCardClick(status) { /* igual ao original */ },
-                removeStatus(status) { this.activeStatuses = this.activeStatuses.filter(s => s !== status); },
-                copyToClipboard(text) { navigator.clipboard.writeText(text); this.copiedId = text; setTimeout(() => this.copiedId = null, 2000); }
+                exitTVMode() {
+                    this.isTVMode = false;
+                }
             }
         }).mount('#app')
     </script>
