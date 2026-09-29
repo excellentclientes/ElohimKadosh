@@ -19,7 +19,43 @@ const db = getDatabase(app);
 
 // Expõe métodos para manipulação global pelo index.html
 window.FirebaseDB = {
-  // Escuta os Pedidos em tempo real
+  // --- CLIENTES / CADASTROS ---
+  listenClientes(callback) {
+    const clientesRef = ref(db, 'clientes');
+    onValue(clientesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        callback(list);
+      } else {
+        callback([]);
+      }
+    }, (error) => {
+      console.error("Erro ao escutar clientes no Firebase:", error);
+    });
+  },
+
+  saveCliente(cliente) {
+    const dataToSave = JSON.parse(JSON.stringify(cliente));
+    if (dataToSave.id) {
+      return set(ref(db, `clientes/${dataToSave.id}`), dataToSave);
+    } else {
+      const newRef = push(ref(db, 'clientes'));
+      dataToSave.id = newRef.key;
+      return set(newRef, dataToSave);
+    }
+  },
+
+  deleteCliente(id) {
+    return remove(ref(db, `clientes/${id}`));
+  },
+
+  // Atalho caso seu código chame saveCadastro
+  saveCadastro(dados) {
+    return this.saveCliente(dados);
+  },
+
+  // --- PEDIDOS ---
   listenPedidos(callback) {
     const pedidosRef = ref(db, 'pedidos');
     onValue(pedidosRef, (snapshot) => {
@@ -30,24 +66,11 @@ window.FirebaseDB = {
       } else {
         callback([]);
       }
+    }, (error) => {
+      console.error("Erro ao escutar pedidos no Firebase:", error);
     });
   },
 
-  // Escuta as Finanças em tempo real
-  listenFinancas(callback) {
-    const financasRef = ref(db, 'financas');
-    onValue(financasRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        callback(list);
-      } else {
-        callback([]);
-      }
-    });
-  },
-
-  // Salva ou atualiza um pedido
   savePedido(pedido) {
     const dataToSave = JSON.parse(JSON.stringify(pedido));
     if (dataToSave.id) {
@@ -59,12 +82,26 @@ window.FirebaseDB = {
     }
   },
 
-  // Deleta um pedido
   deletePedido(id) {
     return remove(ref(db, `pedidos/${id}`));
   },
 
-  // Salva ou atualiza um lançamento financeiro
+  // --- FINANÇAS ---
+  listenFinancas(callback) {
+    const financasRef = ref(db, 'financas');
+    onValue(financasRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        callback(list);
+      } else {
+        callback([]);
+      }
+    }, (error) => {
+      console.error("Erro ao escutar finanças no Firebase:", error);
+    });
+  },
+
   saveFinanca(financa) {
     const dataToSave = JSON.parse(JSON.stringify(financa));
     if (dataToSave.id) {
@@ -74,4 +111,5 @@ window.FirebaseDB = {
       dataToSave.id = newRef.key;
       return set(newRef, dataToSave);
     }
-  },
+  }
+};
