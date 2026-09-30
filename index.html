@@ -339,20 +339,35 @@
 
                                 <!-- Item -->
                                 <td class="px-3 py-3 font-bold">
-                                    <input type="text" v-model="item.item" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col gap-0.5">
+                                        <span v-for="(it, iIdx) in item.itens" :key="iIdx" class="text-xs">
+                                            • {{ it.item }} <span class="text-slate-400 font-normal">({{ it.qtd }}x)</span>
+                                        </span>
+                                    </div>
+                                    <input v-else type="text" v-model="item.item" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
                                            :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
                                 </td>
 
                                 <!-- Recorte -->
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="if(item.editando){ item.recorte = !item.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.recorte ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-0.5">
+                                        <span v-for="(it, iIdx) in item.itens" :key="iIdx" class="text-[10px] font-bold" :class="it.recorte ? 'text-emerald-600' : 'text-slate-400'">
+                                            {{ it.recorte ? 'Sim' : 'Não' }}
+                                        </span>
+                                    </div>
+                                    <button v-else @click="if(item.editando){ item.recorte = !item.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.recorte ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
                                         <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
 
                                 <!-- Qtd -->
                                 <td class="px-2 py-3 text-center">
-                                    <input type="number" min="1" v-model.number="item.qtd" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-0.5">
+                                        <span v-for="(it, iIdx) in item.itens" :key="iIdx" class="text-xs font-bold">
+                                            {{ it.qtd }}
+                                        </span>
+                                    </div>
+                                    <input v-else type="number" min="1" v-model.number="item.qtd" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
                                            :class="['w-10 h-7 text-center rounded-lg border outline-none font-bold text-xs transition-all mx-auto', item.editando ? 'border-current bg-white/80' : 'border-transparent bg-transparent']">
                                 </td>
 
@@ -1730,31 +1745,34 @@
                     this.form.itensPedido.splice(index, 1);
                 },
                 savePedido() {
-                    // Gera um ID de grupo único para vincular todos os itens deste mesmo pedido/cliente
-                    const grupoId = Date.now().toString();
-                    
-                    this.form.itensPedido.forEach((it, idx) => {
-                        const novoPedido = {
-                            id: grupoId + '_' + idx + Math.random().toString(36).substr(2, 3),
-                            grupoId: grupoId,
-                            loja: this.form.loja,
-                            data: this.form.data,
-                            idCliente: this.form.idCliente,
-                            nomeCrianca: this.form.nomeCrianca,
-                            idade: this.form.idade,
-                            tema: this.form.tema,
-                            nf: this.form.nf,
-                            sab: this.form.sab,
+                    const novoPedido = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        loja: this.form.loja,
+                        data: this.form.data,
+                        idCliente: this.form.idCliente,
+                        nomeCrianca: this.form.nomeCrianca,
+                        idade: this.form.idade,
+                        tema: this.form.tema,
+                        nf: this.form.nf,
+                        sab: this.form.sab,
+                        // Salva a lista inteira de itens cadastrados de uma vez só
+                        itens: this.form.itensPedido.map(it => ({
                             item: it.item,
                             qtd: it.qtd,
-                            recorte: it.recorte,
-                            status: 'Novo',
-                            editando: false
-                        };
-                        if (window.FirebaseDB && window.FirebaseDB.savePedido) {
-                            window.FirebaseDB.savePedido(novoPedido);
-                        }
-                    });
+                            recorte: it.recorte
+                        })),
+                        // Mantemos campos individuais caso algum código antigo leia, pegando o primeiro item por segurança
+                        item: this.form.itensPedido.map(i => `${i.item} (${i.qtd}x)`).join(', '),
+                        qtd: this.form.itensPedido.reduce((acc, curr) => acc + (parseInt(curr.qtd) || 0), 0),
+                        recorte: this.form.itensPedido.some(i => i.recorte),
+                        status: 'Novo',
+                        editando: false
+                    };
+
+                    if (window.FirebaseDB && window.FirebaseDB.savePedido) {
+                        window.FirebaseDB.savePedido(novoPedido);
+                    }
+
                     this.closeModalPedidos();
                     this.form.itensPedido = [{ item: '', qtd: 1, recorte: false }];
                     this.form.idCliente = '';
