@@ -74,7 +74,7 @@
 </head>
 <body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
 
-    <!-- CABEÇALHO SUPERIOR FIXO (PRETO FOSCO COM LOGOS MAIORES) -->
+    <!-- CABEÇALHO SUPERIOR FIXO (PRETO FOSCO COM LOGOS MAIORES E CORES ESPECÍFICAS) -->
     <header class="sticky top-0 z-50 shadow-xl transition-colors">
         <div class="max-w-[1600px] mx-auto px-6 h-24 flex items-center justify-between">
             
@@ -84,7 +84,11 @@
                     <img src="logo2.png" alt="Logo Kadosh" class="h-14 w-auto object-contain">
                 </div>
                 <div class="flex flex-col ml-1">
-                    <h1 class="text-xl font-bold text-white tracking-wide leading-tight">Elohim e Kadosh</h1>
+                    <h1 class="text-xl font-bold tracking-wide leading-tight">
+                        <span class="text-pink-500 font-extrabold">Elohim</span> 
+                        <span class="text-slate-300 font-normal">e</span> 
+                        <span class="text-blue-500 font-extrabold">Kadosh</span>
+                    </h1>
                     <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-widest">Gestão de pedidos</span>
                 </div>
             </div>
@@ -1666,7 +1670,7 @@
                     let titulo = "";
                     
                     if (this.activeTab === 'pedidos') {
-                        titulo = "Relatório de Pedidos";
+                        titulo = "Relatório Executivo de Pedidos";
                         colunas = ["Data", "Loja", "ID Cliente", "Criança", "Idade", "Tema", "Item", "Qtd", "Recorte", "NF", "Sab", "Status"];
                         dados = this.filteredItems.map(item => [
                             this.formatDate(item.data),
@@ -1683,7 +1687,7 @@
                             item.status
                         ]);
                     } else if (this.activeTab === 'financas') {
-                        titulo = "Relatório de Finanças";
+                        titulo = "Relatório Executivo de Finanças";
                         colunas = ["Data", "Descrição", "Tipo", "Status", "Valor"];
                         dados = this.financasSorted.map(fin => [
                             this.formatDate(fin.data),
@@ -1713,7 +1717,6 @@
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF('landscape'); 
                     
-                    // Função auxiliar para carregar logos e converter em base64 com segurança
                     const loadImage = async (url) => {
                         try {
                             return await new Promise((resolve, reject) => {
@@ -1738,11 +1741,11 @@
                     const logo1Data = await loadImage('logo1.png');
                     const logo2Data = await loadImage('logo2.png');
                     
-                    // Cabeçalho preto fosco para destacar perfeitamente as duas logos
+                    // Cabeçalho moderno preto fosco
                     doc.setFillColor(9, 9, 11); 
                     doc.rect(0, 0, doc.internal.pageSize.width, 36, 'F');
                     
-                    // Inserir Logo 1 (Esquerda) e Logo 2 (Direita) bem aparentes
+                    // Logos nas pontas bem aparentes
                     if (logo1Data) {
                         doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
                     }
@@ -1750,9 +1753,9 @@
                         doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
                     }
 
-                    // Títulos institucionais centralizados
+                    // Títulos institucionais
                     doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(16);
+                    doc.setFontSize(15);
                     doc.setFont("helvetica", "bold");
                     doc.text("Elohim e Kadosh", doc.internal.pageSize.width / 2, 16, { align: 'center' });
                     
@@ -1761,24 +1764,21 @@
                     doc.setTextColor(203, 213, 225);
                     doc.text(titulo, doc.internal.pageSize.width / 2, 25, { align: 'center' });
                     
-                    // Data e hora de emissão no canto direito superior
                     doc.setFontSize(8);
                     doc.setTextColor(148, 163, 184);
                     doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 44, 30, { align: 'right' });
 
-                    // Configuração da tabela moderna no AutoTable com reflexo das cores de status
+                    // Configuração da tabela com visual ultra-moderno e elegante
                     doc.autoTable({
                         head: [colunas],
                         body: dados,
                         startY: 44,
-                        theme: 'grid',
+                        theme: 'plain',
                         styles: { 
                             font: 'helvetica', 
                             fontSize: 8.5, 
-                            cellPadding: 5, 
+                            cellPadding: 6, 
                             textColor: [51, 65, 85], 
-                            lineColor: [226, 232, 240], 
-                            lineWidth: 0.15,
                             valign: 'middle',
                             halign: 'center'
                         },
@@ -1787,8 +1787,11 @@
                             textColor: [255, 255, 255], 
                             fontStyle: 'bold', 
                             halign: 'center',
-                            cellPadding: 6,
-                            lineWidth: 0
+                            cellPadding: 7
+                        },
+                        bodyStyles: {
+                            lineColor: [241, 245, 249],
+                            lineWidth: { bottom: 0.5 }
                         },
                         alternateRowStyles: { 
                             fillColor: comCor ? [248, 250, 252] : [255, 255, 255] 
@@ -1797,24 +1800,24 @@
                             if (comCor && data.section === 'body') {
                                 const headerText = colunas[data.column.index];
                                 if (headerText === 'Status' || headerText === 'Tipo') {
-                                    const status = data.cell.raw;
-                                    if (status === 'Finalizado' || status === 'Pago' || status === 'Entrada') {
+                                    const rawVal = String(data.cell.raw || '').trim();
+                                    if (rawVal === 'Finalizado' || rawVal === 'Pago' || rawVal === 'Entrada') {
                                         data.cell.styles.fillColor = [209, 250, 229]; // Verde claro
                                         data.cell.styles.textColor = [6, 95, 70];     // Verde escuro
                                         data.cell.styles.fontStyle = 'bold';
-                                    } else if (status === 'Sem informações' || status === 'Saída') {
+                                    } else if (rawVal === 'Sem informações' || rawVal === 'Saída') {
                                         data.cell.styles.fillColor = [254, 242, 242]; // Vermelho claro
                                         data.cell.styles.textColor = [153, 27, 27];   // Vermelho escuro
                                         data.cell.styles.fontStyle = 'bold';
-                                    } else if (status && (status.includes('Para aprovação') || status.includes('Aguardando') || status === 'Pendente')) {
-                                        data.cell.styles.fillColor = [254, 243, 199]; // Amarelo/Laranja claro
-                                        data.cell.styles.textColor = [146, 64, 14];   // Amarelo/Laranja escuro
+                                    } else if (rawVal.includes('Para aprovação') || rawVal.includes('Aguardando') || rawVal === 'Pendente') {
+                                        data.cell.styles.fillColor = [254, 243, 199]; // Amarelo/Âmbar claro
+                                        data.cell.styles.textColor = [146, 64, 14];   // Amarelo/Âmbar escuro
                                         data.cell.styles.fontStyle = 'bold';
-                                    } else if (status === 'Aprovado') {
+                                    } else if (rawVal === 'Aprovado') {
                                         data.cell.styles.fillColor = [219, 234, 254]; // Azul claro
                                         data.cell.styles.textColor = [30, 64, 175];   // Azul escuro
                                         data.cell.styles.fontStyle = 'bold';
-                                    } else if (status === 'Impresso') {
+                                    } else if (rawVal === 'Impresso') {
                                         data.cell.styles.fillColor = [243, 232, 255]; // Roxo claro
                                         data.cell.styles.textColor = [107, 33, 168];  // Roxo escuro
                                         data.cell.styles.fontStyle = 'bold';
@@ -1840,7 +1843,7 @@
                         }
                     });
 
-                    const nomeArquivo = titulo.toLowerCase().includes('finan') ? 'relatório de finanças.pdf' : 'relatório de pedidos.pdf';
+                    const nomeArquivo = titulo.toLowerCase().includes('finan') ? 'relatório_finanças.pdf' : 'relatório_pedidos.pdf';
                     doc.save(nomeArquivo);
                 },
 
