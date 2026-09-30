@@ -1770,8 +1770,7 @@
                         nomeCrianca: this.form.nomeCrianca,
                         idade: this.form.idade,
                         tema: this.form.tema,
-                        sab: this.form.sab, // SAB continua único para o pedido todo
-                        // Salva a lista inteira de itens com recorte e NF individuais
+                        sab: this.form.sab,
                         itens: this.form.itensPedido.map(it => ({
                             item: it.item,
                             qtd: it.qtd,
@@ -1785,20 +1784,13 @@
                         status: 'Novo',
                         editando: false
                     };
-                        // Mantemos campos individuais caso algum código antigo leia, pegando o primeiro item por segurança
-                        item: this.form.itensPedido.map(i => `${i.item} (${i.qtd}x)`).join(', '),
-                        qtd: this.form.itensPedido.reduce((acc, curr) => acc + (parseInt(curr.qtd) || 0), 0),
-                        recorte: this.form.itensPedido.some(i => i.recorte),
-                        status: 'Novo',
-                        editando: false
-                    };
 
                     if (window.FirebaseDB && window.FirebaseDB.savePedido) {
                         window.FirebaseDB.savePedido(novoPedido);
                     }
 
                     this.closeModalPedidos();
-                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false }];
+                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false, nf: false }];
                     this.form.idCliente = '';
                     this.form.nomeCrianca = '';
                     this.form.idade = '';
