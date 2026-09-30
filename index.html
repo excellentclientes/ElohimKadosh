@@ -24,6 +24,9 @@
     <!-- Firebase Externa -->
     <script type="module" src="firebase-config.js"></script>
 
+    <!-- Configuração de Senha de Finanças -->
+    <script src="finance-auth.js"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -98,7 +101,7 @@
                        :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'pedidos' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white']">
                         <i class="ph-fill ph-squares-four text-lg"></i> Painel de Pedidos
                     </a>
-                    <a href="#" @click.prevent="activeTab = 'financas'" 
+                    <a href="#" @click.prevent="tentarAbrirFinancas" 
                        :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'financas' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white']">
                         <i class="ph-fill ph-currency-dollar text-lg"></i> Finanças
                     </a>
@@ -231,7 +234,7 @@
                 </div>
             </div>
 
-            <!-- Cards de Status com Cores Únicas e Seleção com Borda Clean -->
+            <!-- Cards de Status -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
                 <div v-for="status in statuses" :key="status"
                      @click="handleCardClick(status)"
@@ -492,6 +495,32 @@
         </div>
 
     </main>
+
+    <!-- MODAL DE SENHA PARA FINANÇAS -->
+    <transition name="scale">
+        <div v-if="showPasswordModal" class="fixed inset-0 z-[120] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showPasswordModal = false"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 border border-slate-200 text-center transform transition-all">
+                <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner border border-emerald-100">
+                    <i class="ph-fill ph-lock-key text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-800 mb-2">Área Financeira Protegida</h3>
+                <p class="text-xs font-medium text-slate-500 mb-6">Digite a senha definida no arquivo finance-auth.js para acessar.</p>
+                
+                <form @submit.prevent="verificarSenhaFinancas" class="space-y-4">
+                    <input type="password" v-model="senhaInput" autofocus placeholder="Digite a senha..." 
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-800 text-center tracking-widest focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                    
+                    <div v-if="senhaErro" class="text-red-500 text-xs font-bold">Senha incorreta. Tente novamente.</div>
+
+                    <div class="flex gap-3 justify-center pt-2">
+                        <button type="button" @click="showPasswordModal = false; senhaInput = ''; senhaErro = false" class="w-full px-4 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors border border-slate-200 text-xs">Cancelar</button>
+                        <button type="submit" class="w-full px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all text-xs">Entrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </transition>
 
     <!-- TELA DE ANÁLISE -->
     <transition name="fade">
@@ -1088,7 +1117,7 @@
         </div>
     </transition>
 
-    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO (COM @click.stop CORRIGIDO) -->
+    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO (POSICIONAMENTO CORRIGIDO) -->
     <transition name="fade">
         <div v-if="activeStatusItem" @click.stop 
              :style="{ top: statusMenuPos.top, left: statusMenuPos.left }" 
@@ -1135,6 +1164,12 @@
                     activeStatuses: [],
                     selecaoDinamica: false,
                     
+                    // Variáveis de controle de senha para Finanças
+                    showPasswordModal: false,
+                    senhaInput: '',
+                    senhaErro: false,
+                    financasLiberado: false,
+
                     lojas: ['Elohim', 'Kadosh'],
                     statuses: ['Com informações', 'Sem informações', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
                     
@@ -1295,6 +1330,26 @@
                     this.openReportMenu = false;
                     this.activeStatusItem = null;
                 },
+                tentarAbrirFinancas() {
+                    if (this.financasLiberado) {
+                        this.activeTab = 'financas';
+                    } else {
+                        this.senhaInput = '';
+                        this.senhaErro = false;
+                        this.showPasswordModal = true;
+                    }
+                },
+                verificarSenhaFinancas() {
+                    const senhaCorreta = window.FinanceAuthConfig ? window.FinanceAuthConfig.senha : '123';
+                    if (this.senhaInput === senhaCorreta) {
+                        this.financasLiberado = true;
+                        this.showPasswordModal = false;
+                        this.activeTab = 'financas';
+                        this.senhaErro = false;
+                    } else {
+                        this.senhaErro = true;
+                    }
+                },
                 getSortLabel(key) {
                     const opt = this.sortOptions.find(o => o.value === key);
                     return opt ? opt.label : key;
@@ -1320,7 +1375,6 @@
                         if (idx > -1) this.activeStatuses.splice(idx, 1);
                         else this.activeStatuses.push(status);
                     } else {
-                        // Se clicado novamente e já estiver ativo, desmarca (limpa filtro)
                         if (this.activeStatuses.includes(status)) {
                             this.activeStatuses = [];
                         } else {
@@ -1448,10 +1502,10 @@
                     this.activeStatusItem = item;
                     const rect = event.currentTarget.getBoundingClientRect();
                     const spaceBelow = window.innerHeight - rect.bottom;
-                    const menuHeight = 250;
-                    let top = rect.bottom + window.scrollY + 5;
+                    const menuHeight = 260;
+                    let top = rect.bottom + 4;
                     if (spaceBelow < menuHeight) {
-                        top = rect.top + window.scrollY - menuHeight - 5;
+                        top = rect.top - menuHeight - 4;
                     }
                     this.statusMenuPos = { top: top + 'px', left: rect.left + 'px' };
                 },
