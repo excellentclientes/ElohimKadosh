@@ -1730,9 +1730,13 @@
                     this.form.itensPedido.splice(index, 1);
                 },
                 savePedido() {
-                    this.form.itensPedido.forEach((it) => {
+                    // Gera um ID de grupo único para vincular todos os itens deste mesmo pedido/cliente
+                    const grupoId = Date.now().toString();
+                    
+                    this.form.itensPedido.forEach((it, idx) => {
                         const novoPedido = {
-                            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                            id: grupoId + '_' + idx + Math.random().toString(36).substr(2, 3),
+                            grupoId: grupoId,
                             loja: this.form.loja,
                             data: this.form.data,
                             idCliente: this.form.idCliente,
