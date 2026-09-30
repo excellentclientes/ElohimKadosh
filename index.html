@@ -1892,20 +1892,43 @@
                     if (this.activeTab === 'pedidos') {
                         titulo = "Relatório Executivo de Pedidos";
                         colunas = ["Status", "Item", "Recorte", "Qtd", "Tema", "Nome", "Idade", "Tempo", "Data", "Loja", "NF", "Sab"];
-                        dados = this.filteredItems.map(item => [
-                            item.status,
-                            item.item,
-                            item.recorte ? "Sim" : "Não",
-                            item.qtd,
-                            item.tema || '-',
-                            item.nomeCrianca || '-',
-                            item.idade || '-',
-                            this.getTempoBadge(item.data).text,
-                            this.formatDate(item.data),
-                            item.loja,
-                            item.nf ? "Sim" : "Não",
-                            item.sab ? "Sim" : "Não"
-                        ]);
+                        dados = [];
+                        
+                        this.filteredItems.forEach(item => {
+                            if (item.itens && Array.isArray(item.itens) && item.itens.length > 0) {
+                                item.itens.forEach(it => {
+                                    dados.push([
+                                        item.status,
+                                        it.item,
+                                        it.recorte ? "Sim" : "Não",
+                                        it.qtd,
+                                        item.tema || '-',
+                                        item.nomeCrianca || '-',
+                                        item.idade || '-',
+                                        this.getTempoBadge(item.data).text,
+                                        this.formatDate(item.data),
+                                        item.loja,
+                                        it.nf ? "Sim" : "Não",
+                                        item.sab ? "Sim" : "Não"
+                                    ]);
+                                });
+                            } else {
+                                dados.push([
+                                    item.status,
+                                    item.item,
+                                    item.recorte ? "Sim" : "Não",
+                                    item.qtd,
+                                    item.tema || '-',
+                                    item.nomeCrianca || '-',
+                                    item.idade || '-',
+                                    this.getTempoBadge(item.data).text,
+                                    this.formatDate(item.data),
+                                    item.loja,
+                                    item.nf ? "Sim" : "Não",
+                                    item.sab ? "Sim" : "Não"
+                                ]);
+                            }
+                        });
                     } else if (this.activeTab === 'financas') {
                         titulo = "Relatório Executivo de Finanças";
                         colunas = ["Data", "Descrição", "Tipo", "Status", "Valor"];
