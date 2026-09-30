@@ -569,7 +569,7 @@
                     </div>
                     Análise de {{ previousTab === 'financas' ? 'Finanças' : 'Pedidos' }}
                 </h2>
-                <button @click="activeTab = previousTab" class="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-sm">
+                <button @click="voltarDeAnalise" class="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-sm">
                     <i class="ph-bold ph-arrow-left"></i> Voltar
                 </button>
             </div>
@@ -1190,6 +1190,7 @@
                     financasLiberado: false,
 
                     isFullScreen: false,
+                    wasFullScreenBeforeSpecialMode: false,
 
                     lojas: ['Elohim', 'Kadosh'],
                     statuses: ['Novo', 'Com informação', 'Sem informação', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
@@ -1284,7 +1285,6 @@
                     if (this.activeStatuses.length > 0) {
                         result = result.filter(p => this.activeStatuses.includes(p.status));
                     } else {
-                        // Se nenhum status estiver selecionado (card Todos), exibe todos exceto finalizados por padrão
                         result = result.filter(p => p.status !== 'Finalizado');
                     }
                     
@@ -1371,10 +1371,19 @@
                         this.isFullScreen = false;
                     }
                 },
-                requestFullScreenIfNeeded() {
+                forceEnterFullScreen() {
+                    this.wasFullScreenBeforeSpecialMode = !!document.fullscreenElement;
                     if (!document.fullscreenElement) {
                         document.documentElement.requestFullscreen().catch(() => {});
                         this.isFullScreen = true;
+                    }
+                },
+                restoreFullScreenState() {
+                    if (!this.wasFullScreenBeforeSpecialMode && document.fullscreenElement) {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen().catch(() => {});
+                        }
+                        this.isFullScreen = false;
                     }
                 },
                 closeAllDropdowns() {
@@ -1610,9 +1619,13 @@
                     this.cancelDelete();
                 },
                 openAnalise() {
-                    this.requestFullScreenIfNeeded();
+                    this.forceEnterFullScreen();
                     this.previousTab = this.activeTab;
                     this.activeTab = 'analise';
+                },
+                voltarDeAnalise() {
+                    this.activeTab = this.previousTab;
+                    this.restoreFullScreenState();
                 },
                 getLojasCountAnalise(loja) {
                     return this.pedidosAnalise.filter(p => p.loja === loja).length;
@@ -1698,12 +1711,13 @@
                     buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); 
                 },
                 enterTVMode() {
-                    this.requestFullScreenIfNeeded();
+                    this.forceEnterFullScreen();
                     this.isTVMode = true;
                     this.showTVConfig = false;
                 },
                 exitTVMode() {
                     this.isTVMode = false;
+                    this.restoreFullScreenState();
                 },
                 closeModalPedidos() {
                     this.showModalPedidos = false;
