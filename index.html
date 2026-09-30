@@ -14,17 +14,17 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- ApexCharts (Para os gráficos modernos) -->
+    <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    <!-- jsPDF e AutoTable (Para geração de relatórios modernos) -->
+    <!-- jsPDF e AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- Conexão com Firebase Externa -->
+    <!-- Firebase Externa -->
     <script type="module" src="firebase-config.js"></script>
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -54,14 +54,12 @@
             100% { box-shadow: 0 0 2px currentColor, 0 0 5px currentColor; opacity: 0.8; }
         }
 
-        /* HEADER OFF-WHITE CLEAN MODERNO */
         header { 
             background-color: rgba(250, 250, 250, 0.9) !important; 
             backdrop-filter: blur(12px);
             border-bottom-color: #e2e8f0 !important; 
         }
 
-        /* ESTILO PARA CABEÇALHOS FIXOS DA TABELA */
         .sticky-table-header th {
             position: sticky;
             top: 0;
@@ -75,7 +73,7 @@
 </head>
 <body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
 
-    <!-- CABEÇALHO SUPERIOR FIXO (OFF-WHITE CLEAN COM LOGOS MAIORES E CORES ESPECÍFICAS) -->
+    <!-- CABEÇALHO SUPERIOR FIXO -->
     <header class="sticky top-0 z-50 shadow-sm border-b transition-colors">
         <div class="max-w-[1600px] mx-auto px-6 h-24 flex items-center justify-between">
             
@@ -106,7 +104,6 @@
                     </a>
                 </nav>
 
-                <!-- Botão Exportar Relatório com Opções de PDF Customizadas -->
                 <div class="relative group hidden lg:block" @click.stop>
                     <button @click="openReportMenu = !openReportMenu" title="Gerar Relatório" 
                             class="w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
@@ -139,11 +136,8 @@
 
     <main class="flex-1 w-full max-w-[1600px] mx-auto p-6 lg:p-8">
         
-        <!-- ========================================== -->
-        <!-- ABA: PAINEL DE PEDIDOS                     -->
-        <!-- ========================================== -->
+        <!-- ABA: PAINEL DE PEDIDOS -->
         <div v-if="activeTab === 'pedidos'">
-            <!-- BARRA DE AÇÕES FIXA (FILTROS E AÇÕES) -->
             <div class="sticky top-24 z-40 bg-[#f8fafc] pt-2 pb-2 mb-6 transition-all">
                 <div class="flex flex-col bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
                     <div class="flex flex-col xl:flex-row justify-between items-center gap-3 w-full">
@@ -237,7 +231,7 @@
                 </div>
             </div>
 
-            <!-- Cards de Status -->
+            <!-- Cards de Status com Cores Únicas e Seleção com Borda Clean -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
                 <div v-for="status in statuses" :key="status"
                      @click="handleCardClick(status)"
@@ -275,7 +269,7 @@
                                     <div class="flex items-center gap-1">Loja <i :class="getSortIcon('loja')"></i></div>
                                 </th>
                                 <th @click="setSortKey('idCliente')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center gap-1">Cliente <i :class="getSortIcon('idCliente')"></i></div>
+                                    <div class="flex items-center gap-1">ID Cliente <i :class="getSortIcon('idCliente')"></i></div>
                                 </th>
                                 <th @click="setSortKey('item')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Item <i :class="getSortIcon('item')"></i></div>
@@ -403,9 +397,7 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- ABA: FINANÇAS                              -->
-        <!-- ========================================== -->
+        <!-- ABA: FINANÇAS -->
         <div v-else-if="activeTab === 'financas'">
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 px-2">
@@ -501,9 +493,7 @@
 
     </main>
 
-    <!-- ========================================== -->
-    <!-- TELA DE ANÁLISE (MODO EXECUTIVO NO-SCROLL) -->
-    <!-- ========================================== -->
+    <!-- TELA DE ANÁLISE -->
     <transition name="fade">
         <div v-if="activeTab === 'analise'" class="fixed inset-0 z-50 bg-[#f8fafc] flex flex-col p-4 md:p-6 lg:p-8 overflow-hidden h-full w-full">
             <div class="flex justify-between items-center mb-4 bg-white p-4 lg:px-6 rounded-3xl shadow-sm border border-slate-200 shrink-0">
@@ -832,7 +822,6 @@
                     </div>
                 </div>
                 
-                <!-- MODO FORMULÁRIO PADRÃO -->
                 <div v-show="!modoPlanilha" class="p-8 overflow-y-auto flex-1 custom-scrollbar">
                     <form @submit.prevent="savePedido" id="formPedido" class="space-y-6">
                         <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
@@ -899,7 +888,7 @@
                             </div>
                         </div>
 
-                        <!-- ITENS DO PEDIDO COM CABEÇALHO STICKY / BOTÃO FLUTUANTE SEMPRE APARENTE -->
+                        <!-- ITENS DO PEDIDO COM CABEÇALHO STICKY E BOTÃO FLUTUANTE -->
                         <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-white shadow-sm relative">
                             <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10 pt-1">
                                 <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Itens do Pedido</h4>
@@ -939,7 +928,7 @@
                     </form>
                 </div>
 
-                <!-- MODO PLANILHA EXCEL STYLE -->
+                <!-- MODO PLANILHA -->
                 <div v-if="modoPlanilha" class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
                     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                         <div class="overflow-x-auto w-full custom-scrollbar">
@@ -1017,11 +1006,6 @@
                                 <i class="ph-bold ph-plus"></i> Adicionar Linha Vazia
                             </button>
                         </div>
-                    </div>
-                    
-                    <div class="mt-4 bg-indigo-50 text-indigo-600 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 text-xs font-medium">
-                        <i class="ph-fill ph-info text-lg mt-0.5"></i>
-                        <p><strong>Dica de uso (Tempo Real Ativado):</strong> Você não precisa clicar em um botão para salvar. Ao preencher o <span class="font-bold underline">ID Cliente</span> e o <span class="font-bold underline">Item</span>, o sistema salva e cria o registro automaticamente em plano de fundo no momento em que você clica fora da célula.</p>
                     </div>
                 </div>
                 
@@ -1104,7 +1088,7 @@
         </div>
     </transition>
 
-    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO -->
+    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO (COM @click.stop CORRIGIDO) -->
     <transition name="fade">
         <div v-if="activeStatusItem" @click.stop 
              :style="{ top: statusMenuPos.top, left: statusMenuPos.left }" 
@@ -1336,38 +1320,58 @@
                         if (idx > -1) this.activeStatuses.splice(idx, 1);
                         else this.activeStatuses.push(status);
                     } else {
-                        this.activeStatuses = [status];
+                        // Se clicado novamente e já estiver ativo, desmarca (limpa filtro)
+                        if (this.activeStatuses.includes(status)) {
+                            this.activeStatuses = [];
+                        } else {
+                            this.activeStatuses = [status];
+                        }
                     }
                 },
                 removeStatus(status) {
                     this.activeStatuses = this.activeStatuses.filter(s => s !== status);
                 },
                 getCardStyles(status, isActive) {
-                    let base = "relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all duration-300 transform shadow-sm ";
-                    if (isActive) base += "ring-2 ring-offset-2 scale-105 ";
-                    else base += "hover:-translate-y-1 hover:shadow-md bg-white ";
-                    
+                    let base = "relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all duration-300 transform shadow-sm bg-white ";
                     if (isActive) {
-                        if (status === 'Finalizado') base += "bg-emerald-500 border-emerald-600 text-white ring-emerald-500";
-                        else if (status === 'Sem informações') base += "bg-red-500 border-red-600 text-white ring-red-500";
-                        else if (status.includes('Para aprovação') || status.includes('Aguardando')) base += "bg-amber-500 border-amber-600 text-white ring-amber-500";
-                        else base += "bg-indigo-500 border-indigo-600 text-white ring-indigo-500";
+                        base += "ring-2 ring-offset-2 scale-105 shadow-md ";
+                        if (status === 'Com informações') base += "border-indigo-500 ring-indigo-500";
+                        else if (status === 'Sem informações') base += "border-red-500 ring-red-500";
+                        else if (status === 'Para aprovação') base += "border-orange-500 ring-orange-500";
+                        else if (status === 'Aprovado') base += "border-blue-500 ring-blue-500";
+                        else if (status === 'Impresso') base += "border-purple-500 ring-purple-500";
+                        else if (status === 'Aguardando coleta') base += "border-amber-500 ring-amber-500";
+                        else if (status === 'Finalizado') base += "border-emerald-500 ring-emerald-500";
                     } else {
-                        base += "border-slate-200";
+                        base += "border-slate-200 hover:-translate-y-1 hover:shadow-md";
                     }
                     return base;
                 },
                 getCardBarAccent(status) {
-                    if (status === 'Finalizado') return "bg-emerald-500";
+                    if (status === 'Com informações') return "bg-indigo-500";
                     if (status === 'Sem informações') return "bg-red-500";
-                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "bg-amber-500";
+                    if (status === 'Para aprovação') return "bg-orange-500";
+                    if (status === 'Aprovado') return "bg-blue-500";
+                    if (status === 'Impresso') return "bg-purple-500";
+                    if (status === 'Aguardando coleta') return "bg-amber-500";
+                    if (status === 'Finalizado') return "bg-emerald-500";
                     return "bg-indigo-500";
                 },
                 getCardContentStyles(status, isActive) {
-                    if (isActive) {
-                        return { text: "text-white/90", number: "text-white", iconBg: "bg-white/20", icon: "text-white" };
-                    }
-                    return { text: "text-slate-500", number: "text-slate-800", iconBg: "bg-slate-50", icon: "text-slate-400" };
+                    let textClass = "text-indigo-600";
+                    if (status === 'Sem informações') textClass = "text-red-600";
+                    else if (status === 'Para aprovação') textClass = "text-orange-600";
+                    else if (status === 'Aprovado') textClass = "text-blue-600";
+                    else if (status === 'Impresso') textClass = "text-purple-600";
+                    else if (status === 'Aguardando coleta') textClass = "text-amber-600";
+                    else if (status === 'Finalizado') textClass = "text-emerald-600";
+
+                    return { 
+                        text: "text-slate-500", 
+                        number: textClass, 
+                        iconBg: "bg-slate-50", 
+                        icon: textClass 
+                    };
                 },
                 getStatusIcon(status) {
                     if (status === 'Finalizado') return "ph-check-circle";
@@ -1386,21 +1390,28 @@
                 getRowBorderColor(status) {
                     if (status === 'Finalizado') return "border-emerald-400";
                     if (status === 'Sem informações') return "border-red-400";
-                    if (status.includes('Para aprovação')) return "border-amber-400";
+                    if (status.includes('Para aprovação')) return "border-orange-400";
+                    if (status === 'Aprovado') return "border-blue-400";
+                    if (status === 'Impresso') return "border-purple-400";
+                    if (status === 'Aguardando coleta') return "border-amber-400";
                     return "border-indigo-400";
                 },
                 getStatusColor(status) {
                     if (status === 'Finalizado') return "bg-emerald-100 text-emerald-700";
                     if (status === 'Sem informações') return "bg-red-100 text-red-700";
-                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "bg-amber-100 text-amber-700";
+                    if (status.includes('Para aprovação')) return "bg-orange-100 text-orange-700";
+                    if (status === 'Aguardando coleta') return "bg-amber-100 text-amber-700";
                     if (status === 'Aprovado') return "bg-blue-100 text-blue-700";
                     if (status === 'Impresso') return "bg-purple-100 text-purple-700";
-                    return "bg-slate-100 text-slate-700";
+                    return "bg-indigo-100 text-indigo-700";
                 },
                 getStatusIconColor(status) {
                     if (status === 'Finalizado') return "text-emerald-600";
                     if (status === 'Sem informações') return "text-red-600";
-                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "text-amber-600";
+                    if (status.includes('Para aprovação')) return "text-orange-600";
+                    if (status === 'Aguardando coleta') return "text-amber-600";
+                    if (status === 'Aprovado') return "text-blue-600";
+                    if (status === 'Impresso') return "text-purple-600";
                     return "text-indigo-600";
                 },
                 getTempoBadge(data) {
@@ -1429,9 +1440,20 @@
                     }
                 },
                 openStatusMenu(item, event) {
+                    event.stopPropagation();
+                    if (this.activeStatusItem === item) {
+                        this.activeStatusItem = null;
+                        return;
+                    }
                     this.activeStatusItem = item;
                     const rect = event.currentTarget.getBoundingClientRect();
-                    this.statusMenuPos = { top: (rect.bottom + window.scrollY + 5) + 'px', left: rect.left + 'px' };
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const menuHeight = 250;
+                    let top = rect.bottom + window.scrollY + 5;
+                    if (spaceBelow < menuHeight) {
+                        top = rect.top + window.scrollY - menuHeight - 5;
+                    }
+                    this.statusMenuPos = { top: top + 'px', left: rect.left + 'px' };
                 },
                 changeStatus(item, status) {
                     item.status = status;
@@ -1746,15 +1768,12 @@
                     const logo1Data = await loadImage('logo1.png');
                     const logo2Data = await loadImage('logo2.png');
                     
-                    // Cabeçalho moderno off-white claro no PDF
                     doc.setFillColor(248, 250, 252); 
                     doc.rect(0, 0, doc.internal.pageSize.width, 36, 'F');
                     
-                    // Linha sutil abaixo do cabeçalho
                     doc.setDrawColor(226, 232, 240);
                     doc.line(0, 36, doc.internal.pageSize.width, 36);
 
-                    // Logos nas pontas bem aparentes
                     if (logo1Data) {
                         doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
                     }
@@ -1762,7 +1781,6 @@
                         doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
                     }
 
-                    // Títulos institucionais com cores escuras para fundo claro
                     doc.setTextColor(15, 23, 42);
                     doc.setFontSize(15);
                     doc.setFont("helvetica", "bold");
@@ -1777,21 +1795,20 @@
                     doc.setTextColor(100, 116, 139);
                     doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 44, 30, { align: 'right' });
 
-                    // Configuração de larguras proporcionais para os cabeçalhos ficarem completos e sem quebrar
                     const isPedidos = titulo.toLowerCase().includes('pedido');
                     const columnStylesConfig = isPedidos ? {
-                        0: { cellWidth: 20 }, // Data
-                        1: { cellWidth: 18 }, // Loja
-                        2: { cellWidth: 24 }, // ID Cliente
-                        3: { cellWidth: 28 }, // Criança
-                        4: { cellWidth: 16 }, // Idade
-                        5: { cellWidth: 28 }, // Tema
-                        6: { cellWidth: 38 }, // Item
-                        7: { cellWidth: 12 }, // Qtd
-                        8: { cellWidth: 18 }, // Recorte
-                        9: { cellWidth: 14 }, // NF
-                        10: { cellWidth: 14 }, // Sab
-                        11: { cellWidth: 32 }  // Status
+                        0: { cellWidth: 20 },
+                        1: { cellWidth: 18 },
+                        2: { cellWidth: 24 },
+                        3: { cellWidth: 28 },
+                        4: { cellWidth: 16 },
+                        5: { cellWidth: 28 },
+                        6: { cellWidth: 38 },
+                        7: { cellWidth: 12 },
+                        8: { cellWidth: 18 },
+                        9: { cellWidth: 14 },
+                        10: { cellWidth: 14 },
+                        11: { cellWidth: 32 }
                     } : {};
 
                     doc.autoTable({
