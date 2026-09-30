@@ -54,10 +54,11 @@
             100% { box-shadow: 0 0 2px currentColor, 0 0 5px currentColor; opacity: 0.8; }
         }
 
-        /* HEADER PRETO FOSCO PERMANENTE */
+        /* HEADER OFF-WHITE CLEAN MODERNO */
         header { 
-            background-color: #09090b !important; 
-            border-bottom-color: #27272a !important; 
+            background-color: rgba(250, 250, 250, 0.9) !important; 
+            backdrop-filter: blur(12px);
+            border-bottom-color: #e2e8f0 !important; 
         }
 
         /* ESTILO PARA CABEÇALHOS FIXOS DA TABELA */
@@ -74,8 +75,8 @@
 </head>
 <body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
 
-    <!-- CABEÇALHO SUPERIOR FIXO (PRETO FOSCO COM LOGOS MAIORES E CORES ESPECÍFICAS) -->
-    <header class="sticky top-0 z-50 shadow-xl transition-colors">
+    <!-- CABEÇALHO SUPERIOR FIXO (OFF-WHITE CLEAN COM LOGOS MAIORES E CORES ESPECÍFICAS) -->
+    <header class="sticky top-0 z-50 shadow-sm border-b transition-colors">
         <div class="max-w-[1600px] mx-auto px-6 h-24 flex items-center justify-between">
             
             <div class="flex items-center gap-4">
@@ -85,22 +86,22 @@
                 </div>
                 <div class="flex flex-col ml-1">
                     <h1 class="text-xl font-bold tracking-wide leading-tight">
-                        <span class="text-pink-500 font-extrabold">Elohim</span> 
-                        <span class="text-slate-300 font-normal">e</span> 
-                        <span class="text-blue-500 font-extrabold">Kadosh</span>
+                        <span class="text-pink-600 font-extrabold">Elohim</span> 
+                        <span class="text-slate-400 font-normal">e</span> 
+                        <span class="text-blue-600 font-extrabold">Kadosh</span>
                     </h1>
-                    <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-widest">Gestão de pedidos</span>
+                    <span class="text-[11px] text-slate-500 font-semibold uppercase tracking-widest">Gestão de pedidos</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <nav class="hidden lg:flex items-center gap-2 p-1.5 bg-[#18181b] rounded-2xl border border-slate-800">
+                <nav class="hidden lg:flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
                     <a href="#" @click.prevent="activeTab = 'pedidos'" 
-                       :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'pedidos' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800']">
+                       :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'pedidos' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white']">
                         <i class="ph-fill ph-squares-four text-lg"></i> Painel de Pedidos
                     </a>
                     <a href="#" @click.prevent="activeTab = 'financas'" 
-                       :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'financas' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800']">
+                       :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'financas' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white']">
                         <i class="ph-fill ph-currency-dollar text-lg"></i> Finanças
                     </a>
                 </nav>
@@ -108,11 +109,11 @@
                 <!-- Botão Exportar Relatório com Opções de PDF Customizadas -->
                 <div class="relative group hidden lg:block" @click.stop>
                     <button @click="openReportMenu = !openReportMenu" title="Gerar Relatório" 
-                            class="w-12 h-12 rounded-xl border flex items-center justify-center transition-all shadow-inner bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
+                            class="w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
                         <i class="ph-bold ph-download-simple text-xl"></i>
                     </button>
                     <transition name="fade">
-                        <div v-if="openReportMenu" class="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1 z-50">
+                        <div v-if="openReportMenu" class="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1 z-50">
                             <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-100">Exportar Relatório PDF</div>
                             <a href="#" @click.prevent="gerarRelatorio('pdf', true)" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors">
                                 <i class="ph-fill ph-file-pdf text-indigo-500 text-lg"></i> PDF Executivo (Com Cor)
@@ -129,7 +130,7 @@
                 </div>
 
                 <button @click="openAnalise" title="Análise" 
-                        class="w-12 h-12 rounded-xl border flex items-center justify-center transition-all shadow-inner hidden lg:flex bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
+                        class="w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm hidden lg:flex bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
                     <i class="ph-bold ph-chart-bar text-xl"></i>
                 </button>
             </div>
@@ -168,7 +169,7 @@
                                 </div>
                             </div>
                             <transition name="fade">
-                                <div v-if="openFilterDropdown === 'loja'" class="absolute z-50 top-full left-0 mt-1 w-full sm:w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                <div v-if="openFilterDropdown === 'loja'" class="absolute z-50 top-full left-0 mt-1 w-full sm:w-44 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1">
                                     <div @click="filtroLoja = 'Todas'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Todas' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Todas as Lojas</div>
                                     <div @click="filtroLoja = 'Elohim'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Elohim' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Elohim</div>
                                     <div @click="filtroLoja = 'Kadosh'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Kadosh' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Kadosh</div>
@@ -191,7 +192,7 @@
                                             </div>
                                         </div>
                                         <transition name="fade">
-                                            <div v-if="openFilterDropdown === 'sort'" class="absolute z-50 top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                            <div v-if="openFilterDropdown === 'sort'" class="absolute z-50 top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1">
                                                 <div v-for="option in sortOptions" :key="option.value" 
                                                      @click="sortKey = option.value; openFilterDropdown = null" 
                                                      class="px-4 py-2 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
@@ -436,14 +437,15 @@
                         <i class="ph-bold ph-trend-down text-3xl"></i>
                     </div>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex items-center justify-between relative overflow-hidden">
+                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex items-center justify-between relative overflow-hidden">
+                    <div class="w-2 bg-indigo-500 absolute left-0 top-0 bottom-0"></div>
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Saldo Atual</p>
-                        <h3 :class="['text-3xl font-black', saldoTotal >= 0 ? 'text-emerald-400' : 'text-red-400']">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Saldo Atual</p>
+                        <h3 :class="['text-3xl font-black', saldoTotal >= 0 ? 'text-emerald-600' : 'text-red-600']">
                             {{ formatCurrency(saldoTotal) }}
                         </h3>
                     </div>
-                    <div class="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-indigo-400">
+                    <div class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
                         <i class="ph-bold ph-scales text-3xl"></i>
                     </div>
                 </div>
@@ -613,9 +615,9 @@
                             <span class="text-3xl font-black text-red-500">{{ formatCurrency(totalSaidas) }}</span>
                         </div>
                     </div>
-                    <div class="bg-slate-900 rounded-3xl border border-slate-800 shadow-xl p-8 flex-1 flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
+                    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 flex-1 flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
                         <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Saldo Geral Consolidado</span>
-                        <span :class="['text-5xl lg:text-6xl font-black', saldoTotal >= 0 ? 'text-emerald-400' : 'text-red-400']">{{ formatCurrency(saldoTotal) }}</span>
+                        <span :class="['text-5xl lg:text-6xl font-black', saldoTotal >= 0 ? 'text-emerald-600' : 'text-red-600']">{{ formatCurrency(saldoTotal) }}</span>
                     </div>
                 </div>
                 
@@ -816,7 +818,7 @@
             <div class="relative bg-white rounded-3xl shadow-2xl w-full max-h-[90vh] flex flex-col overflow-hidden transform transition-all border border-slate-200" 
                  :class="modoPlanilha ? 'max-w-[95vw] lg:max-w-[90vw]' : 'max-w-3xl'">
                 
-                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-20">
                     <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <i class="ph-fill ph-package text-indigo-500"></i> Novo Cadastro de Pedido
                     </h3>
@@ -897,11 +899,12 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
-                            <div class="flex justify-between items-center mb-4">
+                        <!-- ITENS DO PEDIDO COM CABEÇALHO STICKY / BOTÃO FLUTUANTE SEMPRE APARENTE -->
+                        <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-white shadow-sm relative">
+                            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10 pt-1">
                                 <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Itens do Pedido</h4>
-                                <button type="button" @click="addNovoItemPedido" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-1">
-                                    <i class="ph-bold ph-plus"></i> Adicionar Item
+                                <button type="button" @click="addNovoItemPedido" class="text-xs bg-indigo-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-indigo-500 transition-all shadow-md flex items-center gap-1.5 transform hover:-translate-y-0.5">
+                                    <i class="ph-bold ph-plus text-sm"></i> Adicionar Item
                                 </button>
                             </div>
 
@@ -1717,7 +1720,6 @@
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF('landscape'); 
                     
-                    // Otimização leve de imagem para evitar arquivos pesados (max 120px)
                     const loadImage = async (url) => {
                         try {
                             return await new Promise((resolve, reject) => {
@@ -1744,10 +1746,14 @@
                     const logo1Data = await loadImage('logo1.png');
                     const logo2Data = await loadImage('logo2.png');
                     
-                    // Cabeçalho moderno preto fosco
-                    doc.setFillColor(9, 9, 11); 
+                    // Cabeçalho moderno off-white claro no PDF
+                    doc.setFillColor(248, 250, 252); 
                     doc.rect(0, 0, doc.internal.pageSize.width, 36, 'F');
                     
+                    // Linha sutil abaixo do cabeçalho
+                    doc.setDrawColor(226, 232, 240);
+                    doc.line(0, 36, doc.internal.pageSize.width, 36);
+
                     // Logos nas pontas bem aparentes
                     if (logo1Data) {
                         doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
@@ -1756,35 +1762,35 @@
                         doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
                     }
 
-                    // Títulos institucionais
-                    doc.setTextColor(255, 255, 255);
+                    // Títulos institucionais com cores escuras para fundo claro
+                    doc.setTextColor(15, 23, 42);
                     doc.setFontSize(15);
                     doc.setFont("helvetica", "bold");
                     doc.text("Elohim e Kadosh", doc.internal.pageSize.width / 2, 16, { align: 'center' });
                     
                     doc.setFontSize(10);
                     doc.setFont("helvetica", "normal");
-                    doc.setTextColor(203, 213, 225);
+                    doc.setTextColor(71, 85, 105);
                     doc.text(titulo, doc.internal.pageSize.width / 2, 25, { align: 'center' });
                     
                     doc.setFontSize(8);
-                    doc.setTextColor(148, 163, 184);
+                    doc.setTextColor(100, 116, 139);
                     doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 44, 30, { align: 'right' });
 
-                    // Configuração da tabela com largura proporcional para os títulos aparecerem completos
+                    // Configuração de larguras proporcionais para os cabeçalhos ficarem completos e sem quebrar
                     const isPedidos = titulo.toLowerCase().includes('pedido');
                     const columnStylesConfig = isPedidos ? {
-                        0: { cellWidth: 22 }, // Data
-                        1: { cellWidth: 20 }, // Loja
+                        0: { cellWidth: 20 }, // Data
+                        1: { cellWidth: 18 }, // Loja
                         2: { cellWidth: 24 }, // ID Cliente
-                        3: { cellWidth: 26 }, // Criança
-                        4: { cellWidth: 15 }, // Idade
-                        5: { cellWidth: 26 }, // Tema
-                        6: { cellWidth: 36 }, // Item
-                        7: { cellWidth: 15 }, // Qtd
+                        3: { cellWidth: 28 }, // Criança
+                        4: { cellWidth: 16 }, // Idade
+                        5: { cellWidth: 28 }, // Tema
+                        6: { cellWidth: 38 }, // Item
+                        7: { cellWidth: 12 }, // Qtd
                         8: { cellWidth: 18 }, // Recorte
-                        9: { cellWidth: 15 }, // NF
-                        10: { cellWidth: 15 }, // Sab
+                        9: { cellWidth: 14 }, // NF
+                        10: { cellWidth: 14 }, // Sab
                         11: { cellWidth: 32 }  // Status
                     } : {};
 
@@ -1796,18 +1802,20 @@
                         columnStyles: columnStylesConfig,
                         styles: { 
                             font: 'helvetica', 
-                            fontSize: 8.5, 
-                            cellPadding: 6, 
+                            fontSize: 8, 
+                            cellPadding: 5.5, 
                             textColor: [51, 65, 85], 
                             valign: 'middle',
-                            halign: 'center'
+                            halign: 'center',
+                            overflow: 'linebreak'
                         },
                         headStyles: { 
-                            fillColor: [24, 24, 27], 
+                            fillColor: [30, 41, 59], 
                             textColor: [255, 255, 255], 
                             fontStyle: 'bold', 
                             halign: 'center',
-                            cellPadding: 7
+                            cellPadding: 6,
+                            fontSize: 8
                         },
                         bodyStyles: {
                             lineColor: [241, 245, 249],
@@ -1818,7 +1826,6 @@
                         },
                         didParseCell: (data) => {
                             if (comCor && data.section === 'body') {
-                                // Identificar o status da linha atual (última coluna em pedidos ou coluna 3 em finanças)
                                 const rowValues = data.row.raw;
                                 const status = String(rowValues[rowValues.length - 1] || '').trim();
                                 
@@ -1826,20 +1833,20 @@
                                 let tc = [51, 65, 85];
 
                                 if (status === 'Finalizado' || status === 'Pago' || status === 'Entrada') {
-                                    bg = [209, 250, 229]; // Verde claro
-                                    tc = [6, 95, 70];     // Verde escuro
+                                    bg = [209, 250, 229]; 
+                                    tc = [6, 95, 70];     
                                 } else if (status === 'Sem informações' || status === 'Saída') {
-                                    bg = [254, 242, 242]; // Vermelho claro
-                                    tc = [153, 27, 27];   // Vermelho escuro
+                                    bg = [254, 242, 242]; 
+                                    tc = [153, 27, 27];   
                                 } else if (status.includes('Para aprovação') || status.includes('Aguardando') || status === 'Pendente') {
-                                    bg = [254, 243, 199]; // Amarelo/Âmbar claro
-                                    tc = [146, 64, 14];   // Amarelo/Âmbar escuro
+                                    bg = [254, 243, 199]; 
+                                    tc = [146, 64, 14];   
                                 } else if (status === 'Aprovado') {
-                                    bg = [219, 234, 254]; // Azul claro
-                                    tc = [30, 64, 175];   // Azul escuro
+                                    bg = [219, 234, 254]; 
+                                    tc = [30, 64, 175];   
                                 } else if (status === 'Impresso') {
-                                    bg = [243, 232, 255]; // Roxo claro
-                                    tc = [107, 33, 168];  // Roxo escuro
+                                    bg = [243, 232, 255]; 
+                                    tc = [107, 33, 168];  
                                 }
 
                                 if (bg) {
