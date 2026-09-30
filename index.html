@@ -339,10 +339,11 @@
 
                                 <!-- Item -->
                                 <td class="px-3 py-3 font-bold">
-                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col gap-0.5">
-                                        <span v-for="(it, iIdx) in item.itens" :key="iIdx" class="text-xs">
-                                            • {{ it.item }} <span class="text-slate-400 font-normal">({{ it.qtd }}x)</span>
-                                        </span>
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col gap-1.5">
+                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
+                                            <input type="text" v-model="it.item" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                                   :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[130px] font-bold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
+                                        </div>
                                     </div>
                                     <input v-else type="text" v-model="item.item" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
                                            :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
@@ -350,10 +351,12 @@
 
                                 <!-- Recorte -->
                                 <td class="px-2 py-3 text-center">
-                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-0.5">
-                                        <span v-for="(it, iIdx) in item.itens" :key="iIdx" class="text-[10px] font-bold" :class="it.recorte ? 'text-emerald-600' : 'text-slate-400'">
-                                            {{ it.recorte ? 'Sim' : 'Não' }}
-                                        </span>
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-1">
+                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
+                                            <button @click="if(item.editando){ it.recorte = !it.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', it.recorte ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                                <i :class="it.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <button v-else @click="if(item.editando){ item.recorte = !item.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.recorte ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
                                         <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
@@ -362,10 +365,11 @@
 
                                 <!-- Qtd -->
                                 <td class="px-2 py-3 text-center">
-                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-0.5">
-                                        <span v-for="(it, iIdx) in item.itens" :key="iIdx" class="text-xs font-bold">
-                                            {{ it.qtd }}
-                                        </span>
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-1">
+                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
+                                            <input type="number" min="1" v-model.number="it.qtd" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                                   :class="['w-10 h-7 text-center rounded-lg border outline-none font-bold text-xs transition-all mx-auto', item.editando ? 'border-current bg-white/80' : 'border-transparent bg-transparent']">
+                                        </div>
                                     </div>
                                     <input v-else type="number" min="1" v-model.number="item.qtd" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
                                            :class="['w-10 h-7 text-center rounded-lg border outline-none font-bold text-xs transition-all mx-auto', item.editando ? 'border-current bg-white/80' : 'border-transparent bg-transparent']">
