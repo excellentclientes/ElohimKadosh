@@ -263,7 +263,7 @@
                 </div>
             </div>
 
-            <!-- Tabela com Ordem Exata das Colunas e Edição por Linha -->
+            <!-- Tabela com Ordem Exata das Colunas, Linha Pintada e Edição por Linha -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full relative z-10">
                 <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)] min-h-[350px] w-full custom-scrollbar rounded-3xl">
                     <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
@@ -279,13 +279,13 @@
                                 <th @click="setSortKey('qtd')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center justify-center gap-1">Qtd <i :class="getSortIcon('qtd')"></i></div>
                                 </th>
-                                <th @click="setSortKey('tema')" class="px-3 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                <th @click="setSortKey('tema')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Tema <i :class="getSortIcon('tema')"></i></div>
                                 </th>
-                                <th @click="setSortKey('nomeCrianca')" class="px-3 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                <th @click="setSortKey('nomeCrianca')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Nome <i :class="getSortIcon('nomeCrianca')"></i></div>
                                 </th>
-                                <th @click="setSortKey('idade')" class="px-2 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                <th @click="setSortKey('idade')" class="px-2 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Idade <i :class="getSortIcon('idade')"></i></div>
                                 </th>
                                 <th @click="setSortKey('tempo')" class="px-3 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
@@ -302,30 +302,30 @@
                                 <th class="px-3 py-4 text-right">Ação</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200">
+                        <tbody class="divide-y divide-black/10">
                             <tr v-for="(item, index) in filteredItems" :key="item.id" 
-                                :class="['transition-colors duration-200 group border-b border-slate-200', getRowColor(item.status)]">
+                                :class="['transition-colors duration-200 group border-b', getRowColor(item.status)]">
                                 
                                 <!-- Status -->
                                 <td class="px-3 py-3 border-l-4" :class="getRowBorderColor(item.status)">
                                     <div class="inline-flex items-center select-none" @click.stop>
                                         <div @click="openStatusMenu(item, $event)" 
-                                             :class="['pl-3 pr-7 py-1.5 rounded-lg text-[10px] font-extrabold cursor-pointer outline-none transition-all shadow-sm border border-transparent hover:border-black/20 flex items-center gap-2 min-w-[120px] relative', getStatusColor(item.status)]">
+                                             :class="['pl-3 pr-7 py-1.5 rounded-lg text-[10px] font-extrabold cursor-pointer outline-none transition-all shadow-sm border border-transparent hover:border-black/25 flex items-center gap-2 min-w-[120px] relative', getStatusColor(item.status)]">
                                             {{ item.status }}
-                                            <i class="ph-bold ph-caret-down absolute right-2.5 text-[10px] opacity-70" :class="getStatusIconColor(item.status)"></i>
+                                            <i class="ph-bold ph-caret-down absolute right-2.5 text-[10px] opacity-70"></i>
                                         </div>
                                     </div>
                                 </td>
 
                                 <!-- Item -->
-                                <td class="px-3 py-3 font-bold text-slate-900">
+                                <td class="px-3 py-3 font-bold">
                                     <input type="text" v-model="item.item" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
-                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-xs', item.editando ? 'border-indigo-400 bg-white text-slate-900' : 'border-transparent text-slate-900']">
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
                                 </td>
 
                                 <!-- Recorte -->
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="if(item.editando){ item.recorte = !item.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300']">
+                                    <button @click="if(item.editando){ item.recorte = !item.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.recorte ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
                                         <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
@@ -333,30 +333,30 @@
                                 <!-- Qtd -->
                                 <td class="px-2 py-3 text-center">
                                     <input type="number" min="1" v-model.number="item.qtd" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
-                                           :class="['w-10 h-7 text-center rounded-lg border outline-none font-bold text-xs transition-all mx-auto', item.editando ? 'border-indigo-400 bg-white text-slate-900' : 'border-transparent bg-transparent text-slate-900']">
+                                           :class="['w-10 h-7 text-center rounded-lg border outline-none font-bold text-xs transition-all mx-auto', item.editando ? 'border-current bg-white/80' : 'border-transparent bg-transparent']">
                                 </td>
 
                                 <!-- Tema -->
-                                <td class="px-3 py-3 font-bold text-slate-800">
+                                <td class="px-3 py-3 font-bold">
                                     <input type="text" v-model="item.tema" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-xs', item.editando ? 'border-indigo-400 bg-white text-slate-800' : 'border-transparent text-slate-800']">
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
                                 </td>
 
                                 <!-- Nome Criança -->
-                                <td class="px-3 py-3 font-semibold text-slate-800">
+                                <td class="px-3 py-3 font-semibold">
                                     <input type="text" v-model="item.nomeCrianca" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-xs', item.editando ? 'border-indigo-400 bg-white text-slate-800' : 'border-transparent text-slate-800']">
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
                                 </td>
 
                                 <!-- Idade -->
-                                <td class="px-2 py-3 font-semibold text-slate-800">
+                                <td class="px-2 py-3 font-semibold">
                                     <input type="text" v-model="item.idade" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-xs text-center', item.editando ? 'border-indigo-400 bg-white text-slate-800' : 'border-transparent text-slate-800']">
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-xs text-center', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
                                 </td>
                                 
                                 <!-- Tempo -->
                                 <td class="px-3 py-3 text-center">
-                                    <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest shadow-sm bg-white/60 backdrop-blur-sm" :class="getTempoBadge(item.data).badgeClass">
+                                    <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest shadow-sm bg-white/70 backdrop-blur-sm" :class="getTempoBadge(item.data).badgeClass">
                                         <span class="relative flex h-2 w-2">
                                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="getTempoBadge(item.data).dotBaseClass"></span>
                                             <span class="relative inline-flex rounded-full h-2 w-2 glow-pulse" :class="getTempoBadge(item.data).dotClass"></span>
@@ -366,14 +366,14 @@
                                 </td>
 
                                 <!-- Data -->
-                                <td class="px-3 py-3 text-slate-800 font-semibold text-xs">
-                                    <input type="date" v-if="item.editando" v-model="item.data" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-semibold outline-none">
+                                <td class="px-3 py-3 font-semibold text-xs">
+                                    <input type="date" v-if="item.editando" v-model="item.data" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-semibold outline-none text-slate-800">
                                     <span v-else>{{ formatDate(item.data) }}</span>
                                 </td>
 
                                 <!-- Loja -->
-                                <td class="px-3 py-3 font-bold text-slate-900 text-xs">
-                                    <select v-if="item.editando" v-model="item.loja" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-bold outline-none">
+                                <td class="px-3 py-3 font-bold text-xs">
+                                    <select v-if="item.editando" v-model="item.loja" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-bold outline-none text-slate-800">
                                         <option v-for="l in lojas" :key="l" :value="l">{{ l }}</option>
                                     </select>
                                     <span v-else>{{ item.loja }}</span>
@@ -381,14 +381,14 @@
 
                                 <!-- NF -->
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="if(item.editando){ item.nf = !item.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300']">
+                                    <button @click="if(item.editando){ item.nf = !item.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
                                         <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
 
                                 <!-- Sab -->
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="if(item.editando){ item.sab = !item.sab; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300']">
+                                    <button @click="if(item.editando){ item.sab = !item.sab; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
                                         <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
@@ -396,10 +396,10 @@
                                 <!-- Ação (Editar e Excluir) -->
                                 <td class="px-3 py-3 text-right">
                                     <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button @click="item.editando = !item.editando" :title="item.editando ? 'Salvar Edição' : 'Editar Linha'" :class="['w-7 h-7 rounded-lg flex items-center justify-center shadow-sm transition-all border', item.editando ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600']">
+                                        <button @click="item.editando = !item.editando" :title="item.editando ? 'Salvar Edição' : 'Editar Linha'" :class="['w-7 h-7 rounded-lg flex items-center justify-center shadow-sm transition-all border', item.editando ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-black/20 hover:bg-indigo-50 hover:text-indigo-600']">
                                             <i :class="item.editando ? 'ph-bold ph-check text-sm' : 'ph-bold ph-pencil text-sm'"></i>
                                         </button>
-                                        <button @click.stop="confirmDelete(item.id, 'pedido')" title="Excluir" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 shadow-sm transition-all bg-white border border-transparent hover:border-red-200">
+                                        <button @click.stop="confirmDelete(item.id, 'pedido')" title="Excluir" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-600 hover:bg-red-50 shadow-sm transition-all bg-white border border-black/20 hover:border-red-300">
                                             <i class="ph-bold ph-trash text-sm"></i>
                                         </button>
                                     </div>
@@ -758,90 +758,69 @@
         </div>
     </transition>
 
-    <!-- TELA: MODO TV -->
+    <!-- TELA: MODO TV IDÊNTICO À REFERÊNCIA -->
     <transition name="fade">
         <div v-if="isTVMode" class="fixed inset-0 z-[100] bg-slate-100 flex flex-col text-slate-800 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white shadow-sm">
-                <div class="flex items-center gap-3">
-                    <i class="ph-fill ph-monitor-play text-3xl text-indigo-600 glow-pulse"></i>
-                    <h1 class="text-2xl font-black tracking-wider uppercase text-slate-900">
-                        Modo TV <span class="text-sm text-slate-500 ml-2 font-medium tracking-normal">Acompanhamento em Tempo Real</span>
-                    </h1>
-                </div>
-                <button @click="exitTVMode" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl font-bold transition-all border border-red-200">
-                    <i class="ph-bold ph-x"></i> Sair
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white shadow-sm shrink-0">
+                <h1 class="text-sm font-bold text-slate-700">
+                    Todos os pedidos ativos <span class="font-extrabold text-slate-900">{{ pedidos.filter(p => p.status !== 'Finalizado').length }} pedido(s)</span>
+                </h1>
+                <button @click="exitTVMode" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+                    Sair do Modo TV
                 </button>
             </div>
             
             <div class="flex-1 flex gap-4 p-4 overflow-hidden">
-                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
-                    <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
-                        <h2 class="text-xl font-black text-indigo-600 uppercase tracking-widest">Todos os Pedidos ({{tvAllOrders.length}})</h2>
-                    </div>
+                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                     <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                        <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 bg-slate-50">
+                        <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
+                            <thead class="text-slate-100 text-[11px] uppercase tracking-widest font-bold bg-slate-900 sticky top-0 z-10">
                                 <tr>
-                                    <th class="px-4 py-3">Cliente / Loja</th>
-                                    <th class="px-4 py-3">Tema / Criança</th>
-                                    <th class="px-4 py-3">Item / Qtd</th>
-                                    <th class="px-4 py-3 text-center">Status</th>
+                                    <th class="px-4 py-3">ITEM</th>
+                                    <th class="px-4 py-3">Qtd.</th>
+                                    <th class="px-4 py-3">TEMA</th>
+                                    <th class="px-4 py-3">NOME</th>
+                                    <th class="px-4 py-3">Idade</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-200">
-                                <tr v-for="item in tvAllOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
-                                    <td class="px-4 py-3 border-l-4" :class="getRowBorderColor(item.status)">
-                                        <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
-                                        <div class="font-bold text-slate-900">{{item.loja}}</div>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <div class="font-bold text-indigo-700">{{item.tema || '-'}}</div>
-                                        <div class="text-[11px] text-slate-500 font-semibold">{{item.nomeCrianca || '-'}}</div>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <div class="font-bold text-slate-900">{{item.item}}</div>
-                                        <div class="text-[11px] text-slate-500 font-semibold">Qtd: {{item.qtd}}</div>
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
-                                    </td>
+                            <tbody class="divide-y divide-black/10">
+                                <tr v-for="item in tvAllOrders" :key="item.id" :class="['transition-colors border-b', getRowColor(item.status)]">
+                                    <td class="px-4 py-3 font-bold border-l-4" :class="getRowBorderColor(item.status)">{{ item.item }}</td>
+                                    <td class="px-4 py-3 font-bold">{{ item.qtd }}</td>
+                                    <td class="px-4 py-3 font-bold">{{ item.tema || '-' }}</td>
+                                    <td class="px-4 py-3 font-semibold">{{ item.nomeCrianca || '-' }}</td>
+                                    <td class="px-4 py-3 font-semibold">{{ item.idade || '-' }}</td>
+                                </tr>
+                                <tr v-if="tvAllOrders.length === 0">
+                                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 bg-white">Nenhum pedido.</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
                 
-                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
-                    <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
-                        <h2 class="text-xl font-black text-emerald-600 uppercase tracking-widest">Pedidos de Hoje ({{tvTodayOrders.length}})</h2>
-                    </div>
-                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                        <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 bg-slate-50">
+                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar flex items-center justify-center">
+                        <div v-if="tvTodayOrders.length === 0" class="text-slate-400 font-bold text-sm">
+                            Nenhum pedido.
+                        </div>
+                        <table v-else class="w-full text-left text-sm whitespace-nowrap border-collapse self-start">
+                            <thead class="text-slate-100 text-[11px] uppercase tracking-widest font-bold bg-slate-900 sticky top-0 z-10">
                                 <tr>
-                                    <th class="px-4 py-3">Cliente / Loja</th>
-                                    <th class="px-4 py-3">Tema / Criança</th>
-                                    <th class="px-4 py-3">Item / Qtd</th>
-                                    <th class="px-4 py-3 text-center">Status</th>
+                                    <th class="px-4 py-3">ITEM</th>
+                                    <th class="px-4 py-3">Qtd.</th>
+                                    <th class="px-4 py-3">TEMA</th>
+                                    <th class="px-4 py-3">NOME</th>
+                                    <th class="px-4 py-3">Idade</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-200">
-                                <tr v-for="item in tvTodayOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
-                                    <td class="px-4 py-3 border-l-4" :class="getRowBorderColor(item.status)">
-                                        <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
-                                        <div class="font-bold text-slate-900">{{item.loja}}</div>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <div class="font-bold text-indigo-700">{{item.tema || '-'}}</div>
-                                        <div class="text-[11px] text-slate-500 font-semibold">{{item.nomeCrianca || '-'}}</div>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <div class="font-bold text-slate-900">{{item.item}}</div>
-                                        <div class="text-[11px] text-slate-500 font-semibold">Qtd: {{item.qtd}}</div>
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
-                                    </td>
+                            <tbody class="divide-y divide-black/10">
+                                <tr v-for="item in tvTodayOrders" :key="item.id" :class="['transition-colors border-b', getRowColor(item.status)]">
+                                    <td class="px-4 py-3 font-bold border-l-4" :class="getRowBorderColor(item.status)">{{ item.item }}</td>
+                                    <td class="px-4 py-3 font-bold">{{ item.qtd }}</td>
+                                    <td class="px-4 py-3 font-bold">{{ item.tema || '-' }}</td>
+                                    <td class="px-4 py-3 font-semibold">{{ item.nomeCrianca || '-' }}</td>
+                                    <td class="px-4 py-3 font-semibold">{{ item.idade || '-' }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1269,7 +1248,6 @@
                 pedidosFiltradosPorLoja() {
                     let lista = this.filtroLoja === 'Todas' ? this.pedidos : this.pedidos.filter(p => p.loja === this.filtroLoja);
                     
-                    // Se nenhum status específico foi selecionado, esconde os finalizados por padrão
                     if (this.activeStatuses.length === 0) {
                         lista = lista.filter(p => p.status !== 'Finalizado');
                     }
@@ -1351,11 +1329,11 @@
                     return counts;
                 },
                 tvAllOrders() {
-                    return [...this.pedidos].sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, this.tvLimit);
+                    return [...this.pedidos].filter(p => p.status !== 'Finalizado').sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, this.tvLimit);
                 },
                 tvTodayOrders() {
                     const today = new Date().toISOString().split('T')[0];
-                    return this.pedidos.filter(p => p.data === today).slice(0, this.tvLimit);
+                    return this.pedidos.filter(p => p.data === today && p.status !== 'Finalizado').slice(0, this.tvLimit);
                 }
             },
             methods: {
@@ -1442,7 +1420,7 @@
                     else if (status === 'Para aprovação') base += "bg-blue-50 text-blue-900 ";
                     else if (status === 'Aprovado') base += "bg-amber-50 text-amber-900 ";
                     else if (status === 'Impresso') base += "bg-emerald-50 text-emerald-900 ";
-                    else if (status === 'Aguardando coleta') base += "bg-teal-900 text-white ";
+                    else if (status === 'Aguardando coleta') base += "bg-white text-teal-900 ";
                     else if (status === 'Finalizado') base += "bg-slate-200 text-slate-900 ";
 
                     if (isActive) {
@@ -1453,7 +1431,7 @@
                         else if (status === 'Para aprovação') base += "border-blue-500 ring-blue-500";
                         else if (status === 'Aprovado') base += "border-amber-500 ring-amber-500";
                         else if (status === 'Impresso') base += "border-emerald-500 ring-emerald-500";
-                        else if (status === 'Aguardando coleta') base += "border-teal-700 ring-teal-700";
+                        else if (status === 'Aguardando coleta') base += "border-teal-800 ring-teal-800";
                         else if (status === 'Finalizado') base += "border-slate-500 ring-slate-500";
                     } else {
                         base += "border-slate-200 hover:-translate-y-1 hover:shadow-md";
@@ -1467,7 +1445,7 @@
                     if (status === 'Para aprovação') return "bg-blue-500";
                     if (status === 'Aprovado') return "bg-amber-500";
                     if (status === 'Impresso') return "bg-emerald-500";
-                    if (status === 'Aguardando coleta') return "bg-teal-700";
+                    if (status === 'Aguardando coleta') return "bg-teal-800";
                     if (status === 'Finalizado') return "bg-slate-600";
                     return "bg-indigo-500";
                 },
@@ -1479,13 +1457,13 @@
                     else if (status === 'Para aprovação') textClass = "text-blue-600";
                     else if (status === 'Aprovado') textClass = "text-amber-600";
                     else if (status === 'Impresso') textClass = "text-emerald-600";
-                    else if (status === 'Aguardando coleta') textClass = "text-teal-300";
+                    else if (status === 'Aguardando coleta') textClass = "text-teal-800";
                     else if (status === 'Finalizado') textClass = "text-slate-700";
 
                     return { 
                         text: "text-slate-600", 
                         number: textClass, 
-                        iconBg: "bg-white/80", 
+                        iconBg: "bg-slate-100", 
                         icon: textClass 
                     };
                 },
@@ -1500,15 +1478,15 @@
                     return "ph-info";
                 },
                 getRowColor(status) {
-                    if (status === 'Novo') return "bg-white hover:bg-slate-50";
-                    if (status === 'Com informação') return "bg-pink-50/40 hover:bg-pink-50/90";
-                    if (status === 'Sem informação') return "bg-red-50/50 hover:bg-red-50/90";
-                    if (status === 'Para aprovação') return "bg-blue-50/40 hover:bg-blue-50/90";
-                    if (status === 'Aprovado') return "bg-amber-50/40 hover:bg-amber-50/90";
-                    if (status === 'Impresso') return "bg-emerald-50/40 hover:bg-emerald-50/90";
-                    if (status === 'Aguardando coleta') return "bg-teal-50/60 hover:bg-teal-100/60";
-                    if (status === 'Finalizado') return "bg-slate-100/70 hover:bg-slate-200/70";
-                    return "bg-white hover:bg-slate-50";
+                    if (status === 'Novo') return "bg-white text-slate-800 hover:bg-slate-50";
+                    if (status === 'Com informação') return "bg-pink-100/70 text-pink-950 hover:bg-pink-100";
+                    if (status === 'Sem informação') return "bg-red-100/70 text-red-950 hover:bg-red-100";
+                    if (status === 'Para aprovação') return "bg-blue-100/70 text-blue-950 hover:bg-blue-100";
+                    if (status === 'Aprovado') return "bg-amber-100/80 text-amber-950 hover:bg-amber-100";
+                    if (status === 'Impresso') return "bg-emerald-100/70 text-emerald-950 hover:bg-emerald-100";
+                    if (status === 'Aguardando coleta') return "bg-teal-700 text-white hover:bg-teal-800";
+                    if (status === 'Finalizado') return "bg-slate-300 text-slate-900 hover:bg-slate-300/90";
+                    return "bg-white text-slate-800 hover:bg-slate-50";
                 },
                 getRowBorderColor(status) {
                     if (status === 'Novo') return "border-slate-400";
@@ -1517,23 +1495,20 @@
                     if (status === 'Para aprovação') return "border-blue-500";
                     if (status === 'Aprovado') return "border-amber-500";
                     if (status === 'Impresso') return "border-emerald-500";
-                    if (status === 'Aguardando coleta') return "border-teal-700";
-                    if (status === 'Finalizado') return "border-slate-500";
+                    if (status === 'Aguardando coleta') return "border-teal-900";
+                    if (status === 'Finalizado') return "border-slate-600";
                     return "border-indigo-400";
                 },
                 getStatusColor(status) {
-                    if (status === 'Novo') return "bg-slate-100 text-slate-800 border border-slate-300";
-                    if (status === 'Com informação') return "bg-pink-100 text-pink-800 border border-pink-300";
-                    if (status === 'Sem informação') return "bg-red-100 text-red-800 border border-red-300";
-                    if (status === 'Para aprovação') return "bg-blue-100 text-blue-800 border border-blue-300";
-                    if (status === 'Aprovado') return "bg-amber-100 text-amber-800 border border-amber-300";
-                    if (status === 'Impresso') return "bg-emerald-100 text-emerald-800 border border-emerald-300";
+                    if (status === 'Novo') return "bg-white text-slate-800 border border-slate-300";
+                    if (status === 'Com informação') return "bg-pink-200 text-pink-900 border border-pink-400";
+                    if (status === 'Sem informação') return "bg-red-200 text-red-900 border border-red-400";
+                    if (status === 'Para aprovação') return "bg-blue-200 text-blue-900 border border-blue-400";
+                    if (status === 'Aprovado') return "bg-amber-200 text-amber-900 border border-amber-400";
+                    if (status === 'Impresso') return "bg-emerald-200 text-emerald-900 border border-emerald-400";
                     if (status === 'Aguardando coleta') return "bg-teal-800 text-teal-100 border border-teal-900";
-                    if (status === 'Finalizado') return "bg-slate-300 text-slate-800 border border-slate-400";
+                    if (status === 'Finalizado') return "bg-slate-400 text-slate-900 border border-slate-500";
                     return "bg-indigo-100 text-indigo-800";
-                },
-                getStatusIconColor(status) {
-                    return "text-current";
                 },
                 getTempoBadge(data) {
                     if (!data) return { text: "-", badgeClass: "text-slate-600 border-slate-200", dotBaseClass: "bg-slate-400", dotClass: "bg-slate-500" };
@@ -1548,10 +1523,10 @@
                     const diffTime = hoje - dataPedido;
                     const diffDias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-                    if (diffDias === 0) return { text: "Hoje", badgeClass: "text-emerald-600 border-emerald-200", dotBaseClass: "bg-emerald-400", dotClass: "bg-emerald-500" };
-                    if (diffDias === 1) return { text: "Ontem", badgeClass: "text-blue-600 border-blue-200", dotBaseClass: "bg-blue-400", dotClass: "bg-blue-500" };
-                    if (diffDias <= 3) return { text: diffDias + " Dias", badgeClass: "text-amber-600 border-amber-200", dotBaseClass: "bg-amber-400", dotClass: "bg-amber-500" };
-                    return { text: diffDias + " Dias", badgeClass: "text-red-600 border-red-200", dotBaseClass: "bg-red-400", dotClass: "bg-red-500" };
+                    if (diffDias === 0) return { text: "Hoje", badgeClass: "text-emerald-700 border-emerald-300 bg-emerald-50", dotBaseClass: "bg-emerald-400", dotClass: "bg-emerald-600" };
+                    if (diffDias === 1) return { text: "Ontem", badgeClass: "text-blue-700 border-blue-300 bg-blue-50", dotBaseClass: "bg-blue-400", dotClass: "bg-blue-600" };
+                    if (diffDias <= 3) return { text: diffDias + " Dias", badgeClass: "text-amber-700 border-amber-300 bg-amber-50", dotBaseClass: "bg-amber-400", dotClass: "bg-amber-600" };
+                    return { text: diffDias + " Dias", badgeClass: "text-red-700 border-red-300 bg-red-50", dotBaseClass: "bg-red-400", dotClass: "bg-red-600" };
                 },
                 formatDate(dateStr) {
                     if (!dateStr) return '';
@@ -1560,11 +1535,6 @@
                 },
                 formatCurrency(val) {
                     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
-                },
-                copyToClipboard(text) {
-                    navigator.clipboard.writeText(text);
-                    this.copiedId = text;
-                    setTimeout(() => this.copiedId = null, 2000);
                 },
                 updatePedidoFirebase(item) {
                     if (window.FirebaseDB && item.id) {
@@ -1642,7 +1612,6 @@
                         if (p.loja === 'Kadosh') dataByDate[p.data].kadosh++;
                     });
 
-                    // Top Itens Ordenados
                     const sortedTopItens = Object.entries(itemCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
                     const topItensCategories = sortedTopItens.map(i => i[0]);
                     const topItensValues = sortedTopItens.map(i => i[1]);
