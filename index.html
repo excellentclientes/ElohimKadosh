@@ -1865,7 +1865,11 @@
                     const tbody = event.target.closest('tbody');
                     const rows = Array.from(tbody.querySelectorAll('tr'));
                     
+                    // Desativa a seleção de texto da página durante o arrasto
+                    document.body.style.userSelect = 'none';
+                    
                     const onMouseMove = (e) => {
+                        e.preventDefault();
                         const targetRow = document.elementFromPoint(e.clientX, e.clientY)?.closest('tr');
                         if (targetRow) {
                             const targetIndex = rows.indexOf(targetRow);
@@ -1880,6 +1884,8 @@
                     };
 
                     const onMouseUp = () => {
+                        // Restaura a seleção normal de texto ao soltar o mouse
+                        document.body.style.userSelect = '';
                         window.removeEventListener('mousemove', onMouseMove);
                         window.removeEventListener('mouseup', onMouseUp);
                     };
