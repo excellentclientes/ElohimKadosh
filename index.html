@@ -129,10 +129,17 @@
                     </transition>
                 </div>
 
-                <button @click="openAnalise" title="Análise" 
-                        class="w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm hidden lg:flex bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
-                    <i class="ph-bold ph-chart-bar text-xl"></i>
-                </button>
+                <div class="hidden lg:flex items-center gap-2">
+                    <button @click="toggleFullScreen" :title="isFullScreen ? 'Sair da Tela Cheia' : 'Tela Cheia'" 
+                            class="w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
+                        <i :class="isFullScreen ? 'ph-bold ph-corners-in text-xl' : 'ph-bold ph-corners-out text-xl'"></i>
+                    </button>
+                    
+                    <button @click="openAnalise" title="Análise" 
+                            class="w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
+                        <i class="ph-bold ph-chart-bar text-xl"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -1170,6 +1177,8 @@
                     senhaErro: false,
                     financasLiberado: false,
 
+                    isFullScreen: false,
+
                     lojas: ['Elohim', 'Kadosh'],
                     statuses: ['Com informações', 'Sem informações', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
                     
@@ -1230,7 +1239,6 @@
             },
             watch: {
                 activeTab(newVal) {
-                    // Tranca a aba finanças sempre que sair dela
                     if (newVal !== 'financas') {
                         this.financasLiberado = false;
                     }
@@ -1329,6 +1337,25 @@
                 }
             },
             methods: {
+                toggleFullScreen() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(err => {
+                            console.error("Erro ao ativar tela cheia:", err);
+                        });
+                        this.isFullScreen = true;
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        }
+                        this.isFullScreen = false;
+                    }
+                },
+                requestFullScreenIfNeeded() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(() => {});
+                        this.isFullScreen = true;
+                    }
+                },
                 closeAllDropdowns() {
                     this.openFilterDropdown = null;
                     this.openReportMenu = false;
@@ -1552,6 +1579,7 @@
                     this.cancelDelete();
                 },
                 openAnalise() {
+                    this.requestFullScreenIfNeeded();
                     this.previousTab = this.activeTab;
                     this.activeTab = 'analise';
                 },
@@ -1627,6 +1655,7 @@
                     buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); 
                 },
                 enterTVMode() {
+                    this.requestFullScreenIfNeeded();
                     this.isTVMode = true;
                     this.showTVConfig = false;
                 },
@@ -1992,6 +2021,10 @@
                 }
             },
             mounted() {
+                document.addEventListener('fullscreenchange', () => {
+                    this.isFullScreen = !!document.fullscreenElement;
+                });
+
                 const initFirebase = () => {
                     if (window.FirebaseDB) {
                         window.FirebaseDB.listenPedidos((lista) => {
