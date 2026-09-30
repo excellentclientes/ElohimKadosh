@@ -1914,11 +1914,11 @@
                     if(this.planilhaLinhas.length === 0) this.addPlanilhaRow();
                 },
                 salvarTodaPlanilha() {
-                    // Agrupa linhas com as mesmas informações gerais (Exceto Item, Qtd, Recorte)
+                    // Agrupa linhas considerando apenas as informações gerais do cliente/pedido
                     const grupos = {};
                     this.planilhaLinhas.forEach(linha => {
                         if (linha.idCliente && linha.item) {
-                            const chave = `${linha.loja}_${linha.data}_${linha.idCliente}_${(linha.nomeCrianca || '').trim()}_${(linha.idade || '').trim()}_${(linha.tema || '').trim()}_${linha.nf}_${linha.sab}`;
+                            const chave = `${linha.loja}_${linha.data}_${linha.idCliente}_${(linha.nomeCrianca || '').trim()}_${(linha.idade || '').trim()}_${(linha.tema || '').trim()}`;
                             
                             if (!grupos[chave]) {
                                 grupos[chave] = {
@@ -1929,12 +1929,17 @@
                                     nomeCrianca: linha.nomeCrianca,
                                     idade: linha.idade,
                                     tema: linha.tema,
-                                    nf: linha.nf,
-                                    sab: linha.sab,
+                                    nf: !!linha.nf,
+                                    sab: !!linha.sab,
                                     status: 'Novo',
                                     itens: []
                                 };
+                            } else {
+                                // Se qualquer linha do mesmo pedido tiver NF ou Sábado marcado, ativa no pedido unificado
+                                if (linha.nf) grupos[chave].nf = true;
+                                if (linha.sab) grupos[chave].sab = true;
                             }
+
                             grupos[chave].itens.push({
                                 item: linha.item,
                                 qtd: linha.qtd || 1,
