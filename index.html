@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elohim e Kadosh - Gestão de pedidos</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- ApexCharts (Para os gráficos modernos) -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- jsPDF e AutoTable (Para geração de relatórios modernos) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Conexão com Firebase Externa -->
+    <script type="module" src="firebase-config.js"></script>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        .scale-enter-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .scale-leave-active { transition: all 0.2s ease; }
+        .scale-enter-from, .scale-leave-to { opacity: 0; transform: scale(0.97) translateY(10px); }
+
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+        
+        .glow-pulse { animation: glow 2s infinite alternate; }
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px currentColor, 0 0 10px currentColor; }
+            100% { box-shadow: 0 0 2px currentColor, 0 0 5px currentColor; opacity: 0.8; }
+        }
+
+        /* HEADER OFF-WHITE CLEAN MODERNO */
+        header { 
+            background-color: rgba(250, 250, 250, 0.9) !important; 
+            backdrop-filter: blur(12px);
+            border-bottom-color: #e2e8f0 !important; 
+        }
+
+        /* ESTILO PARA CABEÇALHOS FIXOS DA TABELA */
+        .sticky-table-header th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: #f8fafc;
+            box-shadow: inset 0 -2px 0 #e2e8f0;
+        }
+
+        select::-ms-expand { display: none; }
+    </style>
+</head>
+<body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
+
+    <!-- CABEÇALHO SUPERIOR FIXO (OFF-WHITE CLEAN COM LOGOS MAIORES E CORES ESPECÍFICAS) -->
+    <header class="sticky top-0 z-50 shadow-sm border-b transition-colors">
+        <div class="max-w-[1600px] mx-auto px-6 h-24 flex items-center justify-between">
+            
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <img src="logo1.png" alt="Logo Elohim" class="h-14 w-auto object-contain">
+                    <img src="logo2.png" alt="Logo Kadosh" class="h-14 w-auto object-contain">
+                </div>
+                <div class="flex flex-col ml-1">
+                    <h1 class="text-xl font-bold tracking-wide leading-tight">
+                        <span class="text-pink-600 font-extrabold">Elohim</span> 
+                        <span class="text-slate-400 font-normal">e</span> 
+                        <span class="text-blue-600 font-extrabold">Kadosh</span>
+                    </h1>
+                    <span class="text-[11px] text-slate-500 font-semibold uppercase tracking-widest">Gestão de pedidos</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <nav class="hidden lg:flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
+                    <a href="#" @click.prevent="activeTab = 'pedidos'" 
+                       :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'pedidos' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white']">
+                        <i class="ph-fill ph-squares-four text-lg"></i> Painel de Pedidos
+                    </a>
+                    <a href="#" @click.prevent="activeTab = 'financas'" 
+                       :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'financas' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white']">
+                        <i class="ph-fill ph-currency-dollar text-lg"></i> Finanças
+                    </a>
+                </nav>
+
+                <!-- Botão Exportar Relatório com Opções de PDF Customizadas -->
+                <div class="relative group hidden lg:block" @click.stop>
+                    <button @click="openReportMenu = !openReportMenu" title="Gerar Relatório" 
+                            class="w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
+                        <i class="ph-bold ph-download-simple text-xl"></i>
+                    </button>
+                    <transition name="fade">
+                        <div v-if="openReportMenu" class="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1 z-50">
+                            <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-100">Exportar Relatório PDF</div>
+                            <a href="#" @click.prevent="gerarRelatorio('pdf', true)" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2 transition-colors">
+                                <i class="ph-fill ph-file-pdf text-indigo-500 text-lg"></i> PDF Executivo (Com Cor)
+                            </a>
+                            <a href="#" @click.prevent="gerarRelatorio('pdf', false)" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-800 flex items-center gap-2 transition-colors">
+                                <i class="ph-fill ph-file-pdf text-slate-500 text-lg"></i> PDF Clean (Sem Cor)
+                            </a>
+                            <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-y border-slate-100">Outros Formatos</div>
+                            <a href="#" @click.prevent="gerarRelatorio('excel')" class="px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 flex items-center gap-2 transition-colors">
+                                <i class="ph-fill ph-file-xls text-emerald-500 text-lg"></i> Planilha (CSV)
+                            </a>
+                        </div>
+                    </transition>
+                </div>
+
+                <button @click="openAnalise" title="Análise" 
+                        class="w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shadow-sm hidden lg:flex bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
+                    <i class="ph-bold ph-chart-bar text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-[1600px] mx-auto p-6 lg:p-8">
+        
+        <!-- ========================================== -->
+        <!-- ABA: PAINEL DE PEDIDOS                     -->
+        <!-- ========================================== -->
+        <div v-if="activeTab === 'pedidos'">
+            <!-- BARRA DE AÇÕES FIXA (FILTROS E AÇÕES) -->
+            <div class="sticky top-24 z-40 bg-[#f8fafc] pt-2 pb-2 mb-6 transition-all">
+                <div class="flex flex-col bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col xl:flex-row justify-between items-center gap-3 w-full">
+                        
+                        <div class="relative w-full xl:w-[280px] shrink-0">
+                            <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                            <input type="text" v-model="searchQuery" placeholder="Pesquisar pedidos ou tempo..." 
+                                   class="w-full pl-11 pr-8 py-3 bg-slate-50 border-transparent focus:bg-white border focus:border-indigo-300 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm font-medium">
+                            <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                <i class="ph-fill ph-x-circle text-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="relative w-full sm:w-auto shrink-0 group" @click.stop>
+                            <div @click="openFilterDropdown = openFilterDropdown === 'loja' ? null : 'loja'" 
+                                 class="w-full sm:w-44 bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-2xl pl-10 pr-8 py-3 cursor-pointer outline-none transition-all shadow-sm flex items-center justify-between">
+                                <div class="absolute left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ph-fill ph-storefront text-indigo-500 text-lg"></i>
+                                </div>
+                                <span>{{ filtroLoja === 'Todas' ? 'Todas as Lojas' : filtroLoja }}</span>
+                                <div class="absolute right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                                    <i class="ph-bold ph-caret-down text-xs"></i>
+                                </div>
+                            </div>
+                            <transition name="fade">
+                                <div v-if="openFilterDropdown === 'loja'" class="absolute z-50 top-full left-0 mt-1 w-full sm:w-44 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1">
+                                    <div @click="filtroLoja = 'Todas'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Todas' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Todas as Lojas</div>
+                                    <div @click="filtroLoja = 'Elohim'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Elohim' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Elohim</div>
+                                    <div @click="filtroLoja = 'Kadosh'; openFilterDropdown = null" class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="filtroLoja === 'Kadosh' ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">Kadosh</div>
+                                </div>
+                            </transition>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between xl:justify-end gap-3 w-full xl:w-auto flex-1">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
+                                    <div class="relative group" @click.stop>
+                                        <div @click="openFilterDropdown = openFilterDropdown === 'sort' ? null : 'sort'" 
+                                             class="bg-slate-100 hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-bold text-xs rounded-xl pl-8 pr-8 py-2 cursor-pointer outline-none transition-all shadow-sm w-44 flex items-center justify-between">
+                                            <div class="absolute left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="ph-bold ph-arrows-down-up text-indigo-500 text-sm"></i>
+                                            </div>
+                                            <span>{{ getSortLabel(sortKey) }}</span>
+                                            <div class="absolute right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                                                <i class="ph-bold ph-caret-down text-[10px]"></i>
+                                            </div>
+                                        </div>
+                                        <transition name="fade">
+                                            <div v-if="openFilterDropdown === 'sort'" class="absolute z-50 top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1">
+                                                <div v-for="option in sortOptions" :key="option.value" 
+                                                     @click="sortKey = option.value; openFilterDropdown = null" 
+                                                     class="px-4 py-2 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-colors" 
+                                                     :class="sortKey === option.value ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                                                    {{ option.label }}
+                                                </div>
+                                            </div>
+                                        </transition>
+                                    </div>
+                                    <button @click="toggleSortOrder" title="Alternar direção da ordem" class="w-8 h-8 flex items-center justify-center bg-white rounded-xl shadow-sm hover:shadow text-indigo-600 transition-all border border-slate-200 hover:border-indigo-300 ml-1">
+                                        <i :class="sortOrder === 'asc' ? 'ph-bold ph-arrow-up' : 'ph-bold ph-arrow-down'" class="text-sm"></i>
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
+                                    <label class="relative inline-flex items-center cursor-pointer group" title="Ativar Seleção Inteligente de Cards">
+                                        <input type="checkbox" v-model="selecaoDinamica" class="sr-only peer">
+                                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-500 group-hover:bg-slate-300"></div>
+                                        <span class="ml-2 text-[11px] font-bold text-slate-600 transition-colors">Seleção Dinâmica</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button @click="showTVConfig = true" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-xs shrink-0">
+                                <i class="ph-bold ph-monitor-play"></i> Modo TV
+                            </button>
+
+                            <button @click="showModalPedidos = true" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-xs shrink-0">
+                                <i class="ph-bold ph-plus"></i> Novo Pedido
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="activeStatuses.length > 0" class="flex flex-wrap gap-2 items-center min-h-[34px] pt-3">
+                        <transition-group name="fade">
+                            <div v-for="status in activeStatuses" :key="status" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] font-bold border border-indigo-100 whitespace-nowrap">
+                                <i class="ph-bold ph-funnel"></i> {{ status }}
+                                <button @click="removeStatus(status)" class="w-4 h-4 bg-indigo-200 text-indigo-700 rounded-full flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-colors ml-1"><i class="ph-bold ph-x text-[9px]"></i></button>
+                            </div>
+                        </transition-group>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards de Status -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
+                <div v-for="status in statuses" :key="status"
+                     @click="handleCardClick(status)"
+                     :class="getCardStyles(status, activeStatuses.includes(status))">
+                    
+                    <div :class="['h-1.5 w-full absolute top-0 left-0 transition-all', getCardBarAccent(status)]"></div>
+                    
+                    <div class="flex justify-between items-start mb-3 pt-1">
+                        <span :class="['text-[9px] lg:text-[10px] font-bold uppercase tracking-wider leading-tight w-2/3', getCardContentStyles(status, activeStatuses.includes(status)).text]">
+                            {{ status }}
+                        </span>
+                        <div :class="['w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors', getCardContentStyles(status, activeStatuses.includes(status)).iconBg]">
+                            <i :class="['text-lg ph-fill transition-colors', getStatusIcon(status), getCardContentStyles(status, activeStatuses.includes(status)).icon]"></i>
+                        </div>
+                    </div>
+                    <span :class="['text-2xl lg:text-3xl font-black tracking-tighter transition-colors', getCardContentStyles(status, activeStatuses.includes(status)).number]">
+                        {{ statusCounts[status] }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tabela com Cabeçalho Fixo -->
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full relative z-10">
+                <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)] min-h-[350px] w-full custom-scrollbar rounded-3xl">
+                    <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
+                        <thead class="sticky-table-header text-slate-500 text-[10px] uppercase tracking-widest font-bold select-none">
+                            <tr>
+                                <th @click="setSortKey('status')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Status <i :class="getSortIcon('status')"></i></div>
+                                </th>
+                                <th @click="setSortKey('data')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Data <i :class="getSortIcon('data')"></i></div>
+                                </th>
+                                <th @click="setSortKey('loja')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Loja <i :class="getSortIcon('loja')"></i></div>
+                                </th>
+                                <th @click="setSortKey('idCliente')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Cliente <i :class="getSortIcon('idCliente')"></i></div>
+                                </th>
+                                <th @click="setSortKey('item')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Item <i :class="getSortIcon('item')"></i></div>
+                                </th>
+                                <th @click="setSortKey('qtd')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center justify-center gap-1">Qtd <i :class="getSortIcon('qtd')"></i></div>
+                                </th>
+                                <th @click="setSortKey('tema')" class="px-3 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Tema <i :class="getSortIcon('tema')"></i></div>
+                                </th>
+                                <th @click="setSortKey('nomeCrianca')" class="px-3 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Criança <i :class="getSortIcon('nomeCrianca')"></i></div>
+                                </th>
+                                <th @click="setSortKey('idade')" class="px-2 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Idade <i :class="getSortIcon('idade')"></i></div>
+                                </th>
+                                <th @click="setSortKey('recorte')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Recorte</th>
+                                <th @click="setSortKey('nf')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">NF</th>
+                                <th @click="setSortKey('sab')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Sab</th>
+                                <th @click="setSortKey('tempo')" class="px-3 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center justify-center gap-1">Tempo <i :class="getSortIcon('tempo')"></i></div>
+                                </th>
+                                <th class="px-3 py-4 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <tr v-for="(item, index) in filteredItems" :key="item.id" 
+                                :class="['transition-colors duration-200 group border-b border-slate-200', getRowColor(item.status)]">
+                                
+                                <td class="px-3 py-3 border-l-4" :class="getRowBorderColor(item.status)">
+                                    <div class="inline-flex items-center select-none" @click.stop>
+                                        <div @click="openStatusMenu(item, $event)" 
+                                             :class="['pl-3 pr-7 py-1.5 rounded-lg text-[10px] font-extrabold cursor-pointer outline-none transition-all shadow-sm border border-transparent hover:border-black/20 flex items-center gap-2 min-w-[120px] relative', getStatusColor(item.status)]">
+                                            {{ item.status }}
+                                            <i class="ph-bold ph-caret-down absolute right-2.5 text-[10px] opacity-70" :class="getStatusIconColor(item.status)"></i>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="px-3 py-3 text-slate-800 font-semibold text-xs">{{ formatDate(item.data) }}</td>
+                                <td class="px-3 py-3 font-bold text-slate-900 text-xs">{{ item.loja }}</td>
+                                
+                                <td class="px-3 py-3">
+                                    <button @click="copyToClipboard(item.idCliente)" 
+                                            title="Clique para copiar ID" 
+                                            class="group/copy relative text-slate-800 font-mono text-[11px] bg-transparent hover:bg-white border border-transparent hover:border-slate-300 focus:border-indigo-400 rounded-md px-1.5 py-1 font-bold transition-all inline-flex items-center gap-1 active:scale-95 shadow-none hover:shadow-sm">
+                                        #{{ item.idCliente }}
+                                        <i class="ph-bold ph-copy text-[10px] opacity-0 group-hover/copy:opacity-100 text-slate-400 group-hover/copy:text-indigo-600 transition-opacity"></i>
+                                        
+                                        <transition name="fade">
+                                            <span v-if="copiedId === item.idCliente" 
+                                                  class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-sans font-bold py-1 px-2 rounded-lg shadow-lg whitespace-nowrap z-20 flex items-center gap-1">
+                                                <i class="ph-bold ph-check text-emerald-400"></i> Copiado!
+                                            </span>
+                                        </transition>
+                                    </button>
+                                </td>
+
+                                <td class="px-3 py-3 font-bold text-slate-900">
+                                    <input type="text" v-model="item.item" @change="updatePedidoFirebase(item)"
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-slate-900 text-xs">
+                                </td>
+
+                                <td class="px-2 py-3 text-center">
+                                    <input type="number" min="1" v-model.number="item.qtd" @change="updatePedidoFirebase(item)"
+                                           class="bg-transparent w-10 h-7 text-center rounded-lg border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white outline-none font-bold text-xs text-slate-900 transition-all">
+                                </td>
+
+                                <td class="px-3 py-3 font-bold text-slate-800">
+                                    <input type="text" v-model="item.tema" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-slate-800 text-xs">
+                                </td>
+
+                                <td class="px-3 py-3 font-semibold text-slate-800">
+                                    <input type="text" v-model="item.nomeCrianca" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-slate-800 text-xs">
+                                </td>
+
+                                <td class="px-2 py-3 font-semibold text-slate-800">
+                                    <input type="text" v-model="item.idade" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-slate-800 text-xs">
+                                </td>
+                                
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="item.recorte = !item.recorte; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                        <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="item.nf = !item.nf; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                        <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="item.sab = !item.sab; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                        <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+
+                                <td class="px-3 py-3 text-center">
+                                    <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest shadow-sm bg-white/60 backdrop-blur-sm" :class="getTempoBadge(item.data).badgeClass">
+                                        <span class="relative flex h-2 w-2">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="getTempoBadge(item.data).dotBaseClass"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 glow-pulse" :class="getTempoBadge(item.data).dotClass"></span>
+                                        </span>
+                                        {{ getTempoBadge(item.data).text }}
+                                    </div>
+                                </td>
+
+                                <td class="px-3 py-3 text-right">
+                                    <button @click.stop="confirmDelete(item.id, 'pedido')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 shadow-sm opacity-0 group-hover:opacity-100 ml-auto transition-all bg-white border border-transparent hover:border-red-200">
+                                        <i class="ph-bold ph-trash text-sm"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="filteredItems.length === 0">
+                                <td colspan="14" class="px-6 py-20 text-center text-slate-400 bg-white">
+                                    <i class="ph-fill ph-package text-4xl text-slate-300 mb-2"></i>
+                                    <h3 class="text-lg font-bold text-slate-600">Nenhum pedido encontrado</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA: FINANÇAS                              -->
+        <!-- ========================================== -->
+        <div v-else-if="activeTab === 'financas'">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 px-2">
+                    <i class="ph-fill ph-wallet text-emerald-500 text-2xl"></i> Gestão Financeira
+                </h2>
+                <button @click="showModalFinancas = true" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-1 text-sm">
+                    <i class="ph-bold ph-plus"></i> Novo Lançamento
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex items-center justify-between relative overflow-hidden">
+                    <div class="w-2 bg-emerald-500 absolute left-0 top-0 bottom-0"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Entradas</p>
+                        <h3 class="text-3xl font-black text-slate-800">{{ formatCurrency(totalEntradas) }}</h3>
+                    </div>
+                    <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                        <i class="ph-bold ph-trend-up text-3xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex items-center justify-between relative overflow-hidden">
+                    <div class="w-2 bg-red-500 absolute left-0 top-0 bottom-0"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Saídas</p>
+                        <h3 class="text-3xl font-black text-slate-800">{{ formatCurrency(totalSaidas) }}</h3>
+                    </div>
+                    <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                        <i class="ph-bold ph-trend-down text-3xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex items-center justify-between relative overflow-hidden">
+                    <div class="w-2 bg-indigo-500 absolute left-0 top-0 bottom-0"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Saldo Atual</p>
+                        <h3 :class="['text-3xl font-black', saldoTotal >= 0 ? 'text-emerald-600' : 'text-red-600']">
+                            {{ formatCurrency(saldoTotal) }}
+                        </h3>
+                    </div>
+                    <div class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                        <i class="ph-bold ph-scales text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full relative z-10">
+                <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] min-h-[350px] w-full custom-scrollbar rounded-3xl">
+                    <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
+                        <thead class="sticky-table-header text-slate-500 text-[11px] uppercase tracking-widest font-bold select-none">
+                            <tr>
+                                <th class="px-6 py-5">Data</th>
+                                <th class="px-6 py-5">Descrição</th>
+                                <th class="px-6 py-5">Tipo</th>
+                                <th class="px-6 py-5">Status</th>
+                                <th class="px-6 py-5 text-right">Valor</th>
+                                <th class="px-6 py-5 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white">
+                            <tr v-for="fin in financasSorted" :key="fin.id" class="hover:bg-slate-50/80 transition-colors group">
+                                <td class="px-6 py-4 text-slate-500 font-semibold">{{ formatDate(fin.data) }}</td>
+                                <td class="px-6 py-4 font-bold text-slate-800">{{ fin.descricao }}</td>
+                                <td class="px-6 py-4">
+                                    <span :class="['px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider', fin.tipo === 'Entrada' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200']">
+                                        {{ fin.tipo }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span :class="['px-2 py-1 rounded border text-[11px] font-bold', fin.status === 'Pago' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-yellow-50 border-yellow-200 text-yellow-700']">
+                                        {{ fin.status }}
+                                    </span>
+                                </td>
+                                <td :class="['px-6 py-4 text-right font-black', fin.tipo === 'Entrada' ? 'text-emerald-600' : 'text-red-500']">
+                                    {{ fin.tipo === 'Entrada' ? '+' : '-' }} {{ formatCurrency(fin.valor) }}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button @click.stop="confirmDelete(fin.id, 'financa')" class="w-8 h-8 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 opacity-0 group-hover:opacity-100 transition-all">
+                                        <i class="ph-bold ph-trash text-lg"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="financasSorted.length === 0">
+                                <td colspan="6" class="px-6 py-16 text-center text-slate-400">
+                                    <i class="ph-fill ph-receipt text-4xl text-slate-300 mb-2"></i>
+                                    <h3 class="text-lg font-bold text-slate-700">Nenhum lançamento financeiro</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- TELA DE ANÁLISE (MODO EXECUTIVO NO-SCROLL) -->
+    <!-- ========================================== -->
+    <transition name="fade">
+        <div v-if="activeTab === 'analise'" class="fixed inset-0 z-50 bg-[#f8fafc] flex flex-col p-4 md:p-6 lg:p-8 overflow-hidden h-full w-full">
+            <div class="flex justify-between items-center mb-4 bg-white p-4 lg:px-6 rounded-3xl shadow-sm border border-slate-200 shrink-0">
+                <h2 class="text-xl font-black text-slate-800 flex items-center gap-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg', previousTab === 'financas' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-indigo-500 shadow-indigo-500/30']">
+                        <i :class="['ph-bold text-xl', previousTab === 'financas' ? 'ph-currency-dollar' : 'ph-chart-line-up']"></i>
+                    </div>
+                    Análise de {{ previousTab === 'financas' ? 'Finanças' : 'Pedidos' }}
+                </h2>
+                <button @click="activeTab = previousTab" class="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-sm">
+                    <i class="ph-bold ph-arrow-left"></i> Voltar
+                </button>
+            </div>
+            
+            <div v-if="previousTab === 'pedidos'" class="flex-1 flex flex-col gap-4 overflow-hidden min-h-0">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 flex justify-between items-center shrink-0">
+                    <div class="flex items-center p-1 bg-slate-100/80 rounded-xl border border-slate-200/60 shadow-inner">
+                        <button @click="analiseLoja = 'Ambas'" :class="analiseLoja === 'Ambas' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Ambas</button>
+                        <button @click="analiseLoja = 'Elohim'" :class="analiseLoja === 'Elohim' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Elohim</button>
+                        <button @click="analiseLoja = 'Kadosh'" :class="analiseLoja === 'Kadosh' ? 'bg-white shadow text-indigo-600 ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-1.5 rounded-lg text-xs font-bold transition-all">Kadosh</button>
+                    </div>
+                    
+                    <div class="flex gap-6 items-center px-4">
+                        <div class="flex flex-col items-end">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Pedidos</span>
+                            <span class="text-2xl font-black text-slate-800 leading-none">{{ pedidosAnalise.length }}</span>
+                        </div>
+                        <div class="w-px h-8 bg-slate-200"></div>
+                        <div class="flex flex-col items-end">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Idade Média</span>
+                            <span class="text-2xl font-black text-indigo-500 leading-none">{{ idadeMedia }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
+                    <div class="col-span-3 flex flex-col gap-4 min-h-0">
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex-1 flex flex-col min-h-0">
+                            <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2 shrink-0">
+                                <i class="ph-bold ph-storefront text-indigo-500"></i> Volume por Loja
+                            </h3>
+                            <div class="overflow-y-auto custom-scrollbar flex-1 space-y-4 pr-1">
+                                <div v-for="loja in lojas" :key="'chart-'+loja">
+                                    <div class="flex justify-between items-center text-[11px] font-bold mb-1.5">
+                                        <span class="text-slate-600 uppercase">{{ loja }}</span>
+                                        <span class="text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{{ getLojasCountAnalise(loja) }}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                        <div :class="['h-full rounded-full transition-all duration-1000', loja === 'Elohim' ? 'bg-indigo-500' : 'bg-blue-500']" 
+                                             :style="{ width: Math.max((getLojasCountAnalise(loja) / Math.max(pedidosAnalise.length, 1)) * 100, 1) + '%' }">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex-1 flex flex-col min-h-0">
+                            <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2 shrink-0">
+                                <i class="ph-bold ph-chart-pie-slice text-indigo-500"></i> Status Atual
+                            </h3>
+                            <div class="overflow-y-auto custom-scrollbar flex-1 space-y-4 pr-1">
+                                <div v-for="status in statuses" :key="'chart-'+status">
+                                    <div class="flex justify-between items-center text-[10px] font-bold mb-1.5">
+                                        <span class="text-slate-600 uppercase">{{ status }}</span>
+                                        <span class="text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{{ statusCountsAnalise[status] }}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner">
+                                        <div :class="['h-full rounded-full transition-all duration-1000', getCardBarAccent(status)]" 
+                                             :style="{ width: Math.max((statusCountsAnalise[status] / Math.max(...Object.values(statusCountsAnalise), 1)) * 100, 1) + '%' }">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-9 flex flex-col gap-4 min-h-0">
+                        <div class="flex-1 grid grid-cols-3 gap-4 min-h-0">
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Recorte vs Sem Recorte</h4>
+                                <div id="chart-recorte" class="flex-1 w-full min-h-0"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">NF vs Sem NF</h4>
+                                <div id="chart-nf" class="flex-1 w-full min-h-0"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Sábado vs Sem Sábado</h4>
+                                <div id="chart-sab" class="flex-1 w-full min-h-0"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Comparativo de Lojas por Data</h4>
+                            <div id="chart-lojas" class="flex-1 w-full min-h-0"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+                <div class="flex flex-col gap-6 overflow-hidden">
+                    <div class="grid grid-cols-2 gap-4 shrink-0">
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Entradas Totais</span>
+                            <span class="text-3xl font-black text-emerald-500">{{ formatCurrency(totalEntradas) }}</span>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Saídas Totais</span>
+                            <span class="text-3xl font-black text-red-500">{{ formatCurrency(totalSaidas) }}</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 flex-1 flex flex-col justify-center items-center overflow-y-auto custom-scrollbar">
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Saldo Geral Consolidado</span>
+                        <span :class="['text-5xl lg:text-6xl font-black', saldoTotal >= 0 ? 'text-emerald-600' : 'text-red-600']">{{ formatCurrency(saldoTotal) }}</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 flex flex-col overflow-y-auto custom-scrollbar">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 shrink-0">
+                        <i class="ph-bold ph-chart-donut text-emerald-500"></i> Distribuição e Status
+                    </h3>
+                    
+                    <div class="space-y-10 mt-4 flex-1 flex flex-col justify-center">
+                        <div>
+                            <div class="flex justify-between items-center text-sm font-bold mb-3">
+                                <span class="text-slate-700 uppercase tracking-wider">Proporção (Entradas vs Saídas)</span>
+                            </div>
+                            <div class="w-full bg-red-400 rounded-full h-8 overflow-hidden shadow-inner flex">
+                                <div class="h-full bg-emerald-500 transition-all duration-1000" 
+                                     :style="{ width: (totalEntradas === 0 && totalSaidas === 0) ? '50%' : (totalEntradas / (totalEntradas + totalSaidas) * 100) + '%' }">
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mt-2">
+                                <span class="text-emerald-600">Entradas ({{ ((totalEntradas / (totalEntradas + totalSaidas) * 100) || 0).toFixed(1) }}%)</span>
+                                <span class="text-red-500">Saídas ({{ ((totalSaidas / (totalEntradas + totalSaidas) * 100) || 0).toFixed(1) }}%)</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-8 border-t border-slate-100">
+                            <div class="flex justify-between items-center text-sm font-bold mb-6">
+                                <span class="text-slate-700 uppercase tracking-wider">Controle de Status</span>
+                            </div>
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between items-center text-xs font-bold mb-2">
+                                        <span class="text-slate-600 uppercase">Lançamentos Pagos</span>
+                                        <span class="text-slate-800 bg-slate-100 px-3 py-1 rounded-md">{{ financas.filter(f => f.status === 'Pago').length }}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-indigo-500 rounded-full transition-all duration-1000" 
+                                             :style="{ width: Math.max((financas.filter(f => f.status === 'Pago').length / Math.max(financas.length, 1)) * 100, 1) + '%' }">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center text-xs font-bold mb-2">
+                                        <span class="text-slate-600 uppercase">Lançamentos Pendentes</span>
+                                        <span class="text-slate-800 bg-slate-100 px-3 py-1 rounded-md">{{ financas.filter(f => f.status === 'Pendente').length }}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-yellow-400 rounded-full transition-all duration-1000" 
+                                             :style="{ width: Math.max((financas.filter(f => f.status === 'Pendente').length / Math.max(financas.length, 1)) * 100, 1) + '%' }">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </transition>
+
+    <!-- MODAL CONFIRMAÇÃO DE EXCLUSÃO -->
+    <transition name="scale">
+        <div v-if="showDeleteModal" class="fixed inset-0 z-[110] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="cancelDelete"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 border border-slate-200 text-center transform transition-all">
+                <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner border border-red-100">
+                    <i class="ph-fill ph-trash text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-800 mb-3">Confirmar Exclusão</h3>
+                <p class="text-sm font-medium text-slate-500 mb-8 leading-relaxed">
+                    Tem certeza que deseja excluir permanentemente este registro?<br>Esta ação não poderá ser desfeita.
+                </p>
+                <div class="flex gap-3 justify-center">
+                    <button @click="cancelDelete" class="w-full px-5 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors border border-slate-200">Cancelar</button>
+                    <button @click="executeDelete" class="w-full px-5 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all transform hover:-translate-y-0.5">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODAL: CONFIGURAR MODO TV -->
+    <transition name="scale">
+        <div v-if="showTVConfig" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showTVConfig = false"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="ph-bold ph-monitor-play text-indigo-500"></i> Configurar Modo TV
+                </h3>
+                <label class="block text-sm font-bold text-slate-600 mb-2">Quantidade máxima de pedidos:</label>
+                <input type="number" v-model.number="tvLimit" min="1" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 mb-6 transition-colors focus:border-indigo-500 focus:bg-white">
+                
+                <div class="flex gap-3 justify-end">
+                    <button @click="showTVConfig = false" class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
+                    <button @click="enterTVMode" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all">Iniciar TV</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- TELA: MODO TV -->
+    <transition name="fade">
+        <div v-if="isTVMode" class="fixed inset-0 z-[100] bg-slate-100 flex flex-col text-slate-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white shadow-sm">
+                <div class="flex items-center gap-3">
+                    <i class="ph-fill ph-monitor-play text-3xl text-indigo-600 glow-pulse"></i>
+                    <h1 class="text-2xl font-black tracking-wider uppercase text-slate-900">
+                        Modo TV <span class="text-sm text-slate-500 ml-2 font-medium tracking-normal">Acompanhamento em Tempo Real</span>
+                    </h1>
+                </div>
+                <button @click="exitTVMode" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl font-bold transition-all border border-red-200">
+                    <i class="ph-bold ph-x"></i> Sair
+                </button>
+            </div>
+            
+            <div class="flex-1 flex gap-4 p-4 overflow-hidden">
+                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
+                        <h2 class="text-xl font-black text-indigo-600 uppercase tracking-widest">Todos os Pedidos ({{tvAllOrders.length}})</h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3">Cliente / Loja</th>
+                                    <th class="px-4 py-3">Tema / Criança</th>
+                                    <th class="px-4 py-3">Item / Qtd</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr v-for="item in tvAllOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
+                                    <td class="px-4 py-3 border-l-4" :class="getRowBorderColor(item.status)">
+                                        <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
+                                        <div class="font-bold text-slate-900">{{item.loja}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-indigo-700">{{item.tema || '-'}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">{{item.nomeCrianca || '-'}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-slate-900">{{item.item}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">Qtd: {{item.qtd}}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="w-1/2 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-md">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 text-center sticky top-0 z-10">
+                        <h2 class="text-xl font-black text-emerald-600 uppercase tracking-widest">Pedidos de Hoje ({{tvTodayOrders.length}})</h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3">Cliente / Loja</th>
+                                    <th class="px-4 py-3">Tema / Criança</th>
+                                    <th class="px-4 py-3">Item / Qtd</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr v-for="item in tvTodayOrders" :key="item.id" :class="['transition-colors border-b border-slate-200 bg-white', getRowColor(item.status)]">
+                                    <td class="px-4 py-3 border-l-4" :class="getRowBorderColor(item.status)">
+                                        <div class="font-mono text-xs font-bold text-slate-500">#{{item.idCliente}}</div>
+                                        <div class="font-bold text-slate-900">{{item.loja}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-indigo-700">{{item.tema || '-'}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">{{item.nomeCrianca || '-'}}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-slate-900">{{item.item}}</div>
+                                        <div class="text-[11px] text-slate-500 font-semibold">Qtd: {{item.qtd}}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span :class="['px-2.5 py-1 rounded-md text-[11px] font-extrabold border', getStatusColor(item.status)]">{{item.status}}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODAL: NOVO PEDIDO -->
+    <transition name="fade">
+        <div v-if="showModalPedidos" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalPedidos"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-h-[90vh] flex flex-col overflow-hidden transform transition-all border border-slate-200" 
+                 :class="modoPlanilha ? 'max-w-[95vw] lg:max-w-[90vw]' : 'max-w-3xl'">
+                
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-20">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-package text-indigo-500"></i> Novo Cadastro de Pedido
+                    </h3>
+                    
+                    <div class="flex items-center gap-4">
+                        <button @click="modoPlanilha = !modoPlanilha" class="flex items-center gap-2 px-4 py-1.5 rounded-xl font-bold transition-all shadow-sm border text-xs"
+                                :class="modoPlanilha ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
+                            <i class="ph-bold ph-table text-lg"></i> {{ modoPlanilha ? 'Modo Padrão' : 'Modo Planilha' }}
+                        </button>
+                        <button @click="closeModalPedidos" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                    </div>
+                </div>
+                
+                <!-- MODO FORMULÁRIO PADRÃO -->
+                <div v-show="!modoPlanilha" class="p-8 overflow-y-auto flex-1 custom-scrollbar">
+                    <form @submit.prevent="savePedido" id="formPedido" class="space-y-6">
+                        <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
+                            <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2 border-b border-slate-200 pb-2">Informações Gerais</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div class="space-y-1.5 relative" @click.stop>
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Loja *</label>
+                                    <div @click="openFilterDropdown = openFilterDropdown === 'formLoja' ? null : 'formLoja'" 
+                                         class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm cursor-pointer flex items-center justify-between">
+                                        <span>{{ form.loja || 'Selecionar...' }}</span>
+                                        <i class="ph-bold ph-caret-down text-slate-400"></i>
+                                    </div>
+                                    <transition name="fade">
+                                        <div v-if="openFilterDropdown === 'formLoja'" class="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                            <div v-for="loja in lojas" :key="loja" @click="form.loja = loja; openFilterDropdown = null" 
+                                                 class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors"
+                                                 :class="form.loja === loja ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                                                {{ loja }}
+                                            </div>
+                                        </div>
+                                    </transition>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
+                                    <input type="date" v-model="form.data" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">ID Cliente *</label>
+                                    <input type="text" v-model="form.idCliente" required placeholder="Ex: 10459" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+                                <div class="space-y-1.5 md:col-span-5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Criança</label>
+                                    <input type="text" v-model="form.nomeCrianca" placeholder="Nome da Criança" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                                <div class="space-y-1.5 md:col-span-2">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Idade</label>
+                                    <input type="text" v-model="form.idade" placeholder="Ex: 5" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm text-center">
+                                </div>
+                                <div class="space-y-1.5 md:col-span-5">
+                                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Tema</label>
+                                    <input type="text" v-model="form.tema" placeholder="Tema da festa" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none font-bold text-slate-700 transition-colors focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm">
+                                </div>
+                            </div>
+
+                            <div class="flex gap-6 pt-2">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <div :class="['w-6 h-6 rounded flex items-center justify-center border shadow-sm transition-all', form.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-indigo-400']">
+                                        <i class="ph-bold ph-check text-sm"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Nota Fiscal (NF)</span>
+                                    <input type="checkbox" v-model="form.nf" class="hidden">
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <div :class="['w-6 h-6 rounded flex items-center justify-center border shadow-sm transition-all', form.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent group-hover:border-amber-400']">
+                                        <i class="ph-bold ph-check text-sm"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Sábado (SAB)</span>
+                                    <input type="checkbox" v-model="form.sab" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- ITENS DO PEDIDO COM CABEÇALHO STICKY / BOTÃO FLUTUANTE SEMPRE APARENTE -->
+                        <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-white shadow-sm relative">
+                            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10 pt-1">
+                                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Itens do Pedido</h4>
+                                <button type="button" @click="addNovoItemPedido" class="text-xs bg-indigo-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-indigo-500 transition-all shadow-md flex items-center gap-1.5 transform hover:-translate-y-0.5">
+                                    <i class="ph-bold ph-plus text-sm"></i> Adicionar Item
+                                </button>
+                            </div>
+
+                            <div class="space-y-3">
+                                <transition-group name="fade">
+                                    <div v-for="(it, index) in form.itensPedido" :key="index" class="flex flex-wrap md:flex-nowrap gap-4 items-end bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm relative group">
+                                        
+                                        <div class="w-full md:w-3/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Nome do Item</label>
+                                            <input type="text" v-model="it.item" required placeholder="Ex: Cartão, Adesivo..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all shadow-sm">
+                                        </div>
+                                        
+                                        <div class="w-1/2 md:w-1/5">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block text-center">Quantidade</label>
+                                            <input type="number" min="1" v-model.number="it.qtd" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none font-bold text-slate-700 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-center shadow-sm">
+                                        </div>
+                                        
+                                        <div class="w-1/2 md:w-1/5 flex flex-col items-center justify-end pb-1">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Recorte</label>
+                                            <button type="button" @click="it.recorte = !it.recorte" :class="['w-8 h-8 rounded flex items-center justify-center border transition-all shadow-sm', it.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-slate-300 hover:border-emerald-400']">
+                                                <i :class="['ph-bold ph-scissors text-base', it.recorte ? 'text-white' : '']"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <button v-if="form.itensPedido.length > 1" type="button" @click="removerItemPedido(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow hover:bg-red-500 hover:text-white border border-red-200">
+                                            <i class="ph-bold ph-minus text-xs"></i>
+                                        </button>
+                                    </div>
+                                </transition-group>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- MODO PLANILHA EXCEL STYLE -->
+                <div v-if="modoPlanilha" class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto w-full custom-scrollbar">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-slate-100 text-slate-500 text-[11px] uppercase tracking-widest font-bold border-b border-slate-200 select-none">
+                                    <tr>
+                                        <th class="px-3 py-3">Loja</th>
+                                        <th class="px-3 py-3">Data</th>
+                                        <th class="px-3 py-3">ID Cliente</th>
+                                        <th class="px-3 py-3">Criança</th>
+                                        <th class="px-3 py-3 text-center">Idade</th>
+                                        <th class="px-3 py-3">Tema</th>
+                                        <th class="px-3 py-3">Item (P. Chave)</th>
+                                        <th class="px-3 py-3 text-center">Qtd</th>
+                                        <th class="px-2 py-3 text-center" title="Recorte"><i class="ph-bold ph-scissors text-emerald-500 text-lg"></i></th>
+                                        <th class="px-2 py-3 text-center" title="Nota Fiscal"><i class="ph-bold ph-receipt text-indigo-500 text-lg"></i></th>
+                                        <th class="px-2 py-3 text-center" title="Sábado"><i class="ph-bold ph-calendar text-amber-500 text-lg"></i></th>
+                                        <th class="px-3 py-3"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="(linha, index) in planilhaLinhas" :key="linha.idTemp" class="hover:bg-slate-50/80 transition-colors group">
+                                        <td class="px-2 py-1.5">
+                                            <select v-model="linha.loja" @change="autoSavePlanilhaRow(linha)" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                                <option v-for="l in lojas" :key="l" :value="l">{{ l }}</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-2 py-1.5">
+                                            <input type="date" v-model="linha.data" @change="autoSavePlanilhaRow(linha)" class="w-28 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                        </td>
+                                        <td class="px-2 py-1.5">
+                                            <input type="text" v-model="linha.idCliente" @change="autoSavePlanilhaRow(linha)" placeholder="ID Cliente" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                        </td>
+                                        <td class="px-2 py-1.5">
+                                            <input type="text" v-model="linha.nomeCrianca" @change="autoSavePlanilhaRow(linha)" placeholder="Nome" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        </td>
+                                        <td class="px-2 py-1.5">
+                                            <input type="text" v-model="linha.idade" @change="autoSavePlanilhaRow(linha)" placeholder="Idade" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        </td>
+                                        <td class="px-2 py-1.5">
+                                            <input type="text" v-model="linha.tema" @change="autoSavePlanilhaRow(linha)" placeholder="Tema" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        </td>
+                                        <td class="px-2 py-1.5">
+                                            <input type="text" v-model="linha.item" @change="autoSavePlanilhaRow(linha)" placeholder="Ex: Cartão, Copo..." class="w-40 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                        </td>
+                                        <td class="px-2 py-1.5">
+                                            <input type="number" min="1" v-model.number="linha.qtd" @change="autoSavePlanilhaRow(linha)" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                        </td>
+                                        <td class="px-2 py-1.5 text-center">
+                                            <button type="button" @click="linha.recorte = !linha.recorte; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-emerald-400']">
+                                                <i class="ph-bold ph-check text-xs"></i>
+                                            </button>
+                                        </td>
+                                        <td class="px-2 py-1.5 text-center">
+                                            <button type="button" @click="linha.nf = !linha.nf; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-indigo-400']">
+                                                <i class="ph-bold ph-check text-xs"></i>
+                                            </button>
+                                        </td>
+                                        <td class="px-2 py-1.5 text-center">
+                                            <button type="button" @click="linha.sab = !linha.sab; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-amber-400']">
+                                                <i class="ph-bold ph-check text-xs"></i>
+                                            </button>
+                                        </td>
+                                        <td class="px-2 py-1.5 text-center">
+                                            <button @click="removePlanilhaRow(index)" class="w-7 h-7 mx-auto rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100">
+                                                <i class="ph-bold ph-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-3 bg-slate-50 border-t border-slate-200">
+                            <button @click="addPlanilhaRow" class="text-xs bg-indigo-100 text-indigo-700 font-bold px-4 py-2 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-1">
+                                <i class="ph-bold ph-plus"></i> Adicionar Linha Vazia
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 bg-indigo-50 text-indigo-600 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 text-xs font-medium">
+                        <i class="ph-fill ph-info text-lg mt-0.5"></i>
+                        <p><strong>Dica de uso (Tempo Real Ativado):</strong> Você não precisa clicar em um botão para salvar. Ao preencher o <span class="font-bold underline">ID Cliente</span> e o <span class="font-bold underline">Item</span>, o sistema salva e cria o registro automaticamente em plano de fundo no momento em que você clica fora da célula.</p>
+                    </div>
+                </div>
+                
+                <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
+                    <button v-if="!modoPlanilha" type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Finalizar Cadastro</button>
+                    <button v-else type="button" @click="salvarTodaPlanilha" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Salvar e Fechar</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODAL: NOVO LANÇAMENTO FINANCEIRO -->
+    <transition name="fade">
+        <div v-if="showModalFinancas" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalFinancas"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden transform transition-all border border-slate-200">
+                
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-10">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-receipt text-emerald-500"></i> Novo Lançamento
+                    </h3>
+                    <button @click="closeModalFinancas" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                </div>
+                
+                <div class="p-8 overflow-y-auto">
+                    <form @submit.prevent="saveFinanca" id="formFinanca" class="space-y-5">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Tipo *</label>
+                            <div class="flex gap-4">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" v-model="formFin.tipo" value="Entrada" class="peer sr-only" required>
+                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-600 transition-all shadow-sm">Entrada</div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" v-model="formFin.tipo" value="Saída" class="peer sr-only" required>
+                                    <div class="px-4 py-3 rounded-xl border border-slate-200 bg-white text-center font-bold text-slate-600 peer-checked:bg-red-50 peer-checked:border-red-500 peer-checked:text-red-600 transition-all shadow-sm">Saída</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Descrição *</label>
+                            <input type="text" v-model="formFin.descricao" required placeholder="Ex: Pagamento Fornecedor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Data *</label>
+                                <input type="date" v-model="formFin.data" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Valor (R$) *</label>
+                                <input type="number" step="0.01" min="0" v-model.number="formFin.valor" required placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-1.5 relative" @click.stop>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Status *</label>
+                            <div @click="openFilterDropdown = openFilterDropdown === 'formStatus' ? null : 'formStatus'" 
+                                 class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none font-bold text-slate-700 transition-colors focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer flex items-center justify-between">
+                                <span>{{ formFin.status }}</span>
+                                <i class="ph-bold ph-caret-down text-slate-400"></i>
+                            </div>
+                            <transition name="fade">
+                                <div v-if="openFilterDropdown === 'formStatus'" class="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1">
+                                    <div @click="formFin.status = 'Pago'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pago' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pago</div>
+                                    <div @click="formFin.status = 'Pendente'; openFilterDropdown = null" class="px-4 py-2.5 text-sm font-bold hover:bg-slate-50 cursor-pointer transition-colors" :class="formFin.status === 'Pendente' ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-700'">Pendente</div>
+                                </div>
+                            </transition>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-10">
+                    <button type="button" @click="closeModalFinancas" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
+                    <button type="submit" form="formFinanca" class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO -->
+    <transition name="fade">
+        <div v-if="activeStatusItem" @click.stop 
+             :style="{ top: statusMenuPos.top, left: statusMenuPos.left }" 
+             class="fixed z-[100] w-48 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden py-1">
+            <div v-for="st in statuses" :key="st" 
+                 @click="changeStatus(activeStatusItem, st)" 
+                 class="px-4 py-2.5 text-xs font-bold hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors"
+                 :class="activeStatusItem.status === st ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-700'">
+                <span>{{ st }}</span>
+                <i v-if="activeStatusItem.status === st" class="ph-bold ph-check text-indigo-600"></i>
+            </div>
+        </div>
+    </transition>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    activeTab: 'pedidos',
+                    previousTab: 'pedidos',
+                    searchQuery: '',
+                    filtroLoja: 'Todas', 
+                    analiseLoja: 'Ambas',
+                    sortKey: 'id',
+                    sortOrder: 'desc',
+                    
+                    showModalPedidos: false,
+                    showModalFinancas: false,
+                    
+                    showDeleteModal: false,
+                    itemToDelete: null,
+                    deleteType: '',
+
+                    openDropdownId: null,
+                    openFilterDropdown: null,
+                    openReportMenu: false,
+
+                    showTVConfig: false,
+                    isTVMode: false,
+                    tvLimit: 10,
+                    
+                    activeStatuses: [],
+                    selecaoDinamica: false,
+                    
+                    lojas: ['Elohim', 'Kadosh'],
+                    statuses: ['Com informações', 'Sem informações', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
+                    
+                    sortOptions: [
+                        { value: 'id', label: 'Data de Criação' },
+                        { value: 'tempo', label: 'Tempo (Dias)' },
+                        { value: 'data', label: 'Data do Pedido' },
+                        { value: 'status', label: 'Status' },
+                        { value: 'loja', label: 'Loja' },
+                        { value: 'idCliente', label: 'Cliente ID' },
+                        { value: 'item', label: 'Item' },
+                        { value: 'tema', label: 'Tema' },
+                        { value: 'nomeCrianca', label: 'Criança' }
+                    ],
+
+                    copiedId: null,
+                    chartInstances: {}, 
+                    activeStatusItem: null,
+                    statusMenuPos: { top: '0px', left: '0px' },
+
+                    modoPlanilha: false,
+                    planilhaLinhas: [{
+                        idTemp: Date.now(),
+                        loja: 'Elohim',
+                        data: new Date().toISOString().split('T')[0],
+                        idCliente: '',
+                        nomeCrianca: '',
+                        idade: '',
+                        tema: '',
+                        item: '',
+                        qtd: 1,
+                        recorte: false,
+                        nf: false,
+                        sab: false
+                    }],
+
+                    form: {
+                        loja: 'Elohim',
+                        data: new Date().toISOString().split('T')[0],
+                        idCliente: '',
+                        nomeCrianca: '',
+                        idade: '',
+                        tema: '',
+                        nf: false,
+                        sab: false,
+                        itensPedido: [{ item: '', qtd: 1, recorte: false }]
+                    },
+                    formFin: {
+                        tipo: 'Entrada',
+                        descricao: '',
+                        data: new Date().toISOString().split('T')[0],
+                        valor: 0,
+                        status: 'Pago'
+                    },
+                    pedidos: [],
+                    financas: []
+                };
+            },
+            watch: {
+                activeTab(newVal) {
+                    if (newVal === 'analise' && this.previousTab === 'pedidos') {
+                        this.$nextTick(() => { this.renderApexCharts(); });
+                    }
+                },
+                analiseLoja() {
+                    if (this.activeTab === 'analise' && this.previousTab === 'pedidos') {
+                        this.$nextTick(() => { this.renderApexCharts(); });
+                    }
+                }
+            },
+            computed: {
+                filteredItems() {
+                    let result = this.pedidos;
+                    
+                    if (this.filtroLoja !== 'Todas') {
+                        result = result.filter(p => p.loja === this.filtroLoja);
+                    }
+                    
+                    if (this.activeStatuses.length > 0) {
+                        result = result.filter(p => this.activeStatuses.includes(p.status));
+                    }
+                    
+                    if (this.searchQuery) {
+                        const q = this.searchQuery.toLowerCase();
+                        result = result.filter(p => 
+                            p.idCliente.toString().toLowerCase().includes(q) ||
+                            p.item.toLowerCase().includes(q) ||
+                            (p.tema && p.tema.toLowerCase().includes(q)) ||
+                            (p.nomeCrianca && p.nomeCrianca.toLowerCase().includes(q))
+                        );
+                    }
+                    
+                    result.sort((a, b) => {
+                        let valA = a[this.sortKey];
+                        let valB = b[this.sortKey];
+                        
+                        if (this.sortKey === 'id' || this.sortKey === 'tempo') {
+                            valA = new Date(a.data).getTime();
+                            valB = new Date(b.data).getTime();
+                        }
+                        
+                        if (valA < valB) return this.sortOrder === 'asc' ? -1 : 1;
+                        if (valA > valB) return this.sortOrder === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                    
+                    return result;
+                },
+                financasSorted() {
+                    return [...this.financas].sort((a, b) => new Date(b.data) - new Date(a.data));
+                },
+                totalEntradas() {
+                    return this.financas.filter(f => f.tipo === 'Entrada' && f.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
+                },
+                totalSaidas() {
+                    return this.financas.filter(f => f.tipo === 'Saída' && f.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
+                },
+                saldoTotal() {
+                    return this.totalEntradas - this.totalSaidas;
+                },
+                statusCounts() {
+                    const counts = {};
+                    this.statuses.forEach(s => counts[s] = 0);
+                    this.pedidos.forEach(p => {
+                        if(counts[p.status] !== undefined) counts[p.status]++;
+                    });
+                    return counts;
+                },
+                pedidosAnalise() {
+                    if (this.analiseLoja === 'Ambas') return this.pedidos;
+                    return this.pedidos.filter(p => p.loja === this.analiseLoja);
+                },
+                idadeMedia() {
+                    const comIdade = this.pedidosAnalise.filter(p => p.idade && !isNaN(p.idade));
+                    if(comIdade.length === 0) return 0;
+                    const soma = comIdade.reduce((acc, p) => acc + parseInt(p.idade), 0);
+                    return Math.round(soma / comIdade.length);
+                },
+                statusCountsAnalise() {
+                    const counts = {};
+                    this.statuses.forEach(s => counts[s] = 0);
+                    this.pedidosAnalise.forEach(p => {
+                        if(counts[p.status] !== undefined) counts[p.status]++;
+                    });
+                    return counts;
+                },
+                tvAllOrders() {
+                    return [...this.pedidos].sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, this.tvLimit);
+                },
+                tvTodayOrders() {
+                    const today = new Date().toISOString().split('T')[0];
+                    return this.pedidos.filter(p => p.data === today).slice(0, this.tvLimit);
+                }
+            },
+            methods: {
+                closeAllDropdowns() {
+                    this.openFilterDropdown = null;
+                    this.openReportMenu = false;
+                    this.activeStatusItem = null;
+                },
+                getSortLabel(key) {
+                    const opt = this.sortOptions.find(o => o.value === key);
+                    return opt ? opt.label : key;
+                },
+                toggleSortOrder() {
+                    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+                },
+                setSortKey(key) {
+                    if (this.sortKey === key) {
+                        this.toggleSortOrder();
+                    } else {
+                        this.sortKey = key;
+                        this.sortOrder = 'asc';
+                    }
+                },
+                getSortIcon(key) {
+                    if (this.sortKey !== key) return 'ph-bold ph-minus text-slate-300';
+                    return this.sortOrder === 'asc' ? 'ph-bold ph-arrow-up text-indigo-600' : 'ph-bold ph-arrow-down text-indigo-600';
+                },
+                handleCardClick(status) {
+                    if (this.selecaoDinamica) {
+                        const idx = this.activeStatuses.indexOf(status);
+                        if (idx > -1) this.activeStatuses.splice(idx, 1);
+                        else this.activeStatuses.push(status);
+                    } else {
+                        this.activeStatuses = [status];
+                    }
+                },
+                removeStatus(status) {
+                    this.activeStatuses = this.activeStatuses.filter(s => s !== status);
+                },
+                getCardStyles(status, isActive) {
+                    let base = "relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all duration-300 transform shadow-sm ";
+                    if (isActive) base += "ring-2 ring-offset-2 scale-105 ";
+                    else base += "hover:-translate-y-1 hover:shadow-md bg-white ";
+                    
+                    if (isActive) {
+                        if (status === 'Finalizado') base += "bg-emerald-500 border-emerald-600 text-white ring-emerald-500";
+                        else if (status === 'Sem informações') base += "bg-red-500 border-red-600 text-white ring-red-500";
+                        else if (status.includes('Para aprovação') || status.includes('Aguardando')) base += "bg-amber-500 border-amber-600 text-white ring-amber-500";
+                        else base += "bg-indigo-500 border-indigo-600 text-white ring-indigo-500";
+                    } else {
+                        base += "border-slate-200";
+                    }
+                    return base;
+                },
+                getCardBarAccent(status) {
+                    if (status === 'Finalizado') return "bg-emerald-500";
+                    if (status === 'Sem informações') return "bg-red-500";
+                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "bg-amber-500";
+                    return "bg-indigo-500";
+                },
+                getCardContentStyles(status, isActive) {
+                    if (isActive) {
+                        return { text: "text-white/90", number: "text-white", iconBg: "bg-white/20", icon: "text-white" };
+                    }
+                    return { text: "text-slate-500", number: "text-slate-800", iconBg: "bg-slate-50", icon: "text-slate-400" };
+                },
+                getStatusIcon(status) {
+                    if (status === 'Finalizado') return "ph-check-circle";
+                    if (status === 'Sem informações') return "ph-warning-circle";
+                    if (status.includes('Para aprovação')) return "ph-clock";
+                    if (status === 'Aprovado') return "ph-thumbs-up";
+                    if (status === 'Impresso') return "ph-printer";
+                    if (status === 'Aguardando coleta') return "ph-package";
+                    return "ph-info";
+                },
+                getRowColor(status) {
+                    if (status === 'Finalizado') return "bg-emerald-50/30 hover:bg-emerald-50/80";
+                    if (status === 'Sem informações') return "bg-red-50/30 hover:bg-red-50/80";
+                    return "bg-white hover:bg-slate-50/80";
+                },
+                getRowBorderColor(status) {
+                    if (status === 'Finalizado') return "border-emerald-400";
+                    if (status === 'Sem informações') return "border-red-400";
+                    if (status.includes('Para aprovação')) return "border-amber-400";
+                    return "border-indigo-400";
+                },
+                getStatusColor(status) {
+                    if (status === 'Finalizado') return "bg-emerald-100 text-emerald-700";
+                    if (status === 'Sem informações') return "bg-red-100 text-red-700";
+                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "bg-amber-100 text-amber-700";
+                    if (status === 'Aprovado') return "bg-blue-100 text-blue-700";
+                    if (status === 'Impresso') return "bg-purple-100 text-purple-700";
+                    return "bg-slate-100 text-slate-700";
+                },
+                getStatusIconColor(status) {
+                    if (status === 'Finalizado') return "text-emerald-600";
+                    if (status === 'Sem informações') return "text-red-600";
+                    if (status.includes('Para aprovação') || status.includes('Aguardando')) return "text-amber-600";
+                    return "text-indigo-600";
+                },
+                getTempoBadge(data) {
+                    const diffDias = Math.floor((new Date() - new Date(data)) / (1000 * 60 * 60 * 24));
+                    if (diffDias === 0) return { text: "Hoje", badgeClass: "text-emerald-600 border-emerald-200", dotBaseClass: "bg-emerald-400", dotClass: "bg-emerald-500" };
+                    if (diffDias === 1) return { text: "Ontem", badgeClass: "text-blue-600 border-blue-200", dotBaseClass: "bg-blue-400", dotClass: "bg-blue-500" };
+                    if (diffDias <= 3) return { text: diffDias + " Dias", badgeClass: "text-amber-600 border-amber-200", dotBaseClass: "bg-amber-400", dotClass: "bg-amber-500" };
+                    return { text: diffDias + " Dias", badgeClass: "text-red-600 border-red-200", dotBaseClass: "bg-red-400", dotClass: "bg-red-500" };
+                },
+                formatDate(dateStr) {
+                    if (!dateStr) return '';
+                    const [y, m, d] = dateStr.split('-');
+                    return `${d}/${m}/${y}`;
+                },
+                formatCurrency(val) {
+                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+                },
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(text);
+                    this.copiedId = text;
+                    setTimeout(() => this.copiedId = null, 2000);
+                },
+                updatePedidoFirebase(item) {
+                    if (window.FirebaseDB && item.id) {
+                        window.FirebaseDB.savePedido(item);
+                    }
+                },
+                openStatusMenu(item, event) {
+                    this.activeStatusItem = item;
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    this.statusMenuPos = { top: (rect.bottom + window.scrollY + 5) + 'px', left: rect.left + 'px' };
+                },
+                changeStatus(item, status) {
+                    item.status = status;
+                    this.updatePedidoFirebase(item);
+                    this.activeStatusItem = null;
+                },
+                confirmDelete(id, type) {
+                    this.itemToDelete = id;
+                    this.deleteType = type;
+                    this.showDeleteModal = true;
+                },
+                cancelDelete() {
+                    this.itemToDelete = null;
+                    this.deleteType = '';
+                    this.showDeleteModal = false;
+                },
+                executeDelete() {
+                    if (window.FirebaseDB) {
+                        if (this.deleteType === 'pedido') {
+                            window.FirebaseDB.deletePedido(this.itemToDelete);
+                        } else if (this.deleteType === 'financa') {
+                            if (window.FirebaseDB.deleteFinanca) {
+                                window.FirebaseDB.deleteFinanca(this.itemToDelete);
+                            }
+                        }
+                    }
+                    this.cancelDelete();
+                },
+                openAnalise() {
+                    this.previousTab = this.activeTab;
+                    this.activeTab = 'analise';
+                },
+                getLojasCountAnalise(loja) {
+                    return this.pedidosAnalise.filter(p => p.loja === loja).length;
+                },
+                renderApexCharts() {
+                    const dataByDate = {};
+                    this.pedidosAnalise.forEach(p => {
+                        if (!dataByDate[p.data]) {
+                            dataByDate[p.data] = { recorteYes: 0, recorteNo: 0, nfYes: 0, nfNo: 0, sabYes: 0, sabNo: 0, elohim: 0, kadosh: 0 };
+                        }
+                        if (p.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
+                        if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
+                        if (p.sab) dataByDate[p.data].sabYes++; else dataByDate[p.data].sabNo++;
+                        if (p.loja === 'Elohim') dataByDate[p.data].elohim++;
+                        if (p.loja === 'Kadosh') dataByDate[p.data].kadosh++;
+                    });
+
+                    const sortedDates = Object.keys(dataByDate).sort();
+                    const recorteSeries = [{ name: 'Com Recorte', data: [] }, { name: 'Sem Recorte', data: [] }];
+                    const nfSeries = [{ name: 'Com NF', data: [] }, { name: 'Sem NF', data: [] }];
+                    const sabSeries = [{ name: 'Com Sáb', data: [] }, { name: 'Sem Sáb', data: [] }];
+                    const lojaSeries = [{ name: 'Elohim', data: [] }, { name: 'Kadosh', data: [] }];
+
+                    sortedDates.forEach(d => {
+                        recorteSeries[0].data.push(dataByDate[d].recorteYes);
+                        recorteSeries[1].data.push(dataByDate[d].recorteNo);
+                        
+                        nfSeries[0].data.push(dataByDate[d].nfYes);
+                        nfSeries[1].data.push(dataByDate[d].nfNo);
+                        
+                        sabSeries[0].data.push(dataByDate[d].sabYes);
+                        sabSeries[1].data.push(dataByDate[d].sabNo);
+                        
+                        lojaSeries[0].data.push(dataByDate[d].elohim);
+                        lojaSeries[1].data.push(dataByDate[d].kadosh);
+                    });
+
+                    const formatDateLabel = (d) => d.split('-').reverse().join('/');
+                    const categories = sortedDates.map(formatDateLabel);
+
+                    const buildChart = (id, type, series, colors, isLine = false) => {
+                        if (this.chartInstances[id]) {
+                            this.chartInstances[id].destroy();
+                        }
+                        
+                        const options = {
+                            series: series,
+                            chart: { type: type, height: '100%', width: '100%', toolbar: { show: false }, parentHeightOffset: 0 },
+                            colors: colors,
+                            plotOptions: isLine ? {} : { bar: { columnWidth: '35%', borderRadius: 2 } },
+                            dataLabels: { enabled: false },
+                            stroke: isLine ? { curve: 'smooth', width: 3 } : { show: true, width: 2, colors: ['transparent'] },
+                            xaxis: { categories: categories, labels: { show: isLine, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: {enabled: false} },
+                            yaxis: { labels: { show: false } },
+                            grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, right: 0, bottom: 0, left: isLine ? 15 : 0 } },
+                            legend: { show: false }, 
+                            tooltip: { theme: 'light', shared: true, intersect: false }
+                        };
+
+                        const el = document.querySelector(`#${id}`);
+                        if(el) {
+                            const chart = new ApexCharts(el, options);
+                            chart.render();
+                            this.chartInstances[id] = chart;
+                        }
+                    };
+
+                    buildChart('chart-recorte', 'bar', recorteSeries, ['#10b981', '#cbd5e1']);
+                    buildChart('chart-nf', 'bar', nfSeries, ['#6366f1', '#cbd5e1']);
+                    buildChart('chart-sab', 'bar', sabSeries, ['#f59e0b', '#cbd5e1']);
+                    buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); 
+                },
+                enterTVMode() {
+                    this.isTVMode = true;
+                    this.showTVConfig = false;
+                },
+                exitTVMode() {
+                    this.isTVMode = false;
+                },
+                closeModalPedidos() {
+                    this.showModalPedidos = false;
+                    this.modoPlanilha = false;
+                },
+                addNovoItemPedido() {
+                    this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
+                },
+                removerItemPedido(index) {
+                    this.form.itensPedido.splice(index, 1);
+                },
+                savePedido() {
+                    this.form.itensPedido.forEach((it) => {
+                        const novoPedido = {
+                            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                            loja: this.form.loja,
+                            data: this.form.data,
+                            idCliente: this.form.idCliente,
+                            nomeCrianca: this.form.nomeCrianca,
+                            idade: this.form.idade,
+                            tema: this.form.tema,
+                            nf: this.form.nf,
+                            sab: this.form.sab,
+                            item: it.item,
+                            qtd: it.qtd,
+                            recorte: it.recorte,
+                            status: 'Com informações'
+                        };
+                        if (window.FirebaseDB && window.FirebaseDB.savePedido) {
+                            window.FirebaseDB.savePedido(novoPedido);
+                        }
+                    });
+                    this.closeModalPedidos();
+                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false }];
+                    this.form.idCliente = '';
+                    this.form.nomeCrianca = '';
+                    this.form.idade = '';
+                    this.form.tema = '';
+                },
+                autoSavePlanilhaRow(linha) {
+                    if(linha.idCliente && linha.item) {
+                        if (!linha.id) {
+                            linha.id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+                            linha.status = 'Com informações';
+                        }
+                        const pedidoData = {
+                            id: linha.id,
+                            loja: linha.loja,
+                            data: linha.data,
+                            idCliente: linha.idCliente,
+                            nomeCrianca: linha.nomeCrianca,
+                            idade: linha.idade,
+                            tema: linha.tema,
+                            item: linha.item,
+                            qtd: linha.qtd,
+                            recorte: linha.recorte,
+                            nf: linha.nf,
+                            sab: linha.sab,
+                            status: linha.status
+                        };
+                        if (window.FirebaseDB && window.FirebaseDB.savePedido) {
+                            window.FirebaseDB.savePedido(pedidoData);
+                        }
+                    }
+                },
+                addPlanilhaRow() {
+                    this.planilhaLinhas.push({
+                        idTemp: Date.now(),
+                        loja: 'Elohim',
+                        data: new Date().toISOString().split('T')[0],
+                        idCliente: '',
+                        nomeCrianca: '',
+                        idade: '',
+                        tema: '',
+                        item: '',
+                        qtd: 1,
+                        recorte: false,
+                        nf: false,
+                        sab: false
+                    });
+                },
+                removePlanilhaRow(index) {
+                    this.planilhaLinhas.splice(index, 1);
+                    if(this.planilhaLinhas.length === 0) this.addPlanilhaRow();
+                },
+                salvarTodaPlanilha() {
+                    this.planilhaLinhas.forEach((linha) => {
+                        this.autoSavePlanilhaRow(linha);
+                    });
+                    this.planilhaLinhas = [{
+                        idTemp: Date.now(),
+                        loja: 'Elohim',
+                        data: new Date().toISOString().split('T')[0],
+                        idCliente: '',
+                        nomeCrianca: '',
+                        idade: '',
+                        tema: '',
+                        item: '',
+                        qtd: 1,
+                        recorte: false,
+                        nf: false,
+                        sab: false
+                    }];
+                    this.closeModalPedidos();
+                },
+                closeModalFinancas() {
+                    this.showModalFinancas = false;
+                },
+                saveFinanca() {
+                    const novaFinanca = {
+                        id: Date.now().toString(),
+                        tipo: this.formFin.tipo,
+                        descricao: this.formFin.descricao,
+                        data: this.formFin.data,
+                        valor: this.formFin.valor,
+                        status: this.formFin.status
+                    };
+                    if (window.FirebaseDB && window.FirebaseDB.saveFinanca) {
+                        window.FirebaseDB.saveFinanca(novaFinanca);
+                    }
+                    this.closeModalFinancas();
+                    this.formFin.descricao = '';
+                    this.formFin.valor = 0;
+                },
+
+                gerarRelatorio(tipo, comCor = true) {
+                    this.openReportMenu = false;
+                    let dados = [];
+                    let colunas = [];
+                    let titulo = "";
+                    
+                    if (this.activeTab === 'pedidos') {
+                        titulo = "Relatório Executivo de Pedidos";
+                        colunas = ["Data", "Loja", "ID Cliente", "Criança", "Idade", "Tema", "Item", "Qtd", "Recorte", "NF", "Sab", "Status"];
+                        dados = this.filteredItems.map(item => [
+                            this.formatDate(item.data),
+                            item.loja,
+                            "#" + item.idCliente,
+                            item.nomeCrianca || '-',
+                            item.idade || '-',
+                            item.tema || '-',
+                            item.item,
+                            item.qtd,
+                            item.recorte ? "Sim" : "Não",
+                            item.nf ? "Sim" : "Não",
+                            item.sab ? "Sim" : "Não",
+                            item.status
+                        ]);
+                    } else if (this.activeTab === 'financas') {
+                        titulo = "Relatório Executivo de Finanças";
+                        colunas = ["Data", "Descrição", "Tipo", "Status", "Valor"];
+                        dados = this.financasSorted.map(fin => [
+                            this.formatDate(fin.data),
+                            fin.descricao,
+                            fin.tipo,
+                            fin.status,
+                            this.formatCurrency(fin.valor)
+                        ]);
+                    } else {
+                        alert("Acesse a aba Pedidos ou Finanças para gerar um relatório.");
+                        return;
+                    }
+
+                    if (dados.length === 0) {
+                        alert("Não há dados visíveis na tela para exportar.");
+                        return;
+                    }
+
+                    if (tipo === 'pdf') {
+                        this.gerarPDF(titulo, colunas, dados, comCor);
+                    } else if (tipo === 'excel') {
+                        this.gerarCSV(titulo, colunas, dados);
+                    }
+                },
+                
+                async gerarPDF(titulo, colunas, dados, comCor) {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('landscape'); 
+                    
+                    const loadImage = async (url) => {
+                        try {
+                            return await new Promise((resolve, reject) => {
+                                const img = new Image();
+                                img.crossOrigin = 'Anonymous';
+                                img.onload = () => {
+                                    const canvas = document.createElement('canvas');
+                                    const maxW = 120;
+                                    const scale = maxW / img.width;
+                                    canvas.width = maxW;
+                                    canvas.height = img.height * scale;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    resolve(canvas.toDataURL('image/png', 0.8));
+                                };
+                                img.onerror = reject;
+                                img.src = url;
+                            });
+                        } catch (e) {
+                            return null;
+                        }
+                    };
+
+                    const logo1Data = await loadImage('logo1.png');
+                    const logo2Data = await loadImage('logo2.png');
+                    
+                    // Cabeçalho moderno off-white claro no PDF
+                    doc.setFillColor(248, 250, 252); 
+                    doc.rect(0, 0, doc.internal.pageSize.width, 36, 'F');
+                    
+                    // Linha sutil abaixo do cabeçalho
+                    doc.setDrawColor(226, 232, 240);
+                    doc.line(0, 36, doc.internal.pageSize.width, 36);
+
+                    // Logos nas pontas bem aparentes
+                    if (logo1Data) {
+                        doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
+                    }
+                    if (logo2Data) {
+                        doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
+                    }
+
+                    // Títulos institucionais com cores escuras para fundo claro
+                    doc.setTextColor(15, 23, 42);
+                    doc.setFontSize(15);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Elohim e Kadosh", doc.internal.pageSize.width / 2, 16, { align: 'center' });
+                    
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(71, 85, 105);
+                    doc.text(titulo, doc.internal.pageSize.width / 2, 25, { align: 'center' });
+                    
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 116, 139);
+                    doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 44, 30, { align: 'right' });
+
+                    // Configuração de larguras proporcionais para os cabeçalhos ficarem completos e sem quebrar
+                    const isPedidos = titulo.toLowerCase().includes('pedido');
+                    const columnStylesConfig = isPedidos ? {
+                        0: { cellWidth: 20 }, // Data
+                        1: { cellWidth: 18 }, // Loja
+                        2: { cellWidth: 24 }, // ID Cliente
+                        3: { cellWidth: 28 }, // Criança
+                        4: { cellWidth: 16 }, // Idade
+                        5: { cellWidth: 28 }, // Tema
+                        6: { cellWidth: 38 }, // Item
+                        7: { cellWidth: 12 }, // Qtd
+                        8: { cellWidth: 18 }, // Recorte
+                        9: { cellWidth: 14 }, // NF
+                        10: { cellWidth: 14 }, // Sab
+                        11: { cellWidth: 32 }  // Status
+                    } : {};
+
+                    doc.autoTable({
+                        head: [colunas],
+                        body: dados,
+                        startY: 44,
+                        theme: 'plain',
+                        columnStyles: columnStylesConfig,
+                        styles: { 
+                            font: 'helvetica', 
+                            fontSize: 8, 
+                            cellPadding: 5.5, 
+                            textColor: [51, 65, 85], 
+                            valign: 'middle',
+                            halign: 'center',
+                            overflow: 'linebreak'
+                        },
+                        headStyles: { 
+                            fillColor: [30, 41, 59], 
+                            textColor: [255, 255, 255], 
+                            fontStyle: 'bold', 
+                            halign: 'center',
+                            cellPadding: 6,
+                            fontSize: 8
+                        },
+                        bodyStyles: {
+                            lineColor: [241, 245, 249],
+                            lineWidth: { bottom: 0.5 }
+                        },
+                        alternateRowStyles: { 
+                            fillColor: comCor ? [248, 250, 252] : [255, 255, 255] 
+                        },
+                        didParseCell: (data) => {
+                            if (comCor && data.section === 'body') {
+                                const rowValues = data.row.raw;
+                                const status = String(rowValues[rowValues.length - 1] || '').trim();
+                                
+                                let bg = null;
+                                let tc = [51, 65, 85];
+
+                                if (status === 'Finalizado' || status === 'Pago' || status === 'Entrada') {
+                                    bg = [209, 250, 229]; 
+                                    tc = [6, 95, 70];     
+                                } else if (status === 'Sem informações' || status === 'Saída') {
+                                    bg = [254, 242, 242]; 
+                                    tc = [153, 27, 27];   
+                                } else if (status.includes('Para aprovação') || status.includes('Aguardando') || status === 'Pendente') {
+                                    bg = [254, 243, 199]; 
+                                    tc = [146, 64, 14];   
+                                } else if (status === 'Aprovado') {
+                                    bg = [219, 234, 254]; 
+                                    tc = [30, 64, 175];   
+                                } else if (status === 'Impresso') {
+                                    bg = [243, 232, 255]; 
+                                    tc = [107, 33, 168];  
+                                }
+
+                                if (bg) {
+                                    data.cell.styles.fillColor = bg;
+                                    data.cell.styles.textColor = tc;
+                                    if (data.column.index === rowValues.length - 1) {
+                                        data.cell.styles.fontStyle = 'bold';
+                                    }
+                                }
+                            }
+                        },
+                        didDrawPage: (data) => {
+                            const pageCount = doc.internal.getNumberOfPages();
+                            doc.setFontSize(8);
+                            doc.setTextColor(148, 163, 184);
+                            doc.text(
+                                `Página ${data.pageNumber} de ${pageCount}`, 
+                                doc.internal.pageSize.width - 16, 
+                                doc.internal.pageSize.height - 10, 
+                                { align: 'right' }
+                            );
+                            doc.text(
+                                "Elohim e Kadosh • Sistema de Gestão Premium", 
+                                16, 
+                                doc.internal.pageSize.height - 10
+                            );
+                        }
+                    });
+
+                    const nomeArquivo = titulo.toLowerCase().includes('finan') ? 'relatório_finanças.pdf' : 'relatório_pedidos.pdf';
+                    doc.save(nomeArquivo);
+                },
+
+                gerarCSV(titulo, colunas, dados) {
+                    let csvContent = "\uFEFF"; 
+                    csvContent += colunas.join(";") + "\r\n";
+                    
+                    dados.forEach(rowArray => {
+                        let row = rowArray.map(item => {
+                            let cell = String(item !== null && item !== undefined ? item : '');
+                            return `"${cell.replace(/"/g, '""')}"`;
+                        }).join(";");
+                        csvContent += row + "\r\n";
+                    });
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    if (link.download !== undefined) {
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", titulo.toLowerCase().includes('finan') ? 'relatório de finanças.csv' : 'relatório de pedidos.csv');
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }
+            },
+            mounted() {
+                const initFirebase = () => {
+                    if (window.FirebaseDB) {
+                        window.FirebaseDB.listenPedidos((lista) => {
+                            this.pedidos = lista;
+                            if (this.activeTab === 'analise') {
+                                this.$nextTick(() => { this.renderApexCharts(); });
+                            }
+                        });
+                        window.FirebaseDB.listenFinancas((lista) => {
+                            this.financas = lista;
+                        });
+                    } else {
+                        setTimeout(initFirebase, 100);
+                    }
+                };
+                initFirebase();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
