@@ -1473,24 +1473,12 @@
                     return "text-indigo-600";
                 },
                 getTempoBadge(data) {
-    if (!data) return { text: "-", badgeClass: "text-slate-600 border-slate-200", dotBaseClass: "bg-slate-400", dotClass: "bg-slate-500" };
-    
-    // Normaliza as datas zerando as horas para comparar apenas os dias exatos
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    
-    const [y, m, d] = data.split('-');
-    const dataPedido = new Date(y, m - 1, d);
-    dataPedido.setHours(0, 0, 0, 0);
-
-    const diffTime = hoje - dataPedido;
-    const diffDias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDias === 0) return { text: "Hoje", badgeClass: "text-emerald-600 border-emerald-200", dotBaseClass: "bg-emerald-400", dotClass: "bg-emerald-500" };
-    if (diffDias === 1) return { text: "Ontem", badgeClass: "text-blue-600 border-blue-200", dotBaseClass: "bg-blue-400", dotClass: "bg-blue-500" };
-    if (diffDias <= 3) return { text: diffDias + " Dias", badgeClass: "text-amber-600 border-amber-200", dotBaseClass: "bg-amber-400", dotClass: "bg-amber-500" };
-    return { text: diffDias + " Dias", badgeClass: "text-red-600 border-red-200", dotBaseClass: "bg-red-400", dotClass: "bg-red-500" };
-}
+                    const diffDias = Math.floor((new Date() - new Date(data)) / (1000 * 60 * 60 * 24));
+                    if (diffDias === 0) return { text: "Hoje", badgeClass: "text-emerald-600 border-emerald-200", dotBaseClass: "bg-emerald-400", dotClass: "bg-emerald-500" };
+                    if (diffDias === 1) return { text: "Ontem", badgeClass: "text-blue-600 border-blue-200", dotBaseClass: "bg-blue-400", dotClass: "bg-blue-500" };
+                    if (diffDias <= 3) return { text: diffDias + " Dias", badgeClass: "text-amber-600 border-amber-200", dotBaseClass: "bg-amber-400", dotClass: "bg-amber-500" };
+                    return { text: diffDias + " Dias", badgeClass: "text-red-600 border-red-200", dotBaseClass: "bg-red-400", dotClass: "bg-red-500" };
+                },
                 formatDate(dateStr) {
                     if (!dateStr) return '';
                     const [y, m, d] = dateStr.split('-');
