@@ -74,37 +74,37 @@
 </head>
 <body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
 
-    <!-- CABEÇALHO SUPERIOR FIXO (PRETO FOSCO) -->
+    <!-- CABEÇALHO SUPERIOR FIXO (PRETO FOSCO COM LOGOS MAIORES) -->
     <header class="sticky top-0 z-50 shadow-xl transition-colors">
-        <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="max-w-[1600px] mx-auto px-6 h-24 flex items-center justify-between">
             
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2">
-                    <img src="logo1.png" alt="Logo Elohim" class="h-10 w-auto object-contain">
-                    <img src="logo2.png" alt="Logo Kadosh" class="h-10 w-auto object-contain">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <img src="logo1.png" alt="Logo Elohim" class="h-14 w-auto object-contain">
+                    <img src="logo2.png" alt="Logo Kadosh" class="h-14 w-auto object-contain">
                 </div>
                 <div class="flex flex-col ml-1">
-                    <h1 class="text-lg font-bold text-white tracking-wide leading-tight">Elohim e Kadosh</h1>
-                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Gestão de pedidos</span>
+                    <h1 class="text-xl font-bold text-white tracking-wide leading-tight">Elohim e Kadosh</h1>
+                    <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-widest">Gestão de pedidos</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
                 <nav class="hidden lg:flex items-center gap-2 p-1.5 bg-[#18181b] rounded-2xl border border-slate-800">
                     <a href="#" @click.prevent="activeTab = 'pedidos'" 
-                       :class="['px-5 py-2 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'pedidos' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800']">
+                       :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'pedidos' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800']">
                         <i class="ph-fill ph-squares-four text-lg"></i> Painel de Pedidos
                     </a>
                     <a href="#" @click.prevent="activeTab = 'financas'" 
-                       :class="['px-5 py-2 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'financas' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800']">
+                       :class="['px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-2', activeTab === 'financas' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800']">
                         <i class="ph-fill ph-currency-dollar text-lg"></i> Finanças
                     </a>
                 </nav>
 
-                <!-- Botão Exportar Relatório com Opções Avançadas -->
+                <!-- Botão Exportar Relatório com Opções de PDF Customizadas -->
                 <div class="relative group hidden lg:block" @click.stop>
                     <button @click="openReportMenu = !openReportMenu" title="Gerar Relatório" 
-                            class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
+                            class="w-12 h-12 rounded-xl border flex items-center justify-center transition-all shadow-inner bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
                         <i class="ph-bold ph-download-simple text-xl"></i>
                     </button>
                     <transition name="fade">
@@ -125,11 +125,9 @@
                 </div>
 
                 <button @click="openAnalise" title="Análise" 
-                        class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all shadow-inner hidden lg:flex bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
+                        class="w-12 h-12 rounded-xl border flex items-center justify-center transition-all shadow-inner hidden lg:flex bg-[#18181b] border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800">
                     <i class="ph-bold ph-chart-bar text-xl"></i>
                 </button>
-                
-                <button class="lg:hidden text-slate-300 hover:text-white"><i class="ph-bold ph-list text-2xl"></i></button>
             </div>
         </div>
     </header>
@@ -141,7 +139,7 @@
         <!-- ========================================== -->
         <div v-if="activeTab === 'pedidos'">
             <!-- BARRA DE AÇÕES FIXA (FILTROS E AÇÕES) -->
-            <div class="sticky top-20 z-40 bg-[#f8fafc] pt-2 pb-2 mb-6 transition-all">
+            <div class="sticky top-24 z-40 bg-[#f8fafc] pt-2 pb-2 mb-6 transition-all">
                 <div class="flex flex-col bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
                     <div class="flex flex-col xl:flex-row justify-between items-center gap-3 w-full">
                         
@@ -1711,39 +1709,68 @@
                     }
                 },
                 
-                gerarPDF(titulo, colunas, dados, comCor) {
+                async gerarPDF(titulo, colunas, dados, comCor) {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF('landscape'); 
                     
-                    const corPrimaria = comCor ? [79, 70, 229] : [30, 41, 59];    
-                    const corBarra = comCor ? [99, 102, 241] : [100, 116, 139];    
-                    const corFundoCabecalho = comCor ? [79, 70, 229] : [15, 23, 42]; 
-                    const corLinhaAlternada = comCor ? [245, 247, 255] : [248, 250, 252]; 
-                    
-                    doc.setFillColor(corFundoCabecalho[0], corFundoCabecalho[1], corFundoCabecalho[2]);
-                    doc.rect(0, 0, doc.internal.pageSize.width, 32, 'F');
-                    
-                    doc.setFillColor(corBarra[0], corBarra[1], corBarra[2]);
-                    doc.rect(0, 32, doc.internal.pageSize.width, 3, 'F');
+                    // Função auxiliar para carregar logos e converter em base64 com segurança
+                    const loadImage = async (url) => {
+                        try {
+                            return await new Promise((resolve, reject) => {
+                                const img = new Image();
+                                img.crossOrigin = 'Anonymous';
+                                img.onload = () => {
+                                    const canvas = document.createElement('canvas');
+                                    canvas.width = img.width;
+                                    canvas.height = img.height;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0);
+                                    resolve(canvas.toDataURL('image/png'));
+                                };
+                                img.onerror = reject;
+                                img.src = url;
+                            });
+                        } catch (e) {
+                            return null;
+                        }
+                    };
 
+                    const logo1Data = await loadImage('logo1.png');
+                    const logo2Data = await loadImage('logo2.png');
+                    
+                    // Cabeçalho preto fosco para destacar perfeitamente as duas logos
+                    doc.setFillColor(9, 9, 11); 
+                    doc.rect(0, 0, doc.internal.pageSize.width, 36, 'F');
+                    
+                    // Inserir Logo 1 (Esquerda) e Logo 2 (Direita) bem aparentes
+                    if (logo1Data) {
+                        doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
+                    }
+                    if (logo2Data) {
+                        doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
+                    }
+
+                    // Títulos institucionais centralizados
                     doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(15);
+                    doc.setFontSize(16);
                     doc.setFont("helvetica", "bold");
-                    doc.text("Elohim e Kadosh", 16, 14);
+                    doc.text("Elohim e Kadosh", doc.internal.pageSize.width / 2, 16, { align: 'center' });
                     
                     doc.setFontSize(10);
                     doc.setFont("helvetica", "normal");
                     doc.setTextColor(203, 213, 225);
-                    doc.text(titulo, 16, 23);
+                    doc.text(titulo, doc.internal.pageSize.width / 2, 25, { align: 'center' });
                     
-                    doc.setFontSize(8.5);
-                    doc.setTextColor(226, 232, 240);
-                    doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 16, 18, { align: 'right' });
+                    // Data e hora de emissão no canto direito superior
+                    doc.setFontSize(8);
+                    doc.setTextColor(148, 163, 184);
+                    doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 44, 30, { align: 'right' });
 
+                    // Configuração da tabela moderna no AutoTable com reflexo das cores de status
                     doc.autoTable({
                         head: [colunas],
                         body: dados,
-                        startY: 42,
+                        startY: 44,
                         theme: 'grid',
                         styles: { 
                             font: 'helvetica', 
@@ -1756,7 +1783,7 @@
                             halign: 'center'
                         },
                         headStyles: { 
-                            fillColor: [corPrimaria[0], corPrimaria[1], corPrimaria[2]], 
+                            fillColor: [24, 24, 27], 
                             textColor: [255, 255, 255], 
                             fontStyle: 'bold', 
                             halign: 'center',
@@ -1764,7 +1791,36 @@
                             lineWidth: 0
                         },
                         alternateRowStyles: { 
-                            fillColor: corLinhaAlternada 
+                            fillColor: comCor ? [248, 250, 252] : [255, 255, 255] 
+                        },
+                        didParseCell: (data) => {
+                            if (comCor && data.section === 'body') {
+                                const headerText = colunas[data.column.index];
+                                if (headerText === 'Status' || headerText === 'Tipo') {
+                                    const status = data.cell.raw;
+                                    if (status === 'Finalizado' || status === 'Pago' || status === 'Entrada') {
+                                        data.cell.styles.fillColor = [209, 250, 229]; // Verde claro
+                                        data.cell.styles.textColor = [6, 95, 70];     // Verde escuro
+                                        data.cell.styles.fontStyle = 'bold';
+                                    } else if (status === 'Sem informações' || status === 'Saída') {
+                                        data.cell.styles.fillColor = [254, 242, 242]; // Vermelho claro
+                                        data.cell.styles.textColor = [153, 27, 27];   // Vermelho escuro
+                                        data.cell.styles.fontStyle = 'bold';
+                                    } else if (status && (status.includes('Para aprovação') || status.includes('Aguardando') || status === 'Pendente')) {
+                                        data.cell.styles.fillColor = [254, 243, 199]; // Amarelo/Laranja claro
+                                        data.cell.styles.textColor = [146, 64, 14];   // Amarelo/Laranja escuro
+                                        data.cell.styles.fontStyle = 'bold';
+                                    } else if (status === 'Aprovado') {
+                                        data.cell.styles.fillColor = [219, 234, 254]; // Azul claro
+                                        data.cell.styles.textColor = [30, 64, 175];   // Azul escuro
+                                        data.cell.styles.fontStyle = 'bold';
+                                    } else if (status === 'Impresso') {
+                                        data.cell.styles.fillColor = [243, 232, 255]; // Roxo claro
+                                        data.cell.styles.textColor = [107, 33, 168];  // Roxo escuro
+                                        data.cell.styles.fontStyle = 'bold';
+                                    }
+                                }
+                            }
                         },
                         didDrawPage: (data) => {
                             const pageCount = doc.internal.getNumberOfPages();
