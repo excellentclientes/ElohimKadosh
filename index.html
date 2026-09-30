@@ -1654,7 +1654,14 @@
                     const itemCounts = {};
 
                     this.pedidosAnalise.forEach(p => {
-                        if (p.item) {
+                        if (p.itens && Array.isArray(p.itens) && p.itens.length > 0) {
+                            p.itens.forEach(it => {
+                                if (it.item) {
+                                    const nomeItemClean = it.item.trim();
+                                    itemCounts[nomeItemClean] = (itemCounts[nomeItemClean] || 0) + (parseInt(it.qtd) || 1);
+                                }
+                            });
+                        } else if (p.item) {
                             const nomeItemClean = p.item.trim();
                             itemCounts[nomeItemClean] = (itemCounts[nomeItemClean] || 0) + (p.qtd || 1);
                         }
