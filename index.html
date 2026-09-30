@@ -420,11 +420,17 @@
 
                                 <!-- NF -->
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="if(item.editando){ item.nf = !item.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-1">
+                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
+                                            <button @click="if(item.editando){ it.nf = !it.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', it.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                                <i :class="it.nf ? 'ph-bold ph-check text-sm' : ''"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button v-else @click="if(item.editando){ item.nf = !item.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
                                         <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
-
                                 <!-- Sab -->
                                 <td class="px-2 py-3 text-center">
                                     <button @click="if(item.editando){ item.sab = !item.sab; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
@@ -1764,14 +1770,21 @@
                         nomeCrianca: this.form.nomeCrianca,
                         idade: this.form.idade,
                         tema: this.form.tema,
-                        nf: this.form.nf,
-                        sab: this.form.sab,
-                        // Salva a lista inteira de itens cadastrados de uma vez só
+                        sab: this.form.sab, // SAB continua único para o pedido todo
+                        // Salva a lista inteira de itens com recorte e NF individuais
                         itens: this.form.itensPedido.map(it => ({
                             item: it.item,
                             qtd: it.qtd,
-                            recorte: it.recorte
+                            recorte: it.recorte,
+                            nf: it.nf
                         })),
+                        item: this.form.itensPedido.map(i => `${i.item} (${i.qtd}x)`).join(', '),
+                        qtd: this.form.itensPedido.reduce((acc, curr) => acc + (parseInt(curr.qtd) || 0), 0),
+                        recorte: this.form.itensPedido.some(i => i.recorte),
+                        nf: this.form.itensPedido.some(i => i.nf),
+                        status: 'Novo',
+                        editando: false
+                    };
                         // Mantemos campos individuais caso algum código antigo leia, pegando o primeiro item por segurança
                         item: this.form.itensPedido.map(i => `${i.item} (${i.qtd}x)`).join(', '),
                         qtd: this.form.itensPedido.reduce((acc, curr) => acc + (parseInt(curr.qtd) || 0), 0),
