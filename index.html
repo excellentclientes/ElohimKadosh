@@ -234,7 +234,7 @@
                 </div>
             </div>
 
-            <!-- Cards de Status -->
+            <!-- Cards de Status (Filtrados por Loja) -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
                 <div v-for="status in statuses" :key="status"
                      @click="handleCardClick(status)"
@@ -1117,7 +1117,7 @@
         </div>
     </transition>
 
-    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO (POSICIONAMENTO CORRIGIDO) -->
+    <!-- MENU FLUTUANTE DE STATUS DO PEDIDO -->
     <transition name="fade">
         <div v-if="activeStatusItem" @click.stop 
              :style="{ top: statusMenuPos.top, left: statusMenuPos.left }" 
@@ -1230,6 +1230,10 @@
             },
             watch: {
                 activeTab(newVal) {
+                    // Tranca a aba finanças sempre que sair dela
+                    if (newVal !== 'financas') {
+                        this.financasLiberado = false;
+                    }
                     if (newVal === 'analise' && this.previousTab === 'pedidos') {
                         this.$nextTick(() => { this.renderApexCharts(); });
                     }
@@ -1241,12 +1245,12 @@
                 }
             },
             computed: {
+                pedidosFiltradosPorLoja() {
+                    if (this.filtroLoja === 'Todas') return this.pedidos;
+                    return this.pedidos.filter(p => p.loja === this.filtroLoja);
+                },
                 filteredItems() {
-                    let result = this.pedidos;
-                    
-                    if (this.filtroLoja !== 'Todas') {
-                        result = result.filter(p => p.loja === this.filtroLoja);
-                    }
+                    let result = this.pedidosFiltradosPorLoja;
                     
                     if (this.activeStatuses.length > 0) {
                         result = result.filter(p => this.activeStatuses.includes(p.status));
@@ -1293,7 +1297,7 @@
                 statusCounts() {
                     const counts = {};
                     this.statuses.forEach(s => counts[s] = 0);
-                    this.pedidos.forEach(p => {
+                    this.pedidosFiltradosPorLoja.forEach(p => {
                         if(counts[p.status] !== undefined) counts[p.status]++;
                     });
                     return counts;
