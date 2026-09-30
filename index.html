@@ -1675,8 +1675,18 @@
                         if (!dataByDate[p.data]) {
                             dataByDate[p.data] = { recorteYes: 0, recorteNo: 0, nfYes: 0, nfNo: 0, sabYes: 0, sabNo: 0, elohim: 0, kadosh: 0 };
                         }
-                        if (p.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
-                        if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
+
+                        // Contabiliza Recorte e NF item por item para pedidos múltiplos
+                        if (p.itens && Array.isArray(p.itens) && p.itens.length > 0) {
+                            p.itens.forEach(it => {
+                                if (it.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
+                                if (it.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
+                            });
+                        } else {
+                            if (p.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
+                            if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
+                        }
+
                         if (p.sab) dataByDate[p.data].sabYes++; else dataByDate[p.data].sabNo++;
                         if (p.loja === 'Elohim') dataByDate[p.data].elohim++;
                         if (p.loja === 'Kadosh') dataByDate[p.data].kadosh++;
