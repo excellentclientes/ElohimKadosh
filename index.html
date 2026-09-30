@@ -1674,7 +1674,7 @@
                         lojaSeries[1].data.push(dataByDate[d].kadosh);
                     });
 
-                    const formatDateLabel = (d) => d.split('-').reverse().join('/');
+                    const formatDateLabel = (d) => d.split('-')[2];
                     const categories = sortedDates.map(formatDateLabel);
 
                     const buildChart = (id, type, series, colors, isLine = false, customCategories = categories, isHorizontal = false) => {
