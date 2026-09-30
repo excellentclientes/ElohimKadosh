@@ -72,6 +72,23 @@
         }
 
         select::-ms-expand { display: none; }
+
+        /* Estilo para a alça de preenchimento (Fill Handle) da planilha */
+        .fill-handle {
+            position: absolute;
+            right: -3px;
+            bottom: -3px;
+            width: 8px;
+            height: 8px;
+            background-color: #6366f1;
+            border: 1px solid #ffffff;
+            cursor: crosshair;
+            display: none;
+            z-index: 10;
+        }
+        td:hover .fill-handle {
+            display: block;
+        }
     </style>
 </head>
 <body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
@@ -418,16 +435,9 @@
                                     <span v-else>{{ item.loja }}</span>
                                 </td>
 
-                                <!-- NF -->
+                                <!-- NF (Único por pedido) -->
                                 <td class="px-2 py-3 text-center">
-                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-1">
-                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
-                                            <button @click="if(item.editando){ it.nf = !it.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', it.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
-                                                <i :class="it.nf ? 'ph-bold ph-check text-sm' : ''"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <button v-else @click="if(item.editando){ item.nf = !item.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                    <button @click="if(item.editando){ item.nf = !item.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
                                         <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
@@ -463,7 +473,7 @@
 
             <!-- Assinatura Discreta -->
             <div class="mt-3 text-right pr-2">
-                <a href="https://wa.me/5511934664498" target="_blank" class="text-[11px] font-medium tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
+                <a href="https://wa.me/5511934664498?text=Olá%20Marcos,%20estou%20entrando%20em%20contato%20pelo%20sistema!" target="_blank" class="text-[11px] font-medium tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
                     Developed by Marcos Valério
                 </a>
             </div>
@@ -1009,7 +1019,7 @@
                     </form>
                 </div>
 
-                <!-- MODO PLANILHA -->
+                <!-- MODO PLANILHA COM NAVEGAÇÃO ENTER E ARRASTAR PARA BAIXO -->
                 <div v-if="modoPlanilha" class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
                     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                         <div class="overflow-x-auto w-full custom-scrollbar">
@@ -1032,44 +1042,52 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     <tr v-for="(linha, index) in planilhaLinhas" :key="linha.idTemp" class="hover:bg-slate-50/80 transition-colors group">
-                                        <td class="px-2 py-1.5">
-                                            <select v-model="linha.loja" @change="autoSavePlanilhaRow(linha)" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <select v-model="linha.loja" @keydown.enter.prevent="focusNextCell($event, index, 0)" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
                                                 <option v-for="l in lojas" :key="l" :value="l">{{ l }}</option>
                                             </select>
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'loja', linha.loja, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="date" v-model="linha.data" @change="autoSavePlanilhaRow(linha)" class="w-28 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="date" v-model="linha.data" @keydown.enter.prevent="focusNextCell($event, index, 1)" class="w-28 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'data', linha.data, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.idCliente" @change="autoSavePlanilhaRow(linha)" placeholder="ID Cliente" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.idCliente" @keydown.enter.prevent="focusNextCell($event, index, 2)" placeholder="ID Cliente" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'idCliente', linha.idCliente, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.nomeCrianca" @change="autoSavePlanilhaRow(linha)" placeholder="Nome" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.nomeCrianca" @keydown.enter.prevent="focusNextCell($event, index, 3)" placeholder="Nome" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'nomeCrianca', linha.nomeCrianca, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.idade" @change="autoSavePlanilhaRow(linha)" placeholder="Idade" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.idade" @keydown.enter.prevent="focusNextCell($event, index, 4)" placeholder="Idade" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'idade', linha.idade, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.tema" @change="autoSavePlanilhaRow(linha)" placeholder="Tema" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.tema" @keydown.enter.prevent="focusNextCell($event, index, 5)" placeholder="Tema" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'tema', linha.tema, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.item" @change="autoSavePlanilhaRow(linha)" placeholder="Ex: Cartão, Copo..." class="w-40 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.item" @keydown.enter.prevent="focusNextCell($event, index, 6)" placeholder="Ex: Cartão, Copo..." class="w-40 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'item', linha.item, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="number" min="1" v-model.number="linha.qtd" @change="autoSavePlanilhaRow(linha)" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="number" min="1" v-model.number="linha.qtd" @keydown.enter.prevent="focusNextCell($event, index, 7)" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'qtd', linha.qtd, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
-                                            <button type="button" @click="linha.recorte = !linha.recorte; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-emerald-400']">
+                                            <button type="button" @click="linha.recorte = !linha.recorte" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-emerald-400']">
                                                 <i class="ph-bold ph-check text-xs"></i>
                                             </button>
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
-                                            <button type="button" @click="linha.nf = !linha.nf; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-indigo-400']">
+                                            <button type="button" @click="linha.nf = !linha.nf" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-indigo-400']">
                                                 <i class="ph-bold ph-check text-xs"></i>
                                             </button>
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
-                                            <button type="button" @click="linha.sab = !linha.sab; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-amber-400']">
+                                            <button type="button" @click="linha.sab = !linha.sab" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-amber-400']">
                                                 <i class="ph-bold ph-check text-xs"></i>
                                             </button>
                                         </td>
@@ -1683,16 +1701,17 @@
                             dataByDate[p.data] = { recorteYes: 0, recorteNo: 0, nfYes: 0, nfNo: 0, sabYes: 0, sabNo: 0, elohim: 0, kadosh: 0 };
                         }
 
-                        // Contabiliza Recorte e NF item por item para pedidos múltiplos
+                        // Contabiliza Recorte item por item para pedidos múltiplos
                         if (p.itens && Array.isArray(p.itens) && p.itens.length > 0) {
                             p.itens.forEach(it => {
                                 if (it.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
-                                if (it.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
                             });
                         } else {
                             if (p.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
-                            if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
                         }
+
+                        // NF é única por pedido agora
+                        if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
 
                         if (p.sab) dataByDate[p.data].sabYes++; else dataByDate[p.data].sabNo++;
                         if (p.loja === 'Elohim') dataByDate[p.data].elohim++;
@@ -1788,16 +1807,15 @@
                         idade: this.form.idade,
                         tema: this.form.tema,
                         sab: this.form.sab,
+                        nf: this.form.nf,
                         itens: this.form.itensPedido.map(it => ({
                             item: it.item,
                             qtd: it.qtd,
-                            recorte: it.recorte,
-                            nf: it.nf
+                            recorte: it.recorte
                         })),
                         item: this.form.itensPedido.map(i => `${i.item} (${i.qtd}x)`).join(', '),
                         qtd: this.form.itensPedido.reduce((acc, curr) => acc + (parseInt(curr.qtd) || 0), 0),
                         recorte: this.form.itensPedido.some(i => i.recorte),
-                        nf: this.form.itensPedido.some(i => i.nf),
                         status: 'Novo',
                         editando: false
                     };
@@ -1807,38 +1825,67 @@
                     }
 
                     this.closeModalPedidos();
-                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false, nf: false }];
+                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false }];
                     this.form.idCliente = '';
                     this.form.nomeCrianca = '';
                     this.form.idade = '';
                     this.form.tema = '';
+                    this.form.nf = false;
+                    this.form.sab = false;
                 },
-                autoSavePlanilhaRow(linha) {
-                    if(linha.idCliente && linha.item) {
-                        if (!linha.id) {
-                            linha.id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
-                            linha.status = 'Novo';
-                        }
-                        const pedidoData = {
-                            id: linha.id,
-                            loja: linha.loja,
-                            data: linha.data,
-                            idCliente: linha.idCliente,
-                            nomeCrianca: linha.nomeCrianca,
-                            idade: linha.idade,
-                            tema: linha.tema,
-                            item: linha.item,
-                            qtd: linha.qtd,
-                            recorte: linha.recorte,
-                            nf: linha.nf,
-                            sab: linha.sab,
-                            status: linha.status,
-                            editando: false
-                        };
-                        if (window.FirebaseDB && window.FirebaseDB.savePedido) {
-                            window.FirebaseDB.savePedido(pedidoData);
-                        }
+                // Navegação com Enter no modo planilha
+                focusNextCell(event, rowIndex, colIndex) {
+                    const rowElements = event.target.closest('tr').querySelectorAll('input, select');
+                    if (rowElements[colIndex + 1]) {
+                        rowElements[colIndex + 1].focus();
+                    } else if (this.planilhaLinhas[rowIndex + 1]) {
+                        // Vai para o primeiro campo da próxima linha
+                        this.$nextTick(() => {
+                            const nextRow = event.target.closest('tbody').querySelectorAll('tr')[rowIndex + 1];
+                            if (nextRow) {
+                                const nextInput = nextRow.querySelector('input, select');
+                                if (nextInput) nextInput.focus();
+                            }
+                        });
+                    } else {
+                        this.addPlanilhaRow();
+                        this.$nextTick(() => {
+                            const rows = event.target.closest('tbody').querySelectorAll('tr');
+                            const nextRow = rows[rows.length - 1];
+                            if (nextRow) {
+                                const nextInput = nextRow.querySelector('input, select');
+                                if (nextInput) nextInput.focus();
+                            }
+                        });
                     }
+                },
+                // Arrastar célula para baixo (Fill Handle)
+                startFillDown(rowIndex, field, value, event) {
+                    const startY = event.clientY;
+                    const tbody = event.target.closest('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    
+                    const onMouseMove = (e) => {
+                        const targetRow = document.elementFromPoint(e.clientX, e.clientY)?.closest('tr');
+                        if (targetRow) {
+                            const targetIndex = rows.indexOf(targetRow);
+                            if (targetIndex > rowIndex) {
+                                for (let i = rowIndex + 1; i <= targetIndex; i++) {
+                                    if (this.planilhaLinhas[i]) {
+                                        this.planilhaLinhas[i][field] = value;
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    const onMouseUp = () => {
+                        window.removeEventListener('mousemove', onMouseMove);
+                        window.removeEventListener('mouseup', onMouseUp);
+                    };
+
+                    window.addEventListener('mousemove', onMouseMove);
+                    window.addEventListener('mouseup', onMouseUp);
                 },
                 addPlanilhaRow() {
                     this.planilhaLinhas.push({
@@ -1861,9 +1908,46 @@
                     if(this.planilhaLinhas.length === 0) this.addPlanilhaRow();
                 },
                 salvarTodaPlanilha() {
-                    this.planilhaLinhas.forEach((linha) => {
-                        this.autoSavePlanilhaRow(linha);
+                    // Agrupa linhas com as mesmas informações gerais (Exceto Item, Qtd, Recorte)
+                    const grupos = {};
+                    this.planilhaLinhas.forEach(linha => {
+                        if (linha.idCliente && linha.item) {
+                            const chave = `${linha.loja}_${linha.data}_${linha.idCliente}_${(linha.nomeCrianca || '').trim()}_${(linha.idade || '').trim()}_${(linha.tema || '').trim()}_${linha.nf}_${linha.sab}`;
+                            
+                            if (!grupos[chave]) {
+                                grupos[chave] = {
+                                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                                    loja: linha.loja,
+                                    data: linha.data,
+                                    idCliente: linha.idCliente,
+                                    nomeCrianca: linha.nomeCrianca,
+                                    idade: linha.idade,
+                                    tema: linha.tema,
+                                    nf: linha.nf,
+                                    sab: linha.sab,
+                                    status: 'Novo',
+                                    itens: []
+                                };
+                            }
+                            grupos[chave].itens.push({
+                                item: linha.item,
+                                qtd: linha.qtd || 1,
+                                recorte: linha.recorte || false
+                            });
+                        }
                     });
+
+                    Object.values(grupos).forEach(pedido => {
+                        pedido.item = pedido.itens.map(i => `${i.item} (${i.qtd}x)`).join(', ');
+                        pedido.qtd = pedido.itens.reduce((acc, curr) => acc + (parseInt(curr.qtd) || 0), 0);
+                        pedido.recorte = pedido.itens.some(i => i.recorte);
+                        pedido.editando = false;
+
+                        if (window.FirebaseDB && window.FirebaseDB.savePedido) {
+                            window.FirebaseDB.savePedido(pedido);
+                        }
+                    });
+
                     this.planilhaLinhas = [{
                         idTemp: Date.now(),
                         loja: 'Elohim',
@@ -1925,12 +2009,11 @@
                                         this.getTempoBadge(item.data).text,
                                         this.formatDate(item.data),
                                         item.loja,
-                                        it.nf ? "Sim" : "Não",
+                                        item.nf ? "Sim" : "Não",
                                         item.sab ? "Sim" : "Não"
                                     ]);
                                 });
                             } else if (item.item && item.item.includes(',')) {
-                                // Suporte para pedidos antigos salvos em formato de texto unificado
                                 const partes = item.item.split(',');
                                 partes.forEach(parte => {
                                     const match = parte.trim().match(/^(.*?)\s*\((\d+)x\)$/);
@@ -2055,25 +2138,25 @@
                             if (comCor && data.section === 'body') {
                                 const status = data.row.raw[0];
                                 if (status === 'Com informação') {
-                                    data.cell.styles.fillColor = [252, 231, 243]; // Rosa claro
+                                    data.cell.styles.fillColor = [252, 231, 243];
                                     data.cell.styles.textColor = [131, 24, 67];
                                 } else if (status === 'Sem informação') {
-                                    data.cell.styles.fillColor = [254, 226, 226]; // Vermelho claro
+                                    data.cell.styles.fillColor = [254, 226, 226];
                                     data.cell.styles.textColor = [153, 27, 27];
                                 } else if (status === 'Para aprovação') {
-                                    data.cell.styles.fillColor = [219, 234, 254]; // Azul claro
+                                    data.cell.styles.fillColor = [219, 234, 254];
                                     data.cell.styles.textColor = [30, 64, 175];
                                 } else if (status === 'Aprovado') {
-                                    data.cell.styles.fillColor = [254, 243, 199]; // Amarelo/Ambar claro
+                                    data.cell.styles.fillColor = [254, 243, 199];
                                     data.cell.styles.textColor = [146, 64, 14];
                                 } else if (status === 'Impresso') {
-                                    data.cell.styles.fillColor = [209, 250, 229]; // Verde claro
+                                    data.cell.styles.fillColor = [209, 250, 229];
                                     data.cell.styles.textColor = [6, 95, 70];
                                 } else if (status === 'Aguardando coleta') {
-                                    data.cell.styles.fillColor = [15, 118, 110]; // Teal escuro
+                                    data.cell.styles.fillColor = [15, 118, 110];
                                     data.cell.styles.textColor = [255, 255, 255];
                                 } else if (status === 'Finalizado') {
-                                    data.cell.styles.fillColor = [203, 213, 225]; // Cinza claro
+                                    data.cell.styles.fillColor = [203, 213, 225];
                                     data.cell.styles.textColor = [15, 23, 42];
                                 } else {
                                     data.cell.styles.fillColor = [255, 255, 255];
@@ -2115,7 +2198,6 @@
                 }
             },
            mounted() {
-                // Fecha qualquer menu flutuante se clicar em qualquer lugar da tela
                 document.addEventListener('click', (e) => {
                     this.activeStatusItem = null;
                     this.openFilterDropdown = null;
