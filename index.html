@@ -1384,7 +1384,7 @@
                 tvTodayOrders() {
                     const today = new Date().toISOString().split('T')[0];
                     return this.pedidos.filter(p => p.data === today && p.status !== 'Finalizado').slice(0, this.tvLimit);
-                }
+                },
             },
             methods: {
                 toggleFullScreen() {
