@@ -1982,7 +1982,14 @@
                     }
                 }
             },
-            mounted() {
+           mounted() {
+                // Fecha qualquer menu flutuante se clicar em qualquer lugar da tela
+                document.addEventListener('click', (e) => {
+                    this.activeStatusItem = null;
+                    this.openFilterDropdown = null;
+                    this.openReportMenu = false;
+                });
+
                 document.addEventListener('fullscreenchange', () => {
                     this.isFullScreen = !!document.fullscreenElement;
                 });
