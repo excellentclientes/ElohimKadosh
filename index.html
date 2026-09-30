@@ -1717,6 +1717,7 @@
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF('landscape'); 
                     
+                    // Otimização leve de imagem para evitar arquivos pesados (max 120px)
                     const loadImage = async (url) => {
                         try {
                             return await new Promise((resolve, reject) => {
@@ -1724,11 +1725,13 @@
                                 img.crossOrigin = 'Anonymous';
                                 img.onload = () => {
                                     const canvas = document.createElement('canvas');
-                                    canvas.width = img.width;
-                                    canvas.height = img.height;
+                                    const maxW = 120;
+                                    const scale = maxW / img.width;
+                                    canvas.width = maxW;
+                                    canvas.height = img.height * scale;
                                     const ctx = canvas.getContext('2d');
-                                    ctx.drawImage(img, 0, 0);
-                                    resolve(canvas.toDataURL('image/png'));
+                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    resolve(canvas.toDataURL('image/png', 0.8));
                                 };
                                 img.onerror = reject;
                                 img.src = url;
@@ -1768,12 +1771,29 @@
                     doc.setTextColor(148, 163, 184);
                     doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 44, 30, { align: 'right' });
 
-                    // Configuração da tabela com visual ultra-moderno e elegante
+                    // Configuração da tabela com largura proporcional para os títulos aparecerem completos
+                    const isPedidos = titulo.toLowerCase().includes('pedido');
+                    const columnStylesConfig = isPedidos ? {
+                        0: { cellWidth: 22 }, // Data
+                        1: { cellWidth: 20 }, // Loja
+                        2: { cellWidth: 24 }, // ID Cliente
+                        3: { cellWidth: 26 }, // Criança
+                        4: { cellWidth: 15 }, // Idade
+                        5: { cellWidth: 26 }, // Tema
+                        6: { cellWidth: 36 }, // Item
+                        7: { cellWidth: 15 }, // Qtd
+                        8: { cellWidth: 18 }, // Recorte
+                        9: { cellWidth: 15 }, // NF
+                        10: { cellWidth: 15 }, // Sab
+                        11: { cellWidth: 32 }  // Status
+                    } : {};
+
                     doc.autoTable({
                         head: [colunas],
                         body: dados,
                         startY: 44,
                         theme: 'plain',
+                        columnStyles: columnStylesConfig,
                         styles: { 
                             font: 'helvetica', 
                             fontSize: 8.5, 
@@ -1798,28 +1818,34 @@
                         },
                         didParseCell: (data) => {
                             if (comCor && data.section === 'body') {
-                                const headerText = colunas[data.column.index];
-                                if (headerText === 'Status' || headerText === 'Tipo') {
-                                    const rawVal = String(data.cell.raw || '').trim();
-                                    if (rawVal === 'Finalizado' || rawVal === 'Pago' || rawVal === 'Entrada') {
-                                        data.cell.styles.fillColor = [209, 250, 229]; // Verde claro
-                                        data.cell.styles.textColor = [6, 95, 70];     // Verde escuro
-                                        data.cell.styles.fontStyle = 'bold';
-                                    } else if (rawVal === 'Sem informações' || rawVal === 'Saída') {
-                                        data.cell.styles.fillColor = [254, 242, 242]; // Vermelho claro
-                                        data.cell.styles.textColor = [153, 27, 27];   // Vermelho escuro
-                                        data.cell.styles.fontStyle = 'bold';
-                                    } else if (rawVal.includes('Para aprovação') || rawVal.includes('Aguardando') || rawVal === 'Pendente') {
-                                        data.cell.styles.fillColor = [254, 243, 199]; // Amarelo/Âmbar claro
-                                        data.cell.styles.textColor = [146, 64, 14];   // Amarelo/Âmbar escuro
-                                        data.cell.styles.fontStyle = 'bold';
-                                    } else if (rawVal === 'Aprovado') {
-                                        data.cell.styles.fillColor = [219, 234, 254]; // Azul claro
-                                        data.cell.styles.textColor = [30, 64, 175];   // Azul escuro
-                                        data.cell.styles.fontStyle = 'bold';
-                                    } else if (rawVal === 'Impresso') {
-                                        data.cell.styles.fillColor = [243, 232, 255]; // Roxo claro
-                                        data.cell.styles.textColor = [107, 33, 168];  // Roxo escuro
+                                // Identificar o status da linha atual (última coluna em pedidos ou coluna 3 em finanças)
+                                const rowValues = data.row.raw;
+                                const status = String(rowValues[rowValues.length - 1] || '').trim();
+                                
+                                let bg = null;
+                                let tc = [51, 65, 85];
+
+                                if (status === 'Finalizado' || status === 'Pago' || status === 'Entrada') {
+                                    bg = [209, 250, 229]; // Verde claro
+                                    tc = [6, 95, 70];     // Verde escuro
+                                } else if (status === 'Sem informações' || status === 'Saída') {
+                                    bg = [254, 242, 242]; // Vermelho claro
+                                    tc = [153, 27, 27];   // Vermelho escuro
+                                } else if (status.includes('Para aprovação') || status.includes('Aguardando') || status === 'Pendente') {
+                                    bg = [254, 243, 199]; // Amarelo/Âmbar claro
+                                    tc = [146, 64, 14];   // Amarelo/Âmbar escuro
+                                } else if (status === 'Aprovado') {
+                                    bg = [219, 234, 254]; // Azul claro
+                                    tc = [30, 64, 175];   // Azul escuro
+                                } else if (status === 'Impresso') {
+                                    bg = [243, 232, 255]; // Roxo claro
+                                    tc = [107, 33, 168];  // Roxo escuro
+                                }
+
+                                if (bg) {
+                                    data.cell.styles.fillColor = bg;
+                                    data.cell.styles.textColor = tc;
+                                    if (data.column.index === rowValues.length - 1) {
                                         data.cell.styles.fontStyle = 'bold';
                                     }
                                 }
