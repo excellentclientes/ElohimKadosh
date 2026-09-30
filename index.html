@@ -1899,9 +1899,9 @@
                                 item.itens.forEach(it => {
                                     dados.push([
                                         item.status,
-                                        it.item,
+                                        it.item || '',
                                         it.recorte ? "Sim" : "Não",
-                                        it.qtd,
+                                        it.qtd || 1,
                                         item.tema || '-',
                                         item.nomeCrianca || '-',
                                         item.idade || '-',
@@ -1912,12 +1912,34 @@
                                         item.sab ? "Sim" : "Não"
                                     ]);
                                 });
+                            } else if (item.item && item.item.includes(',')) {
+                                // Suporte para pedidos antigos salvos em formato de texto unificado
+                                const partes = item.item.split(',');
+                                partes.forEach(parte => {
+                                    const match = parte.trim().match(/^(.*?)\s*\((\d+)x\)$/);
+                                    const nomeItem = match ? match[1].trim() : parte.trim();
+                                    const qtdItem = match ? parseInt(match[2]) : (item.qtd || 1);
+                                    dados.push([
+                                        item.status,
+                                        nomeItem,
+                                        item.recorte ? "Sim" : "Não",
+                                        qtdItem,
+                                        item.tema || '-',
+                                        item.nomeCrianca || '-',
+                                        item.idade || '-',
+                                        this.getTempoBadge(item.data).text,
+                                        this.formatDate(item.data),
+                                        item.loja,
+                                        item.nf ? "Sim" : "Não",
+                                        item.sab ? "Sim" : "Não"
+                                    ]);
+                                });
                             } else {
                                 dados.push([
                                     item.status,
-                                    item.item,
+                                    item.item || '',
                                     item.recorte ? "Sim" : "Não",
-                                    item.qtd,
+                                    item.qtd || 1,
                                     item.tema || '-',
                                     item.nomeCrianca || '-',
                                     item.idade || '-',
@@ -1986,33 +2008,65 @@
                     const logo1Data = await loadImage('logo1.png');
                     const logo2Data = await loadImage('logo2.png');
                     
-                    doc.setFillColor(248, 250, 252); 
+                    doc.setFillColor(comCor ? 248 : 255, comCor ? 250 : 255, comCor ? 252 : 255); 
                     doc.rect(0, 0, doc.internal.pageSize.width, 36, 'F');
                     
-                    doc.setDrawColor(226, 232, 240);
+                    doc.setDrawColor(comCor ? 226 : 0, comCor ? 232 : 0, comCor ? 240 : 0);
                     doc.line(0, 36, doc.internal.pageSize.width, 36);
 
                     if (logo1Data) doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
                     if (logo2Data) doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
 
-                    doc.setTextColor(15, 23, 42);
+                    doc.setTextColor(comCor ? 15 : 0, comCor ? 23 : 0, comCor ? 42 : 0);
                     doc.setFontSize(15);
                     doc.setFont("helvetica", "bold");
                     doc.text("Elohim e Kadosh", doc.internal.pageSize.width / 2, 16, { align: 'center' });
                     
                     doc.setFontSize(10);
                     doc.setFont("helvetica", "normal");
-                    doc.setTextColor(71, 85, 105);
+                    doc.setTextColor(comCor ? 71 : 0, comCor ? 85 : 0, comCor ? 105 : 0);
                     doc.text(titulo, doc.internal.pageSize.width / 2, 25, { align: 'center' });
 
                     doc.autoTable({
                         head: [colunas],
                         body: dados,
                         startY: 44,
-                        theme: 'plain',
-                        styles: { font: 'helvetica', fontSize: 8, cellPadding: 5.5, textColor: [51, 65, 85], valign: 'middle', halign: 'center' },
-                        headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center', cellPadding: 6, fontSize: 8 },
-                        alternateRowStyles: { fillColor: comCor ? [248, 250, 252] : [255, 255, 255] }
+                        theme: comCor ? 'grid' : 'plain',
+                        styles: { font: 'helvetica', fontSize: 8, cellPadding: 5.5, textColor: comCor ? [51, 65, 85] : [0, 0, 0], valign: 'middle', halign: 'center' },
+                        headStyles: { fillColor: comCor ? [30, 41, 59] : [240, 240, 240], textColor: comCor ? [255, 255, 255] : [0, 0, 0], fontStyle: 'bold', halign: 'center', cellPadding: 6, fontSize: 8 },
+                        didParseCell: function(data) {
+                            if (comCor && data.section === 'body') {
+                                const status = data.row.raw[0];
+                                if (status === 'Com informação') {
+                                    data.cell.styles.fillColor = [252, 231, 243]; // Rosa claro
+                                    data.cell.styles.textColor = [131, 24, 67];
+                                } else if (status === 'Sem informação') {
+                                    data.cell.styles.fillColor = [254, 226, 226]; // Vermelho claro
+                                    data.cell.styles.textColor = [153, 27, 27];
+                                } else if (status === 'Para aprovação') {
+                                    data.cell.styles.fillColor = [219, 234, 254]; // Azul claro
+                                    data.cell.styles.textColor = [30, 64, 175];
+                                } else if (status === 'Aprovado') {
+                                    data.cell.styles.fillColor = [254, 243, 199]; // Amarelo/Ambar claro
+                                    data.cell.styles.textColor = [146, 64, 14];
+                                } else if (status === 'Impresso') {
+                                    data.cell.styles.fillColor = [209, 250, 229]; // Verde claro
+                                    data.cell.styles.textColor = [6, 95, 70];
+                                } else if (status === 'Aguardando coleta') {
+                                    data.cell.styles.fillColor = [15, 118, 110]; // Teal escuro
+                                    data.cell.styles.textColor = [255, 255, 255];
+                                } else if (status === 'Finalizado') {
+                                    data.cell.styles.fillColor = [203, 213, 225]; // Cinza claro
+                                    data.cell.styles.textColor = [15, 23, 42];
+                                } else {
+                                    data.cell.styles.fillColor = [255, 255, 255];
+                                    data.cell.styles.textColor = [30, 41, 59];
+                                }
+                            } else if (!comCor && data.section === 'body') {
+                                data.cell.styles.fillColor = [255, 255, 255];
+                                data.cell.styles.textColor = [0, 0, 0];
+                            }
+                        }
                     });
 
                     doc.save(titulo.toLowerCase().includes('finan') ? 'relatório_finanças.pdf' : 'relatório_pedidos.pdf');
