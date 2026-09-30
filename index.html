@@ -241,8 +241,8 @@
                 </div>
             </div>
 
-            <!-- Cards de Status (Filtrados por Loja) -->
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-8 select-none">
+            <!-- Cards de Status Exatos com suas Cores -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 lg:gap-4 mb-8 select-none">
                 <div v-for="status in statuses" :key="status"
                      @click="handleCardClick(status)"
                      :class="getCardStyles(status, activeStatuses.includes(status))">
@@ -263,7 +263,7 @@
                 </div>
             </div>
 
-            <!-- Tabela com Cabeçalho Fixo -->
+            <!-- Tabela com Ordem Exata das Colunas e Edição por Linha -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full relative z-10">
                 <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)] min-h-[350px] w-full custom-scrollbar rounded-3xl">
                     <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
@@ -272,18 +272,10 @@
                                 <th @click="setSortKey('status')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Status <i :class="getSortIcon('status')"></i></div>
                                 </th>
-                                <th @click="setSortKey('data')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center gap-1">Data <i :class="getSortIcon('data')"></i></div>
-                                </th>
-                                <th @click="setSortKey('loja')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center gap-1">Loja <i :class="getSortIcon('loja')"></i></div>
-                                </th>
-                                <th @click="setSortKey('idCliente')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center gap-1">ID Cliente <i :class="getSortIcon('idCliente')"></i></div>
-                                </th>
                                 <th @click="setSortKey('item')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Item <i :class="getSortIcon('item')"></i></div>
                                 </th>
+                                <th @click="setSortKey('recorte')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Recorte</th>
                                 <th @click="setSortKey('qtd')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center justify-center gap-1">Qtd <i :class="getSortIcon('qtd')"></i></div>
                                 </th>
@@ -291,17 +283,22 @@
                                     <div class="flex items-center gap-1">Tema <i :class="getSortIcon('tema')"></i></div>
                                 </th>
                                 <th @click="setSortKey('nomeCrianca')" class="px-3 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center gap-1">Criança <i :class="getSortIcon('nomeCrianca')"></i></div>
+                                    <div class="flex items-center gap-1">Nome <i :class="getSortIcon('nomeCrianca')"></i></div>
                                 </th>
                                 <th @click="setSortKey('idade')" class="px-2 py-4 text-indigo-600 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Idade <i :class="getSortIcon('idade')"></i></div>
                                 </th>
-                                <th @click="setSortKey('recorte')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Recorte</th>
-                                <th @click="setSortKey('nf')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">NF</th>
-                                <th @click="setSortKey('sab')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Sab</th>
                                 <th @click="setSortKey('tempo')" class="px-3 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center justify-center gap-1">Tempo <i :class="getSortIcon('tempo')"></i></div>
                                 </th>
+                                <th @click="setSortKey('data')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Data <i :class="getSortIcon('data')"></i></div>
+                                </th>
+                                <th @click="setSortKey('loja')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Loja <i :class="getSortIcon('loja')"></i></div>
+                                </th>
+                                <th @click="setSortKey('nf')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">NF</th>
+                                <th @click="setSortKey('sab')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Sab</th>
                                 <th class="px-3 py-4 text-right">Ação</th>
                             </tr>
                         </thead>
@@ -309,6 +306,7 @@
                             <tr v-for="(item, index) in filteredItems" :key="item.id" 
                                 :class="['transition-colors duration-200 group border-b border-slate-200', getRowColor(item.status)]">
                                 
+                                <!-- Status -->
                                 <td class="px-3 py-3 border-l-4" :class="getRowBorderColor(item.status)">
                                     <div class="inline-flex items-center select-none" @click.stop>
                                         <div @click="openStatusMenu(item, $event)" 
@@ -319,66 +317,44 @@
                                     </div>
                                 </td>
 
-                                <td class="px-3 py-3 text-slate-800 font-semibold text-xs">{{ formatDate(item.data) }}</td>
-                                <td class="px-3 py-3 font-bold text-slate-900 text-xs">{{ item.loja }}</td>
-                                
-                                <td class="px-3 py-3">
-                                    <button @click="copyToClipboard(item.idCliente)" 
-                                            title="Clique para copiar ID" 
-                                            class="group/copy relative text-slate-800 font-mono text-[11px] bg-transparent hover:bg-white border border-transparent hover:border-slate-300 focus:border-indigo-400 rounded-md px-1.5 py-1 font-bold transition-all inline-flex items-center gap-1 active:scale-95 shadow-none hover:shadow-sm">
-                                        #{{ item.idCliente }}
-                                        <i class="ph-bold ph-copy text-[10px] opacity-0 group-hover/copy:opacity-100 text-slate-400 group-hover/copy:text-indigo-600 transition-opacity"></i>
-                                        
-                                        <transition name="fade">
-                                            <span v-if="copiedId === item.idCliente" 
-                                                  class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-sans font-bold py-1 px-2 rounded-lg shadow-lg whitespace-nowrap z-20 flex items-center gap-1">
-                                                <i class="ph-bold ph-check text-emerald-400"></i> Copiado!
-                                            </span>
-                                        </transition>
-                                    </button>
-                                </td>
-
+                                <!-- Item -->
                                 <td class="px-3 py-3 font-bold text-slate-900">
-                                    <input type="text" v-model="item.item" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-slate-900 text-xs">
+                                    <input type="text" v-model="item.item" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-xs', item.editando ? 'border-indigo-400 bg-white text-slate-900' : 'border-transparent text-slate-900']">
                                 </td>
 
+                                <!-- Recorte -->
                                 <td class="px-2 py-3 text-center">
-                                    <input type="number" min="1" v-model.number="item.qtd" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent w-10 h-7 text-center rounded-lg border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white outline-none font-bold text-xs text-slate-900 transition-all">
-                                </td>
-
-                                <td class="px-3 py-3 font-bold text-slate-800">
-                                    <input type="text" v-model="item.tema" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-slate-800 text-xs">
-                                </td>
-
-                                <td class="px-3 py-3 font-semibold text-slate-800">
-                                    <input type="text" v-model="item.nomeCrianca" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-slate-800 text-xs">
-                                </td>
-
-                                <td class="px-2 py-3 font-semibold text-slate-800">
-                                    <input type="text" v-model="item.idade" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-slate-800 text-xs">
-                                </td>
-                                
-                                <td class="px-2 py-3 text-center">
-                                    <button @click="item.recorte = !item.recorte; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
+                                    <button @click="if(item.editando){ item.recorte = !item.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.recorte ? 'bg-emerald-100 border-emerald-300 text-emerald-600' : 'bg-white border-slate-300 text-slate-300']">
                                         <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
+
+                                <!-- Qtd -->
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.nf = !item.nf; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
-                                        <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
-                                    </button>
-                                </td>
-                                <td class="px-2 py-3 text-center">
-                                    <button @click="item.sab = !item.sab; updatePedidoFirebase(item)" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300 hover:bg-slate-50']">
-                                        <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
-                                    </button>
+                                    <input type="number" min="1" v-model.number="item.qtd" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                           :class="['w-10 h-7 text-center rounded-lg border outline-none font-bold text-xs transition-all mx-auto', item.editando ? 'border-indigo-400 bg-white text-slate-900' : 'border-transparent bg-transparent text-slate-900']">
                                 </td>
 
+                                <!-- Tema -->
+                                <td class="px-3 py-3 font-bold text-slate-800">
+                                    <input type="text" v-model="item.tema" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-xs', item.editando ? 'border-indigo-400 bg-white text-slate-800' : 'border-transparent text-slate-800']">
+                                </td>
+
+                                <!-- Nome Criança -->
+                                <td class="px-3 py-3 font-semibold text-slate-800">
+                                    <input type="text" v-model="item.nomeCrianca" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-xs', item.editando ? 'border-indigo-400 bg-white text-slate-800' : 'border-transparent text-slate-800']">
+                                </td>
+
+                                <!-- Idade -->
+                                <td class="px-2 py-3 font-semibold text-slate-800">
+                                    <input type="text" v-model="item.idade" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-xs text-center', item.editando ? 'border-indigo-400 bg-white text-slate-800' : 'border-transparent text-slate-800']">
+                                </td>
+                                
+                                <!-- Tempo -->
                                 <td class="px-3 py-3 text-center">
                                     <div class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest shadow-sm bg-white/60 backdrop-blur-sm" :class="getTempoBadge(item.data).badgeClass">
                                         <span class="relative flex h-2 w-2">
@@ -389,14 +365,48 @@
                                     </div>
                                 </td>
 
-                                <td class="px-3 py-3 text-right">
-                                    <button @click.stop="confirmDelete(item.id, 'pedido')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 shadow-sm opacity-0 group-hover:opacity-100 ml-auto transition-all bg-white border border-transparent hover:border-red-200">
-                                        <i class="ph-bold ph-trash text-sm"></i>
+                                <!-- Data -->
+                                <td class="px-3 py-3 text-slate-800 font-semibold text-xs">
+                                    <input type="date" v-if="item.editando" v-model="item.data" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-semibold outline-none">
+                                    <span v-else>{{ formatDate(item.data) }}</span>
+                                </td>
+
+                                <!-- Loja -->
+                                <td class="px-3 py-3 font-bold text-slate-900 text-xs">
+                                    <select v-if="item.editando" v-model="item.loja" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-bold outline-none">
+                                        <option v-for="l in lojas" :key="l" :value="l">{{ l }}</option>
+                                    </select>
+                                    <span v-else>{{ item.loja }}</span>
+                                </td>
+
+                                <!-- NF -->
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="if(item.editando){ item.nf = !item.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.nf ? 'bg-indigo-100 border-indigo-300 text-indigo-600' : 'bg-white border-slate-300 text-slate-300']">
+                                        <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
+                                </td>
+
+                                <!-- Sab -->
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="if(item.editando){ item.sab = !item.sab; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.sab ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-white border-slate-300 text-slate-300']">
+                                        <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+
+                                <!-- Ação (Editar e Excluir) -->
+                                <td class="px-3 py-3 text-right">
+                                    <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button @click="item.editando = !item.editando" :title="item.editando ? 'Salvar Edição' : 'Editar Linha'" :class="['w-7 h-7 rounded-lg flex items-center justify-center shadow-sm transition-all border', item.editando ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600']">
+                                            <i :class="item.editando ? 'ph-bold ph-check text-sm' : 'ph-bold ph-pencil text-sm'"></i>
+                                        </button>
+                                        <button @click.stop="confirmDelete(item.id, 'pedido')" title="Excluir" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 shadow-sm transition-all bg-white border border-transparent hover:border-red-200">
+                                            <i class="ph-bold ph-trash text-sm"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <tr v-if="filteredItems.length === 0">
-                                <td colspan="14" class="px-6 py-20 text-center text-slate-400 bg-white">
+                                <td colspan="13" class="px-6 py-20 text-center text-slate-400 bg-white">
                                     <i class="ph-fill ph-package text-4xl text-slate-300 mb-2"></i>
                                     <h3 class="text-lg font-bold text-slate-600">Nenhum pedido encontrado</h3>
                                 </td>
@@ -606,7 +616,7 @@
                     </div>
 
                     <div class="col-span-9 flex flex-col gap-4 min-h-0">
-                        <div class="flex-1 grid grid-cols-3 gap-4 min-h-0">
+                        <div class="flex-1 grid grid-cols-4 gap-4 min-h-0">
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Recorte vs Sem Recorte</h4>
                                 <div id="chart-recorte" class="flex-1 w-full min-h-0"></div>
@@ -618,6 +628,10 @@
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Sábado vs Sem Sábado</h4>
                                 <div id="chart-sab" class="flex-1 w-full min-h-0"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-0 relative">
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 shrink-0">Top Itens Mais Vendidos</h4>
+                                <div id="chart-top-itens" class="flex-1 w-full min-h-0"></div>
                             </div>
                         </div>
 
@@ -1171,7 +1185,6 @@
                     activeStatuses: [],
                     selecaoDinamica: false,
                     
-                    // Variáveis de controle de senha para Finanças
                     showPasswordModal: false,
                     senhaInput: '',
                     senhaErro: false,
@@ -1180,7 +1193,7 @@
                     isFullScreen: false,
 
                     lojas: ['Elohim', 'Kadosh'],
-                    statuses: ['Com informações', 'Sem informações', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
+                    statuses: ['Novo', 'Com informação', 'Sem informação', 'Para aprovação', 'Aprovado', 'Impresso', 'Aguardando coleta', 'Finalizado'],
                     
                     sortOptions: [
                         { value: 'id', label: 'Data de Criação' },
@@ -1254,14 +1267,22 @@
             },
             computed: {
                 pedidosFiltradosPorLoja() {
-                    if (this.filtroLoja === 'Todas') return this.pedidos;
-                    return this.pedidos.filter(p => p.loja === this.filtroLoja);
+                    let lista = this.filtroLoja === 'Todas' ? this.pedidos : this.pedidos.filter(p => p.loja === this.filtroLoja);
+                    
+                    // Se nenhum status específico foi selecionado, esconde os finalizados por padrão
+                    if (this.activeStatuses.length === 0) {
+                        lista = lista.filter(p => p.status !== 'Finalizado');
+                    }
+                    
+                    return lista;
                 },
                 filteredItems() {
-                    let result = this.pedidosFiltradosPorLoja;
+                    let result = this.filtroLoja === 'Todas' ? this.pedidos : this.pedidos.filter(p => p.loja === this.filtroLoja);
                     
                     if (this.activeStatuses.length > 0) {
                         result = result.filter(p => this.activeStatuses.includes(p.status));
+                    } else {
+                        result = result.filter(p => p.status !== 'Finalizado');
                     }
                     
                     if (this.searchQuery) {
@@ -1305,7 +1326,8 @@
                 statusCounts() {
                     const counts = {};
                     this.statuses.forEach(s => counts[s] = 0);
-                    this.pedidosFiltradosPorLoja.forEach(p => {
+                    const baseLista = this.filtroLoja === 'Todas' ? this.pedidos : this.pedidos.filter(p => p.loja === this.filtroLoja);
+                    baseLista.forEach(p => {
                         if(counts[p.status] !== undefined) counts[p.status]++;
                     });
                     return counts;
@@ -1339,14 +1361,10 @@
             methods: {
                 toggleFullScreen() {
                     if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen().catch(err => {
-                            console.error("Erro ao ativar tela cheia:", err);
-                        });
+                        document.documentElement.requestFullscreen().catch(() => {});
                         this.isFullScreen = true;
                     } else {
-                        if (document.exitFullscreen) {
-                            document.exitFullscreen();
-                        }
+                        if (document.exitFullscreen) document.exitFullscreen();
                         this.isFullScreen = false;
                     }
                 },
@@ -1417,87 +1435,105 @@
                     this.activeStatuses = this.activeStatuses.filter(s => s !== status);
                 },
                 getCardStyles(status, isActive) {
-                    let base = "relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all duration-300 transform shadow-sm bg-white ";
+                    let base = "relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all duration-300 transform shadow-sm ";
+                    if (status === 'Novo') base += "bg-white text-slate-800 ";
+                    else if (status === 'Com informação') base += "bg-pink-50 text-pink-900 ";
+                    else if (status === 'Sem informação') base += "bg-red-50 text-red-900 ";
+                    else if (status === 'Para aprovação') base += "bg-blue-50 text-blue-900 ";
+                    else if (status === 'Aprovado') base += "bg-amber-50 text-amber-900 ";
+                    else if (status === 'Impresso') base += "bg-emerald-50 text-emerald-900 ";
+                    else if (status === 'Aguardando coleta') base += "bg-teal-900 text-white ";
+                    else if (status === 'Finalizado') base += "bg-slate-200 text-slate-900 ";
+
                     if (isActive) {
                         base += "ring-2 ring-offset-2 scale-105 shadow-md ";
-                        if (status === 'Com informações') base += "border-indigo-500 ring-indigo-500";
-                        else if (status === 'Sem informações') base += "border-red-500 ring-red-500";
-                        else if (status === 'Para aprovação') base += "border-orange-500 ring-orange-500";
-                        else if (status === 'Aprovado') base += "border-blue-500 ring-blue-500";
-                        else if (status === 'Impresso') base += "border-purple-500 ring-purple-500";
-                        else if (status === 'Aguardando coleta') base += "border-amber-500 ring-amber-500";
-                        else if (status === 'Finalizado') base += "border-emerald-500 ring-emerald-500";
+                        if (status === 'Novo') base += "border-slate-400 ring-slate-400";
+                        else if (status === 'Com informação') base += "border-pink-500 ring-pink-500";
+                        else if (status === 'Sem informação') base += "border-red-500 ring-red-500";
+                        else if (status === 'Para aprovação') base += "border-blue-500 ring-blue-500";
+                        else if (status === 'Aprovado') base += "border-amber-500 ring-amber-500";
+                        else if (status === 'Impresso') base += "border-emerald-500 ring-emerald-500";
+                        else if (status === 'Aguardando coleta') base += "border-teal-700 ring-teal-700";
+                        else if (status === 'Finalizado') base += "border-slate-500 ring-slate-500";
                     } else {
                         base += "border-slate-200 hover:-translate-y-1 hover:shadow-md";
                     }
                     return base;
                 },
                 getCardBarAccent(status) {
-                    if (status === 'Com informações') return "bg-indigo-500";
-                    if (status === 'Sem informações') return "bg-red-500";
-                    if (status === 'Para aprovação') return "bg-orange-500";
-                    if (status === 'Aprovado') return "bg-blue-500";
-                    if (status === 'Impresso') return "bg-purple-500";
-                    if (status === 'Aguardando coleta') return "bg-amber-500";
-                    if (status === 'Finalizado') return "bg-emerald-500";
+                    if (status === 'Novo') return "bg-slate-400";
+                    if (status === 'Com informação') return "bg-pink-500";
+                    if (status === 'Sem informação') return "bg-red-500";
+                    if (status === 'Para aprovação') return "bg-blue-500";
+                    if (status === 'Aprovado') return "bg-amber-500";
+                    if (status === 'Impresso') return "bg-emerald-500";
+                    if (status === 'Aguardando coleta') return "bg-teal-700";
+                    if (status === 'Finalizado') return "bg-slate-600";
                     return "bg-indigo-500";
                 },
                 getCardContentStyles(status, isActive) {
-                    let textClass = "text-indigo-600";
-                    if (status === 'Sem informações') textClass = "text-red-600";
-                    else if (status === 'Para aprovação') textClass = "text-orange-600";
-                    else if (status === 'Aprovado') textClass = "text-blue-600";
-                    else if (status === 'Impresso') textClass = "text-purple-600";
-                    else if (status === 'Aguardando coleta') textClass = "text-amber-600";
-                    else if (status === 'Finalizado') textClass = "text-emerald-600";
+                    let textClass = "text-slate-800";
+                    if (status === 'Novo') textClass = "text-slate-700";
+                    else if (status === 'Com informação') textClass = "text-pink-700";
+                    else if (status === 'Sem informação') textClass = "text-red-600";
+                    else if (status === 'Para aprovação') textClass = "text-blue-600";
+                    else if (status === 'Aprovado') textClass = "text-amber-600";
+                    else if (status === 'Impresso') textClass = "text-emerald-600";
+                    else if (status === 'Aguardando coleta') textClass = "text-teal-300";
+                    else if (status === 'Finalizado') textClass = "text-slate-700";
 
                     return { 
-                        text: "text-slate-500", 
+                        text: "text-slate-600", 
                         number: textClass, 
-                        iconBg: "bg-slate-50", 
+                        iconBg: "bg-white/80", 
                         icon: textClass 
                     };
                 },
                 getStatusIcon(status) {
+                    if (status === 'Novo') return "ph-sparkle";
                     if (status === 'Finalizado') return "ph-check-circle";
-                    if (status === 'Sem informações') return "ph-warning-circle";
-                    if (status.includes('Para aprovação')) return "ph-clock";
+                    if (status === 'Sem informação') return "ph-warning-circle";
+                    if (status === 'Para aprovação') return "ph-clock";
                     if (status === 'Aprovado') return "ph-thumbs-up";
                     if (status === 'Impresso') return "ph-printer";
                     if (status === 'Aguardando coleta') return "ph-package";
                     return "ph-info";
                 },
                 getRowColor(status) {
-                    if (status === 'Finalizado') return "bg-emerald-50/30 hover:bg-emerald-50/80";
-                    if (status === 'Sem informações') return "bg-red-50/30 hover:bg-red-50/80";
-                    return "bg-white hover:bg-slate-50/80";
+                    if (status === 'Novo') return "bg-white hover:bg-slate-50";
+                    if (status === 'Com informação') return "bg-pink-50/40 hover:bg-pink-50/90";
+                    if (status === 'Sem informação') return "bg-red-50/50 hover:bg-red-50/90";
+                    if (status === 'Para aprovação') return "bg-blue-50/40 hover:bg-blue-50/90";
+                    if (status === 'Aprovado') return "bg-amber-50/40 hover:bg-amber-50/90";
+                    if (status === 'Impresso') return "bg-emerald-50/40 hover:bg-emerald-50/90";
+                    if (status === 'Aguardando coleta') return "bg-teal-50/60 hover:bg-teal-100/60";
+                    if (status === 'Finalizado') return "bg-slate-100/70 hover:bg-slate-200/70";
+                    return "bg-white hover:bg-slate-50";
                 },
                 getRowBorderColor(status) {
-                    if (status === 'Finalizado') return "border-emerald-400";
-                    if (status === 'Sem informações') return "border-red-400";
-                    if (status.includes('Para aprovação')) return "border-orange-400";
-                    if (status === 'Aprovado') return "border-blue-400";
-                    if (status === 'Impresso') return "border-purple-400";
-                    if (status === 'Aguardando coleta') return "border-amber-400";
+                    if (status === 'Novo') return "border-slate-400";
+                    if (status === 'Com informação') return "border-pink-500";
+                    if (status === 'Sem informação') return "border-red-500";
+                    if (status === 'Para aprovação') return "border-blue-500";
+                    if (status === 'Aprovado') return "border-amber-500";
+                    if (status === 'Impresso') return "border-emerald-500";
+                    if (status === 'Aguardando coleta') return "border-teal-700";
+                    if (status === 'Finalizado') return "border-slate-500";
                     return "border-indigo-400";
                 },
                 getStatusColor(status) {
-                    if (status === 'Finalizado') return "bg-emerald-100 text-emerald-700";
-                    if (status === 'Sem informações') return "bg-red-100 text-red-700";
-                    if (status.includes('Para aprovação')) return "bg-orange-100 text-orange-700";
-                    if (status === 'Aguardando coleta') return "bg-amber-100 text-amber-700";
-                    if (status === 'Aprovado') return "bg-blue-100 text-blue-700";
-                    if (status === 'Impresso') return "bg-purple-100 text-purple-700";
-                    return "bg-indigo-100 text-indigo-700";
+                    if (status === 'Novo') return "bg-slate-100 text-slate-800 border border-slate-300";
+                    if (status === 'Com informação') return "bg-pink-100 text-pink-800 border border-pink-300";
+                    if (status === 'Sem informação') return "bg-red-100 text-red-800 border border-red-300";
+                    if (status === 'Para aprovação') return "bg-blue-100 text-blue-800 border border-blue-300";
+                    if (status === 'Aprovado') return "bg-amber-100 text-amber-800 border border-amber-300";
+                    if (status === 'Impresso') return "bg-emerald-100 text-emerald-800 border border-emerald-300";
+                    if (status === 'Aguardando coleta') return "bg-teal-800 text-teal-100 border border-teal-900";
+                    if (status === 'Finalizado') return "bg-slate-300 text-slate-800 border border-slate-400";
+                    return "bg-indigo-100 text-indigo-800";
                 },
                 getStatusIconColor(status) {
-                    if (status === 'Finalizado') return "text-emerald-600";
-                    if (status === 'Sem informações') return "text-red-600";
-                    if (status.includes('Para aprovação')) return "text-orange-600";
-                    if (status === 'Aguardando coleta') return "text-amber-600";
-                    if (status === 'Aprovado') return "text-blue-600";
-                    if (status === 'Impresso') return "text-purple-600";
-                    return "text-indigo-600";
+                    return "text-current";
                 },
                 getTempoBadge(data) {
                     if (!data) return { text: "-", badgeClass: "text-slate-600 border-slate-200", dotBaseClass: "bg-slate-400", dotClass: "bg-slate-500" };
@@ -1588,7 +1624,14 @@
                 },
                 renderApexCharts() {
                     const dataByDate = {};
+                    const itemCounts = {};
+
                     this.pedidosAnalise.forEach(p => {
+                        if (p.item) {
+                            const nomeItemClean = p.item.trim();
+                            itemCounts[nomeItemClean] = (itemCounts[nomeItemClean] || 0) + (p.qtd || 1);
+                        }
+
                         if (!dataByDate[p.data]) {
                             dataByDate[p.data] = { recorteYes: 0, recorteNo: 0, nfYes: 0, nfNo: 0, sabYes: 0, sabNo: 0, elohim: 0, kadosh: 0 };
                         }
@@ -1598,6 +1641,11 @@
                         if (p.loja === 'Elohim') dataByDate[p.data].elohim++;
                         if (p.loja === 'Kadosh') dataByDate[p.data].kadosh++;
                     });
+
+                    // Top Itens Ordenados
+                    const sortedTopItens = Object.entries(itemCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                    const topItensCategories = sortedTopItens.map(i => i[0]);
+                    const topItensValues = sortedTopItens.map(i => i[1]);
 
                     const sortedDates = Object.keys(dataByDate).sort();
                     const recorteSeries = [{ name: 'Com Recorte', data: [] }, { name: 'Sem Recorte', data: [] }];
@@ -1622,7 +1670,7 @@
                     const formatDateLabel = (d) => d.split('-').reverse().join('/');
                     const categories = sortedDates.map(formatDateLabel);
 
-                    const buildChart = (id, type, series, colors, isLine = false) => {
+                    const buildChart = (id, type, series, colors, isLine = false, customCategories = categories, isHorizontal = false) => {
                         if (this.chartInstances[id]) {
                             this.chartInstances[id].destroy();
                         }
@@ -1631,11 +1679,11 @@
                             series: series,
                             chart: { type: type, height: '100%', width: '100%', toolbar: { show: false }, parentHeightOffset: 0 },
                             colors: colors,
-                            plotOptions: isLine ? {} : { bar: { columnWidth: '35%', borderRadius: 2 } },
+                            plotOptions: isLine ? {} : { bar: { horizontal: isHorizontal, columnWidth: isHorizontal ? '50%' : '35%', borderRadius: 2 } },
                             dataLabels: { enabled: false },
                             stroke: isLine ? { curve: 'smooth', width: 3 } : { show: true, width: 2, colors: ['transparent'] },
-                            xaxis: { categories: categories, labels: { show: isLine, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: {enabled: false} },
-                            yaxis: { labels: { show: false } },
+                            xaxis: { categories: customCategories, labels: { show: !isHorizontal || isLine, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: {enabled: false} },
+                            yaxis: { labels: { show: isHorizontal, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } } },
                             grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, right: 0, bottom: 0, left: isLine ? 15 : 0 } },
                             legend: { show: false }, 
                             tooltip: { theme: 'light', shared: true, intersect: false }
@@ -1652,6 +1700,7 @@
                     buildChart('chart-recorte', 'bar', recorteSeries, ['#10b981', '#cbd5e1']);
                     buildChart('chart-nf', 'bar', nfSeries, ['#6366f1', '#cbd5e1']);
                     buildChart('chart-sab', 'bar', sabSeries, ['#f59e0b', '#cbd5e1']);
+                    buildChart('chart-top-itens', 'bar', [{ name: 'Quantidade', data: topItensValues }], ['#8b5cf6'], false, topItensCategories, true);
                     buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); 
                 },
                 enterTVMode() {
@@ -1687,7 +1736,8 @@
                             item: it.item,
                             qtd: it.qtd,
                             recorte: it.recorte,
-                            status: 'Com informações'
+                            status: 'Novo',
+                            editando: false
                         };
                         if (window.FirebaseDB && window.FirebaseDB.savePedido) {
                             window.FirebaseDB.savePedido(novoPedido);
@@ -1704,7 +1754,7 @@
                     if(linha.idCliente && linha.item) {
                         if (!linha.id) {
                             linha.id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
-                            linha.status = 'Com informações';
+                            linha.status = 'Novo';
                         }
                         const pedidoData = {
                             id: linha.id,
@@ -1719,7 +1769,8 @@
                             recorte: linha.recorte,
                             nf: linha.nf,
                             sab: linha.sab,
-                            status: linha.status
+                            status: linha.status,
+                            editando: false
                         };
                         if (window.FirebaseDB && window.FirebaseDB.savePedido) {
                             window.FirebaseDB.savePedido(pedidoData);
@@ -1794,20 +1845,20 @@
                     
                     if (this.activeTab === 'pedidos') {
                         titulo = "Relatório Executivo de Pedidos";
-                        colunas = ["Data", "Loja", "ID Cliente", "Criança", "Idade", "Tema", "Item", "Qtd", "Recorte", "NF", "Sab", "Status"];
+                        colunas = ["Status", "Item", "Recorte", "Qtd", "Tema", "Nome", "Idade", "Tempo", "Data", "Loja", "NF", "Sab"];
                         dados = this.filteredItems.map(item => [
-                            this.formatDate(item.data),
-                            item.loja,
-                            "#" + item.idCliente,
+                            item.status,
+                            item.item,
+                            item.recorte ? "Sim" : "Não",
+                            item.qtd,
+                            item.tema || '-',
                             item.nomeCrianca || '-',
                             item.idade || '-',
-                            item.tema || '-',
-                            item.item,
-                            item.qtd,
-                            item.recorte ? "Sim" : "Não",
+                            this.getTempoBadge(item.data).text,
+                            this.formatDate(item.data),
+                            item.loja,
                             item.nf ? "Sim" : "Não",
-                            item.sab ? "Sim" : "Não",
-                            item.status
+                            item.sab ? "Sim" : "Não"
                         ]);
                     } else if (this.activeTab === 'financas') {
                         titulo = "Relatório Executivo de Finanças";
@@ -1872,12 +1923,8 @@
                     doc.setDrawColor(226, 232, 240);
                     doc.line(0, 36, doc.internal.pageSize.width, 36);
 
-                    if (logo1Data) {
-                        doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
-                    }
-                    if (logo2Data) {
-                        doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
-                    }
+                    if (logo1Data) doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
+                    if (logo2Data) doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
 
                     doc.setTextColor(15, 23, 42);
                     doc.setFontSize(15);
@@ -1888,111 +1935,18 @@
                     doc.setFont("helvetica", "normal");
                     doc.setTextColor(71, 85, 105);
                     doc.text(titulo, doc.internal.pageSize.width / 2, 25, { align: 'center' });
-                    
-                    doc.setFontSize(8);
-                    doc.setTextColor(100, 116, 139);
-                    doc.text("Emitido em: " + new Date().toLocaleString('pt-BR'), doc.internal.pageSize.width - 44, 30, { align: 'right' });
-
-                    const isPedidos = titulo.toLowerCase().includes('pedido');
-                    const columnStylesConfig = isPedidos ? {
-                        0: { cellWidth: 20 },
-                        1: { cellWidth: 18 },
-                        2: { cellWidth: 24 },
-                        3: { cellWidth: 28 },
-                        4: { cellWidth: 16 },
-                        5: { cellWidth: 28 },
-                        6: { cellWidth: 38 },
-                        7: { cellWidth: 12 },
-                        8: { cellWidth: 18 },
-                        9: { cellWidth: 14 },
-                        10: { cellWidth: 14 },
-                        11: { cellWidth: 32 }
-                    } : {};
 
                     doc.autoTable({
                         head: [colunas],
                         body: dados,
                         startY: 44,
                         theme: 'plain',
-                        columnStyles: columnStylesConfig,
-                        styles: { 
-                            font: 'helvetica', 
-                            fontSize: 8, 
-                            cellPadding: 5.5, 
-                            textColor: [51, 65, 85], 
-                            valign: 'middle',
-                            halign: 'center',
-                            overflow: 'linebreak'
-                        },
-                        headStyles: { 
-                            fillColor: [30, 41, 59], 
-                            textColor: [255, 255, 255], 
-                            fontStyle: 'bold', 
-                            halign: 'center',
-                            cellPadding: 6,
-                            fontSize: 8
-                        },
-                        bodyStyles: {
-                            lineColor: [241, 245, 249],
-                            lineWidth: { bottom: 0.5 }
-                        },
-                        alternateRowStyles: { 
-                            fillColor: comCor ? [248, 250, 252] : [255, 255, 255] 
-                        },
-                        didParseCell: (data) => {
-                            if (comCor && data.section === 'body') {
-                                const rowValues = data.row.raw;
-                                const status = String(rowValues[rowValues.length - 1] || '').trim();
-                                
-                                let bg = null;
-                                let tc = [51, 65, 85];
-
-                                if (status === 'Finalizado' || status === 'Pago' || status === 'Entrada') {
-                                    bg = [209, 250, 229]; 
-                                    tc = [6, 95, 70];     
-                                } else if (status === 'Sem informações' || status === 'Saída') {
-                                    bg = [254, 242, 242]; 
-                                    tc = [153, 27, 27];   
-                                } else if (status.includes('Para aprovação') || status.includes('Aguardando') || status === 'Pendente') {
-                                    bg = [254, 243, 199]; 
-                                    tc = [146, 64, 14];   
-                                } else if (status === 'Aprovado') {
-                                    bg = [219, 234, 254]; 
-                                    tc = [30, 64, 175];   
-                                } else if (status === 'Impresso') {
-                                    bg = [243, 232, 255]; 
-                                    tc = [107, 33, 168];  
-                                }
-
-                                if (bg) {
-                                    data.cell.styles.fillColor = bg;
-                                    data.cell.styles.textColor = tc;
-                                    if (data.column.index === rowValues.length - 1) {
-                                        data.cell.styles.fontStyle = 'bold';
-                                    }
-                                }
-                            }
-                        },
-                        didDrawPage: (data) => {
-                            const pageCount = doc.internal.getNumberOfPages();
-                            doc.setFontSize(8);
-                            doc.setTextColor(148, 163, 184);
-                            doc.text(
-                                `Página ${data.pageNumber} de ${pageCount}`, 
-                                doc.internal.pageSize.width - 16, 
-                                doc.internal.pageSize.height - 10, 
-                                { align: 'right' }
-                            );
-                            doc.text(
-                                "Elohim e Kadosh • Sistema de Gestão Premium", 
-                                16, 
-                                doc.internal.pageSize.height - 10
-                            );
-                        }
+                        styles: { font: 'helvetica', fontSize: 8, cellPadding: 5.5, textColor: [51, 65, 85], valign: 'middle', halign: 'center' },
+                        headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center', cellPadding: 6, fontSize: 8 },
+                        alternateRowStyles: { fillColor: comCor ? [248, 250, 252] : [255, 255, 255] }
                     });
 
-                    const nomeArquivo = titulo.toLowerCase().includes('finan') ? 'relatório_finanças.pdf' : 'relatório_pedidos.pdf';
-                    doc.save(nomeArquivo);
+                    doc.save(titulo.toLowerCase().includes('finan') ? 'relatório_finanças.pdf' : 'relatório_pedidos.pdf');
                 },
 
                 gerarCSV(titulo, colunas, dados) {
@@ -2028,7 +1982,7 @@
                 const initFirebase = () => {
                     if (window.FirebaseDB) {
                         window.FirebaseDB.listenPedidos((lista) => {
-                            this.pedidos = lista;
+                            this.pedidos = lista.map(p => ({ ...p, editando: p.editando || false }));
                             if (this.activeTab === 'analise') {
                                 this.$nextTick(() => { this.renderApexCharts(); });
                             }
