@@ -72,6 +72,23 @@
         }
 
         select::-ms-expand { display: none; }
+
+        /* Estilo para a alça de preenchimento (Fill Handle) da planilha */
+        .fill-handle {
+            position: absolute;
+            right: -3px;
+            bottom: -3px;
+            width: 8px;
+            height: 8px;
+            background-color: #6366f1;
+            border: 1px solid #ffffff;
+            cursor: crosshair;
+            display: none;
+            z-index: 10;
+        }
+        td:hover .fill-handle {
+            display: block;
+        }
     </style>
 </head>
 <body id="app" @click="closeAllDropdowns" class="flex flex-col min-h-screen text-slate-800 antialiased overflow-x-hidden">
@@ -210,13 +227,21 @@
                                         <i :class="sortOrder === 'asc' ? 'ph-bold ph-arrow-up' : 'ph-bold ph-arrow-down'" class="text-sm"></i>
                                     </button>
                                 </div>
+
+                                <div class="flex items-center gap-2 border-l border-slate-200 pl-3 shrink-0">
+                                    <label class="relative inline-flex items-center cursor-pointer group" title="Ativar Seleção Inteligente de Cards">
+                                        <input type="checkbox" v-model="selecaoDinamica" class="sr-only peer">
+                                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-500 group-hover:bg-slate-300"></div>
+                                        <span class="ml-2 text-[11px] font-bold text-slate-600 transition-colors">Seleção Dinâmica</span>
+                                    </label>
+                                </div>
                             </div>
 
                             <button @click="showTVConfig = true" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-xs shrink-0">
                                 <i class="ph-bold ph-monitor-play"></i> Modo TV
                             </button>
 
-                            <button @click="abrirNovoPedidoModal" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-xs shrink-0">
+                            <button @click="showModalPedidos = true" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold transition-all shadow-lg transform hover:-translate-y-0.5 text-xs shrink-0">
                                 <i class="ph-bold ph-plus"></i> Novo Pedido
                             </button>
                         </div>
@@ -233,7 +258,7 @@
                 </div>
             </div>
 
-            <!-- Cards de Status (1 clique para multiplas seleções, 2 cliques para seleção única) -->
+            <!-- Cards de Status com o Novo Card "Todos" -->
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-3 lg:gap-4 mb-8 select-none">
                 <!-- Card Todos -->
                 <div @click="activeStatuses = []"
@@ -257,9 +282,7 @@
                 <!-- Demais Cards de Status -->
                 <div v-for="status in statuses" :key="status"
                      @click="handleCardClick(status)"
-                     @dblclick="handleCardDblClick(status)"
-                     :class="getCardStyles(status, activeStatuses.includes(status))"
-                     title="Clique 1 vez para seleção múltipla | Dê 2 cliques para seleção exclusiva">
+                     :class="getCardStyles(status, activeStatuses.includes(status))">
                     
                     <div :class="['h-1.5 w-full absolute top-0 left-0 transition-all', getCardBarAccent(status)]"></div>
                     
@@ -277,45 +300,42 @@
                 </div>
             </div>
 
-            <!-- Tabela de Pedidos (Ordem exata solicitada e campos editáveis inline / negrito) -->
+            <!-- Tabela de Pedidos -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full relative z-10">
                 <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)] min-h-[350px] w-full custom-scrollbar rounded-3xl">
                     <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
                         <thead class="sticky-table-header text-slate-500 text-[10px] uppercase tracking-widest font-bold select-none">
                             <tr>
+                                <th @click="setSortKey('status')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center gap-1">Status <i :class="getSortIcon('status')"></i></div>
+                                </th>
                                 <th @click="setSortKey('item')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Item <i :class="getSortIcon('item')"></i></div>
                                 </th>
                                 <th @click="setSortKey('recorte')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Recorte</th>
                                 <th @click="setSortKey('qtd')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center justify-center gap-1">Qtd. <i :class="getSortIcon('qtd')"></i></div>
+                                    <div class="flex items-center justify-center gap-1">Qtd <i :class="getSortIcon('qtd')"></i></div>
                                 </th>
                                 <th @click="setSortKey('tema')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Tema <i :class="getSortIcon('tema')"></i></div>
                                 </th>
                                 <th @click="setSortKey('nomeCrianca')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center gap-1">Criança <i :class="getSortIcon('nomeCrianca')"></i></div>
+                                    <div class="flex items-center gap-1">Nome <i :class="getSortIcon('nomeCrianca')"></i></div>
                                 </th>
                                 <th @click="setSortKey('idade')" class="px-2 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Idade <i :class="getSortIcon('idade')"></i></div>
                                 </th>
-                                <th @click="setSortKey('status')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center gap-1">Status <i :class="getSortIcon('status')"></i></div>
+                                <th @click="setSortKey('tempo')" class="px-3 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center justify-center gap-1">Tempo <i :class="getSortIcon('tempo')"></i></div>
                                 </th>
-                                <th @click="setSortKey('idCliente')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center gap-1">ID <i :class="getSortIcon('idCliente')"></i></div>
-                                </th>
-                                <th @click="setSortKey('nf')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">NF</th>
-                                <th @click="setSortKey('sab')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Sab</th>
                                 <th @click="setSortKey('data')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Data <i :class="getSortIcon('data')"></i></div>
                                 </th>
                                 <th @click="setSortKey('loja')" class="px-3 py-4 cursor-pointer hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1">Loja <i :class="getSortIcon('loja')"></i></div>
                                 </th>
-                                <th @click="setSortKey('tempo')" class="px-3 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <div class="flex items-center justify-center gap-1">Tempo <i :class="getSortIcon('tempo')"></i></div>
-                                </th>
+                                <th @click="setSortKey('nf')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">NF</th>
+                                <th @click="setSortKey('sab')" class="px-2 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors">Sab</th>
                                 <th class="px-3 py-4 text-right">Ação</th>
                             </tr>
                         </thead>
@@ -323,63 +343,7 @@
                             <tr v-for="(item, index) in filteredItems" :key="item.id" 
                                 :class="['transition-colors duration-200 group border-b', getRowColor(item.status)]">
                                 
-                                <!-- Item (Negrito) -->
-                                <td class="px-3 py-3 font-bold">
-                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col gap-1.5">
-                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
-                                            <input type="text" v-model="it.item" @change="updatePedidoFirebase(item)"
-                                                   class="bg-transparent border border-transparent hover:border-black/20 focus:border-current rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[130px] font-bold text-xs bg-white/80">
-                                        </div>
-                                    </div>
-                                    <input v-else type="text" v-model="item.item" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent border border-transparent hover:border-black/20 focus:border-current rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-xs bg-white/80">
-                                </td>
-
-                                <!-- Recorte (Tesoura ou Risco Reto, Negrito, não editável na tabela) -->
-                                <td class="px-2 py-3 text-center font-bold">
-                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-1">
-                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
-                                            <i v-if="it.recorte" class="ph-bold ph-scissors text-emerald-600 text-base"></i>
-                                            <span v-else class="text-slate-400 font-bold">-</span>
-                                        </div>
-                                    </div>
-                                    <div v-else>
-                                        <i v-if="item.recorte" class="ph-bold ph-scissors text-emerald-600 text-base"></i>
-                                        <span v-else class="text-slate-400 font-bold">-</span>
-                                    </div>
-                                </td>
-
-                                <!-- Qtd. (Negrito) -->
-                                <td class="px-2 py-3 text-center font-bold">
-                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-1">
-                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
-                                            <input type="number" min="1" v-model.number="it.qtd" @change="updatePedidoFirebase(item)"
-                                                   class="w-10 h-7 text-center rounded-lg border border-transparent hover:border-black/20 focus:border-current outline-none font-bold text-xs transition-all mx-auto bg-white/80">
-                                        </div>
-                                    </div>
-                                    <input v-else type="number" min="1" v-model.number="item.qtd" @change="updatePedidoFirebase(item)"
-                                           class="w-10 h-7 text-center rounded-lg border border-transparent hover:border-black/20 focus:border-current outline-none font-bold text-xs transition-all mx-auto bg-white/80">
-                                </td>
-
-                                <!-- Tema (Negrito, Editável inline) -->
-                                <td class="px-3 py-3 font-bold">
-                                    <input type="text" v-model="item.tema" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent border border-transparent hover:border-black/20 focus:border-current rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-xs bg-white/80">
-                                </td>
-
-                                <!-- Criança (Negrito, Editável inline) -->
-                                <td class="px-3 py-3 font-bold">
-                                    <input type="text" v-model="item.nomeCrianca" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent border border-transparent hover:border-black/20 focus:border-current rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-xs bg-white/80">
-                                </td>
-
-                                <!-- Idade (Editável inline) -->
-                                <td class="px-2 py-3 font-semibold">
-                                    <input type="text" v-model="item.idade" placeholder="-" @change="updatePedidoFirebase(item)"
-                                           class="bg-transparent border border-transparent hover:border-black/20 focus:border-current rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-xs text-center bg-white/80">
-                                </td>
-
-                                <!-- Status (Localizado à direita da idade) -->
+                                <!-- Status -->
                                 <td class="px-3 py-3 border-l-4" :class="getRowBorderColor(item.status)">
                                     <div class="inline-flex items-center select-none" @click.stop>
                                         <div @click="openStatusMenu(item, $event)" 
@@ -390,45 +354,60 @@
                                     </div>
                                 </td>
 
-                                <!-- ID do Cliente (Copia ao clicar) -->
-                                <td class="px-3 py-3 font-bold text-xs">
-                                    <span @click="copiarIdCliente(item.idCliente)" title="Clique para copiar o ID" 
-                                          class="cursor-pointer hover:text-indigo-600 transition-colors bg-slate-100 hover:bg-indigo-50 px-2 py-1 rounded-md border border-slate-200 inline-block">
-                                        {{ item.idCliente || '-' }}
-                                    </span>
+                                <!-- Item -->
+                                <td class="px-3 py-3 font-bold">
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col gap-1.5">
+                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
+                                            <input type="text" v-model="it.item" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                                   :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[130px] font-bold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
+                                        </div>
+                                    </div>
+                                    <input v-else type="text" v-model="item.item" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[120px] font-bold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
                                 </td>
 
-                                <!-- NF -->
+                                <!-- Recorte -->
                                 <td class="px-2 py-3 text-center">
                                     <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-1">
                                         <div v-for="(it, iIdx) in item.itens" :key="iIdx">
-                                            <button @click="it.nf = !it.nf; updatePedidoFirebase(item);" class="w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto" :class="it.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400'">
-                                                <i :class="it.nf ? 'ph-bold ph-check text-sm' : ''"></i>
+                                            <button @click="if(item.editando){ it.recorte = !it.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', it.recorte ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                                <i :class="it.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
                                             </button>
                                         </div>
                                     </div>
-                                    <button v-else @click="item.nf = !item.nf; updatePedidoFirebase(item);" class="w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto" :class="item.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400'">
-                                        <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    <button v-else @click="if(item.editando){ item.recorte = !item.recorte; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.recorte ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                        <i :class="item.recorte ? 'ph-bold ph-check text-sm' : ''"></i>
                                     </button>
                                 </td>
 
-                                <!-- Sab -->
+                                <!-- Qtd -->
                                 <td class="px-2 py-3 text-center">
-                                    <button @click="item.sab = !item.sab; updatePedidoFirebase(item);" class="w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto" :class="item.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white/80 border-black/20 text-slate-400'">
-                                        <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
-                                    </button>
+                                    <div v-if="item.itens && item.itens.length > 0" class="flex flex-col items-center justify-center gap-1">
+                                        <div v-for="(it, iIdx) in item.itens" :key="iIdx">
+                                            <input type="number" min="1" v-model.number="it.qtd" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                                   :class="['w-10 h-7 text-center rounded-lg border outline-none font-bold text-xs transition-all mx-auto', item.editando ? 'border-current bg-white/80' : 'border-transparent bg-transparent']">
+                                        </div>
+                                    </div>
+                                    <input v-else type="number" min="1" v-model.number="item.qtd" :disabled="!item.editando" @change="updatePedidoFirebase(item)"
+                                           :class="['w-10 h-7 text-center rounded-lg border outline-none font-bold text-xs transition-all mx-auto', item.editando ? 'border-current bg-white/80' : 'border-transparent bg-transparent']">
                                 </td>
 
-                                <!-- Data -->
-                                <td class="px-3 py-3 font-semibold text-xs">
-                                    <input type="date" v-model="item.data" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-semibold outline-none text-slate-800">
+                                <!-- Tema -->
+                                <td class="px-3 py-3 font-bold">
+                                    <input type="text" v-model="item.tema" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-bold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
                                 </td>
 
-                                <!-- Loja -->
-                                <td class="px-3 py-3 font-bold text-xs">
-                                    <select v-model="item.loja" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-bold outline-none text-slate-800">
-                                        <option v-for="l in lojas" :key="l" :value="l">{{ l }}</option>
-                                    </select>
+                                <!-- Nome Criança -->
+                                <td class="px-3 py-3 font-semibold">
+                                    <input type="text" v-model="item.nomeCrianca" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[100px] font-semibold text-xs', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
+                                </td>
+
+                                <!-- Idade -->
+                                <td class="px-2 py-3 font-semibold">
+                                    <input type="text" v-model="item.idade" :disabled="!item.editando" placeholder="-" @change="updatePedidoFirebase(item)"
+                                           :class="['bg-transparent border rounded-lg px-1.5 py-1 outline-none transition-all w-full max-w-[50px] font-semibold text-xs text-center', item.editando ? 'border-current bg-white/80' : 'border-transparent']">
                                 </td>
                                 
                                 <!-- Tempo -->
@@ -442,11 +421,38 @@
                                     </div>
                                 </td>
 
-                                <!-- Ação (Abre modal preenchido ao clicar em editar) -->
+                                <!-- Data -->
+                                <td class="px-3 py-3 font-semibold text-xs">
+                                    <input type="date" v-if="item.editando" v-model="item.data" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-semibold outline-none text-slate-800">
+                                    <span v-else>{{ formatDate(item.data) }}</span>
+                                </td>
+
+                                <!-- Loja -->
+                                <td class="px-3 py-3 font-bold text-xs">
+                                    <select v-if="item.editando" v-model="item.loja" @change="updatePedidoFirebase(item)" class="bg-white border border-indigo-400 rounded-lg px-1.5 py-1 text-xs font-bold outline-none text-slate-800">
+                                        <option v-for="l in lojas" :key="l" :value="l">{{ l }}</option>
+                                    </select>
+                                    <span v-else>{{ item.loja }}</span>
+                                </td>
+
+                                <!-- NF (Único por pedido) -->
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="if(item.editando){ item.nf = !item.nf; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.nf ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                        <i :class="item.nf ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+                                <!-- Sab -->
+                                <td class="px-2 py-3 text-center">
+                                    <button @click="if(item.editando){ item.sab = !item.sab; updatePedidoFirebase(item); }" :disabled="!item.editando" :class="['w-7 h-7 rounded-full flex items-center justify-center transform active:scale-90 transition-all shadow-sm border mx-auto', item.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white/80 border-black/20 text-slate-400']">
+                                        <i :class="item.sab ? 'ph-bold ph-check text-sm' : ''"></i>
+                                    </button>
+                                </td>
+
+                                <!-- Ação (Editar e Excluir) -->
                                 <td class="px-3 py-3 text-right">
                                     <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button @click="abrirEdicaoModal(item)" title="Editar Pedido" class="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm transition-all border bg-white text-slate-700 border-black/20 hover:bg-indigo-50 hover:text-indigo-600">
-                                            <i class="ph-bold ph-pencil text-sm"></i>
+                                        <button @click="item.editando = !item.editando" :title="item.editando ? 'Salvar Edição' : 'Editar Linha'" :class="['w-7 h-7 rounded-lg flex items-center justify-center shadow-sm transition-all border', item.editando ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-black/20 hover:bg-indigo-50 hover:text-indigo-600']">
+                                            <i :class="item.editando ? 'ph-bold ph-check text-sm' : 'ph-bold ph-pencil text-sm'"></i>
                                         </button>
                                         <button @click.stop="confirmDelete(item.id, 'pedido')" title="Excluir" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-600 hover:bg-red-50 shadow-sm transition-all bg-white border border-black/20 hover:border-red-300">
                                             <i class="ph-bold ph-trash text-sm"></i>
@@ -455,7 +461,7 @@
                                 </td>
                             </tr>
                             <tr v-if="filteredItems.length === 0">
-                                <td colspan="14" class="px-6 py-20 text-center text-slate-400 bg-white">
+                                <td colspan="13" class="px-6 py-20 text-center text-slate-400 bg-white">
                                     <i class="ph-fill ph-package text-4xl text-slate-300 mb-2"></i>
                                     <h3 class="text-lg font-bold text-slate-600">Nenhum pedido encontrado</h3>
                                 </td>
@@ -467,7 +473,7 @@
 
             <!-- Assinatura Discreta -->
             <div class="mt-3 text-right pr-2">
-                <a href="https://wa.me/5511934664498" target="_blank" class="text-[11px] font-medium tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
+                <a href="https://wa.me/5511934664498?text=Olá%20Marcos,%20estou%20entrando%20em%20contato%20pelo%20sistema!" target="_blank" class="text-[11px] font-medium tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
                     Developed by Marcos Valério
                 </a>
             </div>
@@ -814,7 +820,7 @@
         </div>
     </transition>
 
-    <!-- TELA: MODO TV -->
+    <!-- TELA: MODO TV IDÊNTICO À REFERÊNCIA (COM LINHAS EM PÍLULA) -->
     <transition name="fade">
         <div v-if="isTVMode" class="fixed inset-0 z-[100] bg-slate-100 flex flex-col text-slate-800 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white shadow-sm shrink-0">
@@ -886,7 +892,7 @@
         </div>
     </transition>
 
-    <!-- MODAL: NOVO / EDITAR PEDIDO -->
+    <!-- MODAL: NOVO PEDIDO -->
     <transition name="fade">
         <div v-if="showModalPedidos" class="fixed inset-0 z-[60] flex items-center justify-center px-4">
             <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModalPedidos"></div>
@@ -895,11 +901,11 @@
                 
                 <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-20">
                     <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="ph-fill ph-package text-indigo-500"></i> {{ form.id ? 'Editar Pedido' : 'Novo Cadastro de Pedido' }}
+                        <i class="ph-fill ph-package text-indigo-500"></i> Novo Cadastro de Pedido
                     </h3>
                     
                     <div class="flex items-center gap-4">
-                        <button v-if="!form.id" @click="modoPlanilha = !modoPlanilha" class="flex items-center gap-2 px-4 py-1.5 rounded-xl font-bold transition-all shadow-sm border text-xs"
+                        <button @click="modoPlanilha = !modoPlanilha" class="flex items-center gap-2 px-4 py-1.5 rounded-xl font-bold transition-all shadow-sm border text-xs"
                                 :class="modoPlanilha ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
                             <i class="ph-bold ph-table text-lg"></i> {{ modoPlanilha ? 'Modo Padrão' : 'Modo Planilha' }}
                         </button>
@@ -973,7 +979,7 @@
                             </div>
                         </div>
 
-                        <!-- ITENS DO PEDIDO -->
+                        <!-- ITENS DO PEDIDO COM CABEÇALHO STICKY E BOTÃO FLUTUANTE -->
                         <div class="mt-4 p-5 rounded-2xl border border-slate-200 bg-white shadow-sm relative">
                             <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10 pt-1">
                                 <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Itens do Pedido</h4>
@@ -1013,7 +1019,7 @@
                     </form>
                 </div>
 
-                <!-- MODO PLANILHA -->
+                <!-- MODO PLANILHA COM NAVEGAÇÃO ENTER E ARRASTAR PARA BAIXO -->
                 <div v-if="modoPlanilha" class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
                     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                         <div class="overflow-x-auto w-full custom-scrollbar">
@@ -1036,44 +1042,52 @@
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
                                     <tr v-for="(linha, index) in planilhaLinhas" :key="linha.idTemp" class="hover:bg-slate-50/80 transition-colors group">
-                                        <td class="px-2 py-1.5">
-                                            <select v-model="linha.loja" @change="autoSavePlanilhaRow(linha)" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <select v-model="linha.loja" @keydown.enter.prevent="focusNextCell($event, index, 0)" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
                                                 <option v-for="l in lojas" :key="l" :value="l">{{ l }}</option>
                                             </select>
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'loja', linha.loja, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="date" v-model="linha.data" @change="autoSavePlanilhaRow(linha)" class="w-28 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="date" v-model="linha.data" @keydown.enter.prevent="focusNextCell($event, index, 1)" class="w-28 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'data', linha.data, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.idCliente" @change="autoSavePlanilhaRow(linha)" placeholder="ID Cliente" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.idCliente" @keydown.enter.prevent="focusNextCell($event, index, 2)" placeholder="ID Cliente" class="w-24 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'idCliente', linha.idCliente, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.nomeCrianca" @change="autoSavePlanilhaRow(linha)" placeholder="Nome" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.nomeCrianca" @keydown.enter.prevent="focusNextCell($event, index, 3)" placeholder="Nome" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'nomeCrianca', linha.nomeCrianca, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.idade" @change="autoSavePlanilhaRow(linha)" placeholder="Idade" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.idade" @keydown.enter.prevent="focusNextCell($event, index, 4)" placeholder="Idade" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'idade', linha.idade, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.tema" @change="autoSavePlanilhaRow(linha)" placeholder="Tema" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.tema" @keydown.enter.prevent="focusNextCell($event, index, 5)" placeholder="Tema" class="w-32 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'tema', linha.tema, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="text" v-model="linha.item" @change="autoSavePlanilhaRow(linha)" placeholder="Ex: Cartão, Copo..." class="w-40 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="text" v-model="linha.item" @keydown.enter.prevent="focusNextCell($event, index, 6)" placeholder="Ex: Cartão, Copo..." class="w-40 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'item', linha.item, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
-                                        <td class="px-2 py-1.5">
-                                            <input type="number" min="1" v-model.number="linha.qtd" @change="autoSavePlanilhaRow(linha)" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                        <td class="px-2 py-1.5 relative">
+                                            <input type="number" min="1" v-model.number="linha.qtd" @keydown.enter.prevent="focusNextCell($event, index, 7)" class="w-16 text-center bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-400 focus:bg-white rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all shadow-sm">
+                                            <div class="fill-handle" @mousedown.stop="startFillDown(index, 'qtd', linha.qtd, $event)" title="Arraste para baixo para preencher"></div>
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
-                                            <button type="button" @click="linha.recorte = !linha.recorte; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-emerald-400']">
+                                            <button type="button" @click="linha.recorte = !linha.recorte" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.recorte ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-emerald-400']">
                                                 <i class="ph-bold ph-check text-xs"></i>
                                             </button>
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
-                                            <button type="button" @click="linha.nf = !linha.nf; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-indigo-400']">
+                                            <button type="button" @click="linha.nf = !linha.nf" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.nf ? 'bg-indigo-500 border-indigo-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-indigo-400']">
                                                 <i class="ph-bold ph-check text-xs"></i>
                                             </button>
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
-                                            <button type="button" @click="linha.sab = !linha.sab; autoSavePlanilhaRow(linha)" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-amber-400']">
+                                            <button type="button" @click="linha.sab = !linha.sab" :class="['w-7 h-7 mx-auto rounded flex items-center justify-center border transition-all shadow-sm', linha.sab ? 'bg-amber-500 border-amber-600 text-white' : 'bg-white border-slate-300 text-transparent hover:border-amber-400']">
                                                 <i class="ph-bold ph-check text-xs"></i>
                                             </button>
                                         </td>
@@ -1096,7 +1110,7 @@
                 
                 <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 sticky bottom-0 z-10">
                     <button type="button" @click="closeModalPedidos" class="px-6 py-2.5 text-slate-600 bg-white border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-sm">Cancelar</button>
-                    <button v-if="!modoPlanilha" type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">{{ form.id ? 'Salvar Alterações' : 'Finalizar Cadastro' }}</button>
+                    <button v-if="!modoPlanilha" type="submit" form="formPedido" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Finalizar Cadastro</button>
                     <button v-else type="button" @click="salvarTodaPlanilha" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5">Salvar e Fechar</button>
                 </div>
             </div>
@@ -1218,6 +1232,7 @@
                     tvLimit: 10,
                     
                     activeStatuses: [],
+                    selecaoDinamica: false,
                     
                     showPasswordModal: false,
                     senhaInput: '',
@@ -1242,6 +1257,7 @@
                         { value: 'nomeCrianca', label: 'Criança' }
                     ],
 
+                    copiedId: null,
                     chartInstances: {}, 
                     activeStatusItem: null,
                     statusMenuPos: { top: '0px', left: '0px' },
@@ -1263,7 +1279,6 @@
                     }],
 
                     form: {
-                        id: null,
                         loja: 'Elohim',
                         data: new Date().toISOString().split('T')[0],
                         idCliente: '',
@@ -1307,9 +1322,11 @@
                 },
                 pedidosFiltradosPorLoja() {
                     let lista = this.filtroLoja === 'Todas' ? this.pedidos : this.pedidos.filter(p => p.loja === this.filtroLoja);
+                    
                     if (this.activeStatuses.length === 0) {
                         lista = lista.filter(p => p.status !== 'Finalizado');
                     }
+                    
                     return lista;
                 },
                 filteredItems() {
@@ -1464,180 +1481,170 @@
                     return this.sortOrder === 'asc' ? 'ph-bold ph-arrow-up text-indigo-600' : 'ph-bold ph-arrow-down text-indigo-600';
                 },
                 handleCardClick(status) {
-                    const idx = this.activeStatuses.indexOf(status);
-                    if (idx > -1) {
-                        this.activeStatuses.splice(idx, 1);
+                    if (this.selecaoDinamica) {
+                        const idx = this.activeStatuses.indexOf(status);
+                        if (idx > -1) this.activeStatuses.splice(idx, 1);
+                        else this.activeStatuses.push(status);
                     } else {
-                        this.activeStatuses.push(status);
+                        if (this.activeStatuses.length === 1 && this.activeStatuses[0] === status) {
+                            this.activeStatuses = [];
+                        } else {
+                            this.activeStatuses = [status];
+                        }
                     }
-                },
-                handleCardDblClick(status) {
-                    this.activeStatuses = [status];
                 },
                 removeStatus(status) {
                     this.activeStatuses = this.activeStatuses.filter(s => s !== status);
                 },
-                copiarIdCliente(idCliente) {
-                    if (!idCliente) return;
-                    navigator.clipboard.writeText(idCliente).then(() => {
-                        alert('ID do cliente copiado: ' + idCliente);
-                    });
-                },
-                abrirNovoPedidoModal() {
-                    this.form = {
-                        id: null,
-                        loja: 'Elohim',
-                        data: new Date().toISOString().split('T')[0],
-                        idCliente: '',
-                        nomeCrianca: '',
-                        idade: '',
-                        tema: '',
-                        nf: false,
-                        sab: false,
-                        itensPedido: [{ item: '', qtd: 1, recorte: false }]
-                    };
-                    this.modoPlanilha = false;
-                    this.showModalPedidos = true;
-                },
-                abrirEdicaoModal(item) {
-                    this.form = {
-                        id: item.id,
-                        loja: item.loja,
-                        data: item.data,
-                        idCliente: item.idCliente,
-                        nomeCrianca: item.nomeCrianca,
-                        idade: item.idade,
-                        tema: item.tema,
-                        nf: item.nf,
-                        sab: item.sab,
-                        itensPedido: item.itens && item.itens.length > 0 ? JSON.parse(JSON.stringify(item.itens)) : [{ item: item.item, qtd: item.qtd, recorte: item.recorte }]
-                    };
-                    this.modoPlanilha = false;
-                    this.showModalPedidos = true;
-                },
                 getCardStyles(status, isActive) {
                     let base = "relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all duration-300 transform shadow-sm ";
+                    if (status === 'Novo') base += "bg-white text-slate-800 ";
+                    else if (status === 'Com informação') base += "bg-pink-50 text-pink-900 ";
+                    else if (status === 'Sem informação') base += "bg-red-50 text-red-900 ";
+                    else if (status === 'Para aprovação') base += "bg-blue-50 text-blue-900 ";
+                    else if (status === 'Aprovado') base += "bg-amber-50 text-amber-900 ";
+                    else if (status === 'Impresso') base += "bg-emerald-50 text-emerald-900 ";
+                    else if (status === 'Aguardando coleta') base += "bg-white text-teal-900 ";
+                    else if (status === 'Finalizado') base += "bg-slate-200 text-slate-900 ";
+
                     if (isActive) {
-                        return base + "bg-indigo-600 text-white border-indigo-600 ring-2 ring-offset-2 ring-indigo-600 scale-105 shadow-md";
+                        base += "ring-2 ring-offset-2 scale-105 shadow-md ";
+                        if (status === 'Novo') base += "border-slate-400 ring-slate-400";
+                        else if (status === 'Com informação') base += "border-pink-500 ring-pink-500";
+                        else if (status === 'Sem informação') base += "border-red-500 ring-red-500";
+                        else if (status === 'Para aprovação') base += "border-blue-500 ring-blue-500";
+                        else if (status === 'Aprovado') base += "border-amber-500 ring-amber-500";
+                        else if (status === 'Impresso') base += "border-emerald-500 ring-emerald-500";
+                        else if (status === 'Aguardando coleta') base += "border-teal-800 ring-teal-800";
+                        else if (status === 'Finalizado') base += "border-slate-500 ring-slate-500";
+                    } else {
+                        base += "border-slate-200 hover:-translate-y-1 hover:shadow-md";
                     }
-                    return base + "bg-white text-slate-800 border-slate-200 hover:-translate-y-1 hover:shadow-md hover:border-indigo-200";
+                    return base;
                 },
                 getCardBarAccent(status) {
-                    const map = {
-                        'Novo': 'bg-blue-500',
-                        'Com informação': 'bg-indigo-500',
-                        'Sem informação': 'bg-amber-500',
-                        'Para aprovação': 'bg-purple-500',
-                        'Aprovado': 'bg-emerald-500',
-                        'Impresso': 'bg-cyan-500',
-                        'Aguardando coleta': 'bg-orange-500',
-                        'Finalizado': 'bg-slate-500'
-                    };
-                    return map[status] || 'bg-slate-400';
+                    if (status === 'Novo') return "bg-slate-400";
+                    if (status === 'Com informação') return "bg-pink-500";
+                    if (status === 'Sem informação') return "bg-red-500";
+                    if (status === 'Para aprovação') return "bg-blue-500";
+                    if (status === 'Aprovado') return "bg-amber-500";
+                    if (status === 'Impresso') return "bg-emerald-500";
+                    if (status === 'Aguardando coleta') return "bg-teal-800";
+                    if (status === 'Finalizado') return "bg-slate-600";
+                    return "bg-indigo-500";
                 },
                 getCardContentStyles(status, isActive) {
-                    if (isActive) {
-                        return { text: 'text-indigo-100', iconBg: 'bg-indigo-700 text-white', icon: 'text-white', number: 'text-white' };
-                    }
-                    return { text: 'text-slate-500', iconBg: 'bg-slate-100 text-slate-600', icon: 'text-slate-600', number: 'text-slate-800' };
+                    let textClass = "text-slate-800";
+                    if (status === 'Novo') textClass = "text-slate-700";
+                    else if (status === 'Com informação') textClass = "text-pink-700";
+                    else if (status === 'Sem informação') textClass = "text-red-600";
+                    else if (status === 'Para aprovação') textClass = "text-blue-600";
+                    else if (status === 'Aprovado') textClass = "text-amber-600";
+                    else if (status === 'Impresso') textClass = "text-emerald-600";
+                    else if (status === 'Aguardando coleta') textClass = "text-teal-800";
+                    else if (status === 'Finalizado') textClass = "text-slate-700";
+
+                    return { 
+                        text: "text-slate-600", 
+                        number: textClass, 
+                        iconBg: "bg-slate-100", 
+                        icon: textClass 
+                    };
                 },
                 getStatusIcon(status) {
-                    const map = {
-                        'Novo': 'ph-sparkle',
-                        'Com informação': 'ph-info',
-                        'Sem informação': 'ph-warning',
-                        'Para aprovação': 'ph-clock',
-                        'Aprovado': 'ph-check-circle',
-                        'Impresso': 'ph-printer',
-                        'Aguardando coleta': 'ph-package',
-                        'Finalizado': 'ph-check-fat'
-                    };
-                    return map[status] || 'ph-circle';
-                },
-                getStatusColor(status) {
-                    const map = {
-                        'Novo': 'bg-blue-100 text-blue-700 border-blue-200',
-                        'Com informação': 'bg-indigo-100 text-indigo-700 border-indigo-200',
-                        'Sem informação': 'bg-amber-100 text-amber-700 border-amber-200',
-                        'Para aprovação': 'bg-purple-100 text-purple-700 border-purple-200',
-                        'Aprovado': 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                        'Impresso': 'bg-cyan-100 text-cyan-700 border-cyan-200',
-                        'Aguardando coleta': 'bg-orange-100 text-orange-700 border-orange-200',
-                        'Finalizado': 'bg-slate-200 text-slate-700 border-slate-300'
-                    };
-                    return map[status] || 'bg-slate-100 text-slate-700 border-slate-200';
+                    if (status === 'Novo') return "ph-sparkle";
+                    if (status === 'Finalizado') return "ph-check-circle";
+                    if (status === 'Sem informação') return "ph-warning-circle";
+                    if (status === 'Para aprovação') return "ph-clock";
+                    if (status === 'Aprovado') return "ph-thumbs-up";
+                    if (status === 'Impresso') return "ph-printer";
+                    if (status === 'Aguardando coleta') return "ph-package";
+                    return "ph-info";
                 },
                 getRowColor(status) {
-                    if (status === 'Finalizado') return 'bg-slate-100/60 opacity-75';
-                    if (status === 'Aprovado') return 'bg-emerald-50/30';
-                    return 'bg-white';
+                    if (status === 'Novo') return "bg-white text-slate-800 hover:bg-slate-50";
+                    if (status === 'Com informação') return "bg-pink-100/70 text-pink-950 hover:bg-pink-100";
+                    if (status === 'Sem informação') return "bg-red-100/70 text-red-950 hover:bg-red-100";
+                    if (status === 'Para aprovação') return "bg-blue-100/70 text-blue-950 hover:bg-blue-100";
+                    if (status === 'Aprovado') return "bg-amber-100/80 text-amber-950 hover:bg-amber-100";
+                    if (status === 'Impresso') return "bg-emerald-100/70 text-emerald-950 hover:bg-emerald-100";
+                    if (status === 'Aguardando coleta') return "bg-teal-700 text-white hover:bg-teal-800";
+                    if (status === 'Finalizado') return "bg-slate-300 text-slate-900 hover:bg-slate-300/90";
+                    return "bg-white text-slate-800 hover:bg-slate-50";
                 },
                 getRowBorderColor(status) {
-                    const map = {
-                        'Novo': 'border-l-blue-500',
-                        'Com informação': 'border-l-indigo-500',
-                        'Sem informação': 'border-l-amber-500',
-                        'Para aprovação': 'border-l-purple-500',
-                        'Aprovado': 'border-l-emerald-500',
-                        'Impresso': 'border-l-cyan-500',
-                        'Aguardando coleta': 'border-l-orange-500',
-                        'Finalizado': 'border-l-slate-400'
-                    };
-                    return map[status] || 'border-l-slate-300';
+                    if (status === 'Novo') return "border-slate-400";
+                    if (status === 'Com informação') return "border-pink-500";
+                    if (status === 'Sem informação') return "border-red-500";
+                    if (status === 'Para aprovação') return "border-blue-500";
+                    if (status === 'Aprovado') return "border-amber-500";
+                    if (status === 'Impresso') return "border-emerald-500";
+                    if (status === 'Aguardando coleta') return "border-teal-900";
+                    if (status === 'Finalizado') return "border-slate-600";
+                    return "border-indigo-400";
+                },
+                getStatusColor(status) {
+                    if (status === 'Novo') return "bg-white text-slate-800 border border-slate-300";
+                    if (status === 'Com informação') return "bg-pink-200 text-pink-900 border border-pink-400";
+                    if (status === 'Sem informação') return "bg-red-200 text-red-900 border border-red-400";
+                    if (status === 'Para aprovação') return "bg-blue-200 text-blue-900 border border-blue-400";
+                    if (status === 'Aprovado') return "bg-amber-200 text-amber-900 border border-amber-400";
+                    if (status === 'Impresso') return "bg-emerald-200 text-emerald-900 border border-emerald-400";
+                    if (status === 'Aguardando coleta') return "bg-teal-800 text-teal-100 border border-teal-900";
+                    if (status === 'Finalizado') return "bg-slate-400 text-slate-900 border border-slate-500";
+                    return "bg-indigo-100 text-indigo-800";
+                },
+                getTempoBadge(data) {
+                    if (!data) return { text: "-", badgeClass: "text-slate-600 border-slate-200", dotBaseClass: "bg-slate-400", dotClass: "bg-slate-500" };
+                    
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    
+                    const [y, m, d] = data.split('-');
+                    const dataPedido = new Date(y, m - 1, d);
+                    dataPedido.setHours(0, 0, 0, 0);
+
+                    const diffTime = hoje - dataPedido;
+                    const diffDias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDias === 0) return { text: "Hoje", badgeClass: "text-emerald-700 border-emerald-300 bg-emerald-50", dotBaseClass: "bg-emerald-400", dotClass: "bg-emerald-600" };
+                    if (diffDias === 1) return { text: "Ontem", badgeClass: "text-blue-700 border-blue-300 bg-blue-50", dotBaseClass: "bg-blue-400", dotClass: "bg-blue-600" };
+                    if (diffDias <= 3) return { text: diffDias + " Dias", badgeClass: "text-amber-700 border-amber-300 bg-amber-50", dotBaseClass: "bg-amber-400", dotClass: "bg-amber-600" };
+                    return { text: diffDias + " Dias", badgeClass: "text-red-700 border-red-300 bg-red-50", dotBaseClass: "bg-red-400", dotClass: "bg-red-600" };
+                },
+                formatDate(dateStr) {
+                    if (!dateStr) return '';
+                    const [y, m, d] = dateStr.split('-');
+                    return `${d}/${m}/${y}`;
+                },
+                formatCurrency(val) {
+                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+                },
+                updatePedidoFirebase(item) {
+                    if (window.FirebaseDB && item.id) {
+                        window.FirebaseDB.savePedido(item);
+                    }
                 },
                 openStatusMenu(item, event) {
                     event.stopPropagation();
-                    const rect = event.currentTarget.getBoundingClientRect();
-                    this.statusMenuPos = {
-                        top: (rect.bottom + window.scrollY + 4) + 'px',
-                        left: (rect.left + window.scrollX) + 'px'
-                    };
+                    if (this.activeStatusItem === item) {
+                        this.activeStatusItem = null;
+                        return;
+                    }
                     this.activeStatusItem = item;
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const menuHeight = 260;
+                    let top = rect.bottom + 4;
+                    if (spaceBelow < menuHeight) {
+                        top = rect.top - menuHeight - 4;
+                    }
+                    this.statusMenuPos = { top: top + 'px', left: rect.left + 'px' };
                 },
-                changeStatus(item, novoStatus) {
-                    item.status = novoStatus;
+                changeStatus(item, status) {
+                    item.status = status;
                     this.updatePedidoFirebase(item);
                     this.activeStatusItem = null;
-                },
-                getTempoBadge(dataStr) {
-                    if (!dataStr) return { text: '-', badgeClass: 'bg-slate-100 text-slate-600 border-slate-200', dotClass: 'bg-slate-400', dotBaseClass: 'bg-slate-400' };
-                    const hoje = new Date();
-                    hoje.setHours(0,0,0,0);
-                    const pedidoDate = new Date(dataStr + 'T00:00:00');
-                    const diffTime = pedidoDate - hoje;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                    if (diffDays < 0) {
-                        return { text: `${Math.abs(diffDays)}d atrasado`, badgeClass: 'bg-red-50 text-red-600 border-red-200', dotClass: 'bg-red-500', dotBaseClass: 'bg-red-400' };
-                    } else if (diffDays === 0) {
-                        return { text: 'Hoje', badgeClass: 'bg-amber-50 text-amber-600 border-amber-200', dotClass: 'bg-amber-500', dotBaseClass: 'bg-amber-400' };
-                    } else if (diffDays === 1) {
-                        return { text: 'Amanhã', badgeClass: 'bg-blue-50 text-blue-600 border-blue-200', dotClass: 'bg-blue-500', dotBaseClass: 'bg-blue-400' };
-                    } else {
-                        return { text: `Em ${diffDays} dias`, badgeClass: 'bg-emerald-50 text-emerald-600 border-emerald-200', dotClass: 'bg-emerald-500', dotBaseClass: 'bg-emerald-400' };
-                    }
-                },
-                formatDate(dateStr) {
-                    if (!dateStr) return '-';
-                    const parts = dateStr.split('-');
-                    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-                    return dateStr;
-                },
-                formatCurrency(val) {
-                    return Number(val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                },
-                addNovoItemPedido() {
-                    this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
-                },
-                removerItemPedido(index) {
-                    this.form.itensPedido.splice(index, 1);
-                },
-                closeModalPedidos() {
-                    this.showModalPedidos = false;
-                    this.modoPlanilha = false;
-                },
-                closeModalFinancas() {
-                    this.showModalFinancas = false;
                 },
                 confirmDelete(id, type) {
                     this.itemToDelete = id;
@@ -1645,75 +1652,246 @@
                     this.showDeleteModal = true;
                 },
                 cancelDelete() {
-                    this.showDeleteModal = false;
                     this.itemToDelete = null;
                     this.deleteType = '';
+                    this.showDeleteModal = false;
                 },
                 executeDelete() {
-                    if (this.deleteType === 'pedido') {
-                        this.pedidos = this.pedidos.filter(p => p.id !== this.itemToDelete);
-                    } else if (this.deleteType === 'financa') {
-                        this.financas = this.financas.filter(f => f.id !== this.itemToDelete);
+                    if (window.FirebaseDB) {
+                        if (this.deleteType === 'pedido') {
+                            window.FirebaseDB.deletePedido(this.itemToDelete);
+                        } else if (this.deleteType === 'financa') {
+                            if (window.FirebaseDB.deleteFinanca) {
+                                window.FirebaseDB.deleteFinanca(this.itemToDelete);
+                            }
+                        }
                     }
                     this.cancelDelete();
                 },
-                savePedido() {
-                    if (this.form.id) {
-                        // Atualizar pedido existente
-                        const idx = this.pedidos.findIndex(p => p.id === this.form.id);
-                        if (idx > -1) {
-                            const atualizado = {
-                                ...this.pedidos[idx],
-                                loja: this.form.loja,
-                                data: this.form.data,
-                                idCliente: this.form.idCliente,
-                                nomeCrianca: this.form.nomeCrianca,
-                                idade: this.form.idade,
-                                tema: this.form.tema,
-                                nf: this.form.nf,
-                                sab: this.form.sab,
-                                item: this.form.itensPedido[0] ? this.form.itensPedido[0].item : '',
-                                qtd: this.form.itensPedido[0] ? this.form.itensPedido[0].qtd : 1,
-                                recorte: this.form.itensPedido[0] ? this.form.itensPedido[0].recorte : false,
-                                itens: this.form.itensPedido
-                            };
-                            this.pedidos[idx] = atualizado;
-                            this.updatePedidoFirebase(atualizado);
+                openAnalise() {
+                    this.forceEnterFullScreen();
+                    this.previousTab = this.activeTab;
+                    this.activeTab = 'analise';
+                },
+                voltarDeAnalise() {
+                    this.activeTab = this.previousTab;
+                    this.restoreFullScreenState();
+                },
+                getLojasCountAnalise(loja) {
+                    return this.pedidosAnalise.filter(p => p.loja === loja).length;
+                },
+                renderApexCharts() {
+                    const dataByDate = {};
+                    const itemCounts = {};
+
+                    this.pedidosAnalise.forEach(p => {
+                        if (p.itens && Array.isArray(p.itens) && p.itens.length > 0) {
+                            p.itens.forEach(it => {
+                                if (it.item) {
+                                    const nomeItemClean = it.item.trim();
+                                    itemCounts[nomeItemClean] = (itemCounts[nomeItemClean] || 0) + (parseInt(it.qtd) || 1);
+                                }
+                            });
+                        } else if (p.item) {
+                            const nomeItemClean = p.item.trim();
+                            itemCounts[nomeItemClean] = (itemCounts[nomeItemClean] || 0) + (p.qtd || 1);
                         }
-                    } else {
-                        // Novo pedido
-                        const novoPedido = {
-                            id: Date.now(),
-                            status: 'Novo',
-                            loja: this.form.loja,
-                            data: this.form.data,
-                            idCliente: this.form.idCliente,
-                            nomeCrianca: this.form.nomeCrianca,
-                            idade: this.form.idade,
-                            tema: this.form.tema,
-                            nf: this.form.nf,
-                            sab: this.form.sab,
-                            item: this.form.itensPedido[0] ? this.form.itensPedido[0].item : '',
-                            qtd: this.form.itensPedido[0] ? this.form.itensPedido[0].qtd : 1,
-                            recorte: this.form.itensPedido[0] ? this.form.itensPedido[0].recorte : false,
-                            itens: this.form.itensPedido
+
+                        if (!dataByDate[p.data]) {
+                            dataByDate[p.data] = { recorteYes: 0, recorteNo: 0, nfYes: 0, nfNo: 0, sabYes: 0, sabNo: 0, elohim: 0, kadosh: 0 };
+                        }
+
+                        // Contabiliza Recorte item por item para pedidos múltiplos
+                        if (p.itens && Array.isArray(p.itens) && p.itens.length > 0) {
+                            p.itens.forEach(it => {
+                                if (it.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
+                            });
+                        } else {
+                            if (p.recorte) dataByDate[p.data].recorteYes++; else dataByDate[p.data].recorteNo++;
+                        }
+
+                        // NF é única por pedido agora
+                        if (p.nf) dataByDate[p.data].nfYes++; else dataByDate[p.data].nfNo++;
+
+                        if (p.sab) dataByDate[p.data].sabYes++; else dataByDate[p.data].sabNo++;
+                        if (p.loja === 'Elohim') dataByDate[p.data].elohim++;
+                        if (p.loja === 'Kadosh') dataByDate[p.data].kadosh++;
+                    });
+
+                    const sortedTopItens = Object.entries(itemCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                    const topItensCategories = sortedTopItens.map(i => i[0]);
+                    const topItensValues = sortedTopItens.map(i => i[1]);
+
+                    const sortedDates = Object.keys(dataByDate).sort();
+                    const recorteSeries = [{ name: 'Com Recorte', data: [] }, { name: 'Sem Recorte', data: [] }];
+                    const nfSeries = [{ name: 'Com NF', data: [] }, { name: 'Sem NF', data: [] }];
+                    const sabSeries = [{ name: 'Com Sáb', data: [] }, { name: 'Sem Sáb', data: [] }];
+                    const lojaSeries = [{ name: 'Elohim', data: [] }, { name: 'Kadosh', data: [] }];
+
+                    sortedDates.forEach(d => {
+                        recorteSeries[0].data.push(dataByDate[d].recorteYes);
+                        recorteSeries[1].data.push(dataByDate[d].recorteNo);
+                        
+                        nfSeries[0].data.push(dataByDate[d].nfYes);
+                        nfSeries[1].data.push(dataByDate[d].nfNo);
+                        
+                        sabSeries[0].data.push(dataByDate[d].sabYes);
+                        sabSeries[1].data.push(dataByDate[d].sabNo);
+                        
+                        lojaSeries[0].data.push(dataByDate[d].elohim);
+                        lojaSeries[1].data.push(dataByDate[d].kadosh);
+                    });
+
+                    const formatDateLabel = (d) => d.split('-')[2];
+                    const categories = sortedDates.map(formatDateLabel);
+
+                    const buildChart = (id, type, series, colors, isLine = false, customCategories = categories, isHorizontal = false) => {
+                        if (this.chartInstances[id]) {
+                            this.chartInstances[id].destroy();
+                        }
+                        
+                        const options = {
+                            series: series,
+                            chart: { type: type, height: '100%', width: '100%', toolbar: { show: false }, parentHeightOffset: 0 },
+                            colors: colors,
+                            plotOptions: isLine ? {} : { bar: { horizontal: isHorizontal, columnWidth: isHorizontal ? '50%' : '35%', borderRadius: 2 } },
+                            dataLabels: { enabled: false },
+                            stroke: isLine ? { curve: 'smooth', width: 3 } : { show: true, width: 2, colors: ['transparent'] },
+                            xaxis: { categories: customCategories, labels: { show: !isHorizontal || isLine, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: {enabled: false} },
+                            yaxis: { labels: { show: isHorizontal, style: { colors: '#94a3b8', fontSize: '9px', fontWeight: 600 } } },
+                            grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, right: 0, bottom: 0, left: isLine ? 15 : 0 } },
+                            legend: { show: false }, 
+                            tooltip: { theme: 'light', shared: true, intersect: false }
                         };
-                        this.pedidos.unshift(novoPedido);
-                        this.updatePedidoFirebase(novoPedido);
-                    }
-                    this.closeModalPedidos();
-                },
-                saveFinanca() {
-                    const novaFin = {
-                        id: Date.now(),
-                        ...this.fin.formFin || this.formFin
+
+                        const el = document.querySelector(`#${id}`);
+                        if(el) {
+                            const chart = new ApexCharts(el, options);
+                            chart.render();
+                            this.chartInstances[id] = chart;
+                        }
                     };
-                    this.financas.unshift(novaFin);
-                    this.showModalFinancas = false;
-                    this.formFin = { tipo: 'Entrada', descricao: '', data: new Date().toISOString().split('T')[0], valor: 0, status: 'Pago' };
+
+                    buildChart('chart-recorte', 'bar', recorteSeries, ['#10b981', '#cbd5e1']);
+                    buildChart('chart-nf', 'bar', nfSeries, ['#6366f1', '#cbd5e1']);
+                    buildChart('chart-sab', 'bar', sabSeries, ['#f59e0b', '#cbd5e1']);
+                    buildChart('chart-top-itens', 'bar', [{ name: 'Quantidade', data: topItensValues }], ['#8b5cf6'], false, topItensCategories, true);
+                    buildChart('chart-lojas', 'line', lojaSeries, ['#6366f1', '#3b82f6'], true); 
                 },
-                updatePedidoFirebase(item) {
-                    // Integração com Firebase se configurada
+                enterTVMode() {
+                    this.forceEnterFullScreen();
+                    this.isTVMode = true;
+                    this.showTVConfig = false;
+                },
+                exitTVMode() {
+                    this.isTVMode = false;
+                    this.restoreFullScreenState();
+                },
+                closeModalPedidos() {
+                    this.showModalPedidos = false;
+                    this.modoPlanilha = false;
+                },
+                addNovoItemPedido() {
+                    this.form.itensPedido.push({ item: '', qtd: 1, recorte: false });
+                },
+                removerItemPedido(index) {
+                    this.form.itensPedido.splice(index, 1);
+                },
+                savePedido() {
+                    const novoPedido = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        loja: this.form.loja,
+                        data: this.form.data,
+                        idCliente: this.form.idCliente,
+                        nomeCrianca: this.form.nomeCrianca,
+                        idade: this.form.idade,
+                        tema: this.form.tema,
+                        sab: this.form.sab,
+                        nf: this.form.nf,
+                        itens: this.form.itensPedido.map(it => ({
+                            item: it.item,
+                            qtd: it.qtd,
+                            recorte: it.recorte
+                        })),
+                        item: this.form.itensPedido.map(i => `${i.item} (${i.qtd}x)`).join(', '),
+                        qtd: this.form.itensPedido.reduce((acc, curr) => acc + (parseInt(curr.qtd) || 0), 0),
+                        recorte: this.form.itensPedido.some(i => i.recorte),
+                        status: 'Novo',
+                        editando: false
+                    };
+
+                    if (window.FirebaseDB && window.FirebaseDB.savePedido) {
+                        window.FirebaseDB.savePedido(novoPedido);
+                    }
+
+                    this.closeModalPedidos();
+                    this.form.itensPedido = [{ item: '', qtd: 1, recorte: false }];
+                    this.form.idCliente = '';
+                    this.form.nomeCrianca = '';
+                    this.form.idade = '';
+                    this.form.tema = '';
+                    this.form.nf = false;
+                    this.form.sab = false;
+                },
+                // Navegação com Enter no modo planilha
+                focusNextCell(event, rowIndex, colIndex) {
+                    const rowElements = event.target.closest('tr').querySelectorAll('input, select');
+                    if (rowElements[colIndex + 1]) {
+                        rowElements[colIndex + 1].focus();
+                    } else if (this.planilhaLinhas[rowIndex + 1]) {
+                        // Vai para o primeiro campo da próxima linha
+                        this.$nextTick(() => {
+                            const nextRow = event.target.closest('tbody').querySelectorAll('tr')[rowIndex + 1];
+                            if (nextRow) {
+                                const nextInput = nextRow.querySelector('input, select');
+                                if (nextInput) nextInput.focus();
+                            }
+                        });
+                    } else {
+                        this.addPlanilhaRow();
+                        this.$nextTick(() => {
+                            const rows = event.target.closest('tbody').querySelectorAll('tr');
+                            const nextRow = rows[rows.length - 1];
+                            if (nextRow) {
+                                const nextInput = nextRow.querySelector('input, select');
+                                if (nextInput) nextInput.focus();
+                            }
+                        });
+                    }
+                },
+                // Arrastar célula para baixo (Fill Handle)
+                startFillDown(rowIndex, field, value, event) {
+                    const startY = event.clientY;
+                    const tbody = event.target.closest('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    
+                    // Desativa a seleção de texto da página durante o arrasto
+                    document.body.style.userSelect = 'none';
+                    
+                    const onMouseMove = (e) => {
+                        e.preventDefault();
+                        const targetRow = document.elementFromPoint(e.clientX, e.clientY)?.closest('tr');
+                        if (targetRow) {
+                            const targetIndex = rows.indexOf(targetRow);
+                            if (targetIndex > rowIndex) {
+                                for (let i = rowIndex + 1; i <= targetIndex; i++) {
+                                    if (this.planilhaLinhas[i]) {
+                                        this.planilhaLinhas[i][field] = value;
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    const onMouseUp = () => {
+                        // Restaura a seleção normal de texto ao soltar o mouse
+                        document.body.style.userSelect = '';
+                        window.removeEventListener('mousemove', onMouseMove);
+                        window.removeEventListener('mouseup', onMouseUp);
+                    };
+
+                    window.addEventListener('mousemove', onMouseMove);
+                    window.addEventListener('mouseup', onMouseUp);
                 },
                 addPlanilhaRow() {
                     this.planilhaLinhas.push({
@@ -1733,52 +1911,330 @@
                 },
                 removePlanilhaRow(index) {
                     this.planilhaLinhas.splice(index, 1);
+                    if(this.planilhaLinhas.length === 0) this.addPlanilhaRow();
                 },
-                autoSavePlanilhaRow(linha) {},
                 salvarTodaPlanilha() {
-                    this.planilhaLinhas.forEach(l => {
-                        if (l.item) {
-                            this.pedidos.unshift({
-                                id: Date.now() + Math.random(),
-                                status: 'Novo',
-                                loja: l.loja,
-                                data: l.data,
-                                idCliente: l.idCliente,
-                                nomeCrianca: l.nomeCrianca,
-                                idade: l.idade,
-                                tema: l.tema,
-                                item: l.item,
-                                qtd: l.qtd,
-                                recorte: l.recorte,
-                                nf: l.nf,
-                                sab: l.sab,
-                                itens: [{ item: l.item, qtd: l.qtd, recorte: l.recorte }]
+                    // Agrupa linhas considerando apenas as informações gerais do cliente/pedido
+                    const grupos = {};
+                    this.planilhaLinhas.forEach(linha => {
+                        if (linha.idCliente && linha.item) {
+                            const chave = `${linha.loja}_${linha.data}_${linha.idCliente}_${(linha.nomeCrianca || '').trim()}_${(linha.idade || '').trim()}_${(linha.tema || '').trim()}`;
+                            
+                            if (!grupos[chave]) {
+                                grupos[chave] = {
+                                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                                    loja: linha.loja,
+                                    data: linha.data,
+                                    idCliente: linha.idCliente,
+                                    nomeCrianca: linha.nomeCrianca,
+                                    idade: linha.idade,
+                                    tema: linha.tema,
+                                    nf: !!linha.nf,
+                                    sab: !!linha.sab,
+                                    status: 'Novo',
+                                    itens: []
+                                };
+                            } else {
+                                // Se qualquer linha do mesmo pedido tiver NF ou Sábado marcado, ativa no pedido unificado
+                                if (linha.nf) grupos[chave].nf = true;
+                                if (linha.sab) grupos[chave].sab = true;
+                            }
+
+                            grupos[chave].itens.push({
+                                item: linha.item,
+                                qtd: linha.qtd || 1,
+                                recorte: linha.recorte || false
                             });
                         }
                     });
+
+                    Object.values(grupos).forEach(pedido => {
+                        pedido.item = pedido.itens.map(i => `${i.item} (${i.qtd}x)`).join(', ');
+                        pedido.qtd = pedido.itens.reduce((acc, curr) => acc + (parseInt(curr.qtd) || 0), 0);
+                        pedido.recorte = pedido.itens.some(i => i.recorte);
+                        pedido.editando = false;
+
+                        if (window.FirebaseDB && window.FirebaseDB.savePedido) {
+                            window.FirebaseDB.savePedido(pedido);
+                        }
+                    });
+
+                    this.planilhaLinhas = [{
+                        idTemp: Date.now(),
+                        loja: 'Elohim',
+                        data: new Date().toISOString().split('T')[0],
+                        idCliente: '',
+                        nomeCrianca: '',
+                        idade: '',
+                        tema: '',
+                        item: '',
+                        qtd: 1,
+                        recorte: false,
+                        nf: false,
+                        sab: false
+                    }];
                     this.closeModalPedidos();
                 },
-                gerarRelatorio(tipo, comCor) {},
-                openAnalise() {
-                    this.previousTab = this.activeTab;
-                    this.activeTab = 'analise';
+                closeModalFinancas() {
+                    this.showModalFinancas = false;
                 },
-                voltarDeAnalise() {
-                    this.activeTab = this.previousTab;
+                saveFinanca() {
+                    const novaFinanca = {
+                        id: Date.now().toString(),
+                        tipo: this.formFin.tipo,
+                        descricao: this.formFin.descricao,
+                        data: this.formFin.data,
+                        valor: this.formFin.valor,
+                        status: this.formFin.status
+                    };
+                    if (window.FirebaseDB && window.FirebaseDB.saveFinanca) {
+                        window.FirebaseDB.saveFinanca(novaFinanca);
+                    }
+                    this.closeModalFinancas();
+                    this.formFin.descricao = '';
+                    this.formFin.valor = 0;
                 },
-                renderApexCharts() {},
-                getLojasCountAnalise(loja) {
-                    return this.pedidosAnalise.filter(p => p.loja === loja).length;
+
+                gerarRelatorio(tipo, comCor = true) {
+                    this.openReportMenu = false;
+                    let dados = [];
+                    let colunas = [];
+                    let titulo = "";
+                    
+                    if (this.activeTab === 'pedidos') {
+                        titulo = "Relatório Executivo de Pedidos";
+                        colunas = ["Status", "Item", "Recorte", "Qtd", "Tema", "Nome", "Idade", "Tempo", "Data", "Loja", "NF", "Sab"];
+                        dados = [];
+                        
+                        this.filteredItems.forEach(item => {
+                            if (item.itens && Array.isArray(item.itens) && item.itens.length > 0) {
+                                item.itens.forEach(it => {
+                                    dados.push([
+                                        item.status,
+                                        it.item || '',
+                                        it.recorte ? "Sim" : "Não",
+                                        it.qtd || 1,
+                                        item.tema || '-',
+                                        item.nomeCrianca || '-',
+                                        item.idade || '-',
+                                        this.getTempoBadge(item.data).text,
+                                        this.formatDate(item.data),
+                                        item.loja,
+                                        item.nf ? "Sim" : "Não",
+                                        item.sab ? "Sim" : "Não"
+                                    ]);
+                                });
+                            } else if (item.item && item.item.includes(',')) {
+                                const partes = item.item.split(',');
+                                partes.forEach(parte => {
+                                    const match = parte.trim().match(/^(.*?)\s*\((\d+)x\)$/);
+                                    const nomeItem = match ? match[1].trim() : parte.trim();
+                                    const qtdItem = match ? parseInt(match[2]) : (item.qtd || 1);
+                                    dados.push([
+                                        item.status,
+                                        nomeItem,
+                                        item.recorte ? "Sim" : "Não",
+                                        qtdItem,
+                                        item.tema || '-',
+                                        item.nomeCrianca || '-',
+                                        item.idade || '-',
+                                        this.getTempoBadge(item.data).text,
+                                        this.formatDate(item.data),
+                                        item.loja,
+                                        item.nf ? "Sim" : "Não",
+                                        item.sab ? "Sim" : "Não"
+                                    ]);
+                                });
+                            } else {
+                                dados.push([
+                                    item.status,
+                                    item.item || '',
+                                    item.recorte ? "Sim" : "Não",
+                                    item.qtd || 1,
+                                    item.tema || '-',
+                                    item.nomeCrianca || '-',
+                                    item.idade || '-',
+                                    this.getTempoBadge(item.data).text,
+                                    this.formatDate(item.data),
+                                    item.loja,
+                                    item.nf ? "Sim" : "Não",
+                                    item.sab ? "Sim" : "Não"
+                                ]);
+                            }
+                        });
+                    } else if (this.activeTab === 'financas') {
+                        titulo = "Relatório Executivo de Finanças";
+                        colunas = ["Data", "Descrição", "Tipo", "Status", "Valor"];
+                        dados = this.financasSorted.map(fin => [
+                            this.formatDate(fin.data),
+                            fin.descricao,
+                            fin.tipo,
+                            fin.status,
+                            this.formatCurrency(fin.valor)
+                        ]);
+                    } else {
+                        alert("Acesse a aba Pedidos ou Finanças para gerar um relatório.");
+                        return;
+                    }
+
+                    if (dados.length === 0) {
+                        alert("Não há dados visíveis na tela para exportar.");
+                        return;
+                    }
+
+                    if (tipo === 'pdf') {
+                        this.gerarPDF(titulo, colunas, dados, comCor);
+                    } else if (tipo === 'excel') {
+                        this.gerarCSV(titulo, colunas, dados);
+                    }
                 },
-                enterTVMode() {
-                    this.showTVConfig = false;
-                    this.isTVMode = true;
-                    this.forceEnterFullScreen();
+                
+                async gerarPDF(titulo, colunas, dados, comCor) {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('landscape'); 
+                    
+                    const loadImage = async (url) => {
+                        try {
+                            return await new Promise((resolve, reject) => {
+                                const img = new Image();
+                                img.crossOrigin = 'Anonymous';
+                                img.onload = () => {
+                                    const canvas = document.createElement('canvas');
+                                    const maxW = 120;
+                                    const scale = maxW / img.width;
+                                    canvas.width = maxW;
+                                    canvas.height = img.height * scale;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    resolve(canvas.toDataURL('image/png', 0.8));
+                                };
+                                img.onerror = reject;
+                                img.src = url;
+                            });
+                        } catch (e) {
+                            return null;
+                        }
+                    };
+
+                    const logo1Data = await loadImage('logo1.png');
+                    const logo2Data = await loadImage('logo2.png');
+                    
+                    doc.setFillColor(comCor ? 248 : 255, comCor ? 250 : 255, comCor ? 252 : 255); 
+                    doc.rect(0, 0, doc.internal.pageSize.width, 36, 'F');
+                    
+                    doc.setDrawColor(comCor ? 226 : 0, comCor ? 232 : 0, comCor ? 240 : 0);
+                    doc.line(0, 36, doc.internal.pageSize.width, 36);
+
+                    if (logo1Data) doc.addImage(logo1Data, 'PNG', 16, 6, 24, 24);
+                    if (logo2Data) doc.addImage(logo2Data, 'PNG', doc.internal.pageSize.width - 40, 6, 24, 24);
+
+                    doc.setTextColor(comCor ? 15 : 0, comCor ? 23 : 0, comCor ? 42 : 0);
+                    doc.setFontSize(15);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Elohim e Kadosh", doc.internal.pageSize.width / 2, 16, { align: 'center' });
+                    
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(comCor ? 71 : 0, comCor ? 85 : 0, comCor ? 105 : 0);
+                    doc.text(titulo, doc.internal.pageSize.width / 2, 25, { align: 'center' });
+
+                    doc.autoTable({
+                        head: [colunas],
+                        body: dados,
+                        startY: 44,
+                        theme: comCor ? 'grid' : 'plain',
+                        styles: { font: 'helvetica', fontSize: 8, cellPadding: 5.5, textColor: comCor ? [51, 65, 85] : [0, 0, 0], valign: 'middle', halign: 'center' },
+                        headStyles: { fillColor: comCor ? [30, 41, 59] : [240, 240, 240], textColor: comCor ? [255, 255, 255] : [0, 0, 0], fontStyle: 'bold', halign: 'center', cellPadding: 6, fontSize: 8 },
+                        didParseCell: function(data) {
+                            if (comCor && data.section === 'body') {
+                                const status = data.row.raw[0];
+                                if (status === 'Com informação') {
+                                    data.cell.styles.fillColor = [252, 231, 243];
+                                    data.cell.styles.textColor = [131, 24, 67];
+                                } else if (status === 'Sem informação') {
+                                    data.cell.styles.fillColor = [254, 226, 226];
+                                    data.cell.styles.textColor = [153, 27, 27];
+                                } else if (status === 'Para aprovação') {
+                                    data.cell.styles.fillColor = [219, 234, 254];
+                                    data.cell.styles.textColor = [30, 64, 175];
+                                } else if (status === 'Aprovado') {
+                                    data.cell.styles.fillColor = [254, 243, 199];
+                                    data.cell.styles.textColor = [146, 64, 14];
+                                } else if (status === 'Impresso') {
+                                    data.cell.styles.fillColor = [209, 250, 229];
+                                    data.cell.styles.textColor = [6, 95, 70];
+                                } else if (status === 'Aguardando coleta') {
+                                    data.cell.styles.fillColor = [15, 118, 110];
+                                    data.cell.styles.textColor = [255, 255, 255];
+                                } else if (status === 'Finalizado') {
+                                    data.cell.styles.fillColor = [203, 213, 225];
+                                    data.cell.styles.textColor = [15, 23, 42];
+                                } else {
+                                    data.cell.styles.fillColor = [255, 255, 255];
+                                    data.cell.styles.textColor = [30, 41, 59];
+                                }
+                            } else if (!comCor && data.section === 'body') {
+                                data.cell.styles.fillColor = [255, 255, 255];
+                                data.cell.styles.textColor = [0, 0, 0];
+                            }
+                        }
+                    });
+
+                    doc.save(titulo.toLowerCase().includes('finan') ? 'relatório_finanças.pdf' : 'relatório_pedidos.pdf');
                 },
-                exitTVMode() {
-                    this.isTVMode = false;
-                    this.restoreFullScreenState();
+
+                gerarCSV(titulo, colunas, dados) {
+                    let csvContent = "\uFEFF"; 
+                    csvContent += colunas.join(";") + "\r\n";
+                    
+                    dados.forEach(rowArray => {
+                        let row = rowArray.map(item => {
+                            let cell = String(item !== null && item !== undefined ? item : '');
+                            return `"${cell.replace(/"/g, '""')}"`;
+                        }).join(";");
+                        csvContent += row + "\r\n";
+                    });
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    if (link.download !== undefined) {
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", titulo.toLowerCase().includes('finan') ? 'relatório de finanças.csv' : 'relatório de pedidos.csv');
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
                 }
+            },
+           mounted() {
+                document.addEventListener('click', (e) => {
+                    this.activeStatusItem = null;
+                    this.openFilterDropdown = null;
+                    this.openReportMenu = false;
+                });
+
+                document.addEventListener('fullscreenchange', () => {
+                    this.isFullScreen = !!document.fullscreenElement;
+                });
+
+                const initFirebase = () => {
+                    if (window.FirebaseDB) {
+                        window.FirebaseDB.listenPedidos((lista) => {
+                            this.pedidos = lista.map(p => ({ ...p, editando: p.editando || false }));
+                            if (this.activeTab === 'analise') {
+                                this.$nextTick(() => { this.renderApexCharts(); });
+                            }
+                        });
+                        window.FirebaseDB.listenFinancas((lista) => {
+                            this.financas = lista;
+                        });
+                    } else {
+                        setTimeout(initFirebase, 100);
+                    }
+                };
+                initFirebase();
             }
         }).mount('#app');
     </script>
